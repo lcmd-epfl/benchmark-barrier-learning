@@ -53,7 +53,7 @@ def predict_KRR(X_train, X_test, y_train, y_test, sigma=100, l2reg=1e-6, gamma=0
 
 def opt_hyperparams(
     X_train, X_val, y_train, y_val,
-    sigmas=[0.1, 1, 10, 100, 1000],
+    sigmas=[1, 10, 100, 1000, 1e4],
     gammas=[1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1],
     l2regs=[1e-10, 1e-7, 1e-4],
     kernel='rbf'
@@ -89,7 +89,7 @@ def opt_hyperparams(
 
     print(
         "min mae",
-        mean_maes[min_j, min_k],
+        maes[min_j, min_k],
         "for sigma/gamma=",
         min_sigma,
         "and l2reg=",

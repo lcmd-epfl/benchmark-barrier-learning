@@ -5,6 +5,7 @@ from glob import glob
 from periodictable import elements
 import os
 from src.fingerprints import get_MFP, get_DRFP
+from src.b2r2 import get_b2r2_a_molecular, get_b2r2_l_molecular, get_b2r2_n_molecular
 
 pt = {}
 for el in elements:
@@ -111,14 +112,14 @@ class TWODIM:
         return np.vstack(drfps)
 
     def get_gdb_MFP(self):
-        data = pd.read_csv("data/gdb7-22-ts/ccsdf12_dz.csv", index_col=0)
+        data = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv", index_col=0)
         self.barriers = data['dE0'].to_numpy()
         rxn_smiles = data['rxn_smiles']
         mfps = [get_MFP(x) for x in rxn_smiles]
         return np.vstack(mfps)
 
     def get_gdb_DRFP(self):
-        data = pd.read_csv("data/gdb7-22-ts/ccsdf12_dz.csv", index_col=0)
+        data = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv", index_col=0)
         self.barriers = data['dE0'].to_numpy()
         rxn_smiles = data['rxn_smiles']
         drfps = [get_DRFP(x) for x in rxn_smiles]
@@ -218,7 +219,7 @@ class B2R2:
         self.mols_reactants = [[qml.Compound(x)] for x in all_reactants]
         self.mols_products = [[qml.Compound(x)] for x in all_products]
 
-        ncharges = [mol.nuclear_charges for mol in list_reactants]
+        self.ncharges = [mol.nuclear_charges for mol in list_reactants]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
 
         return
@@ -304,8 +305,6 @@ class B2R2:
         files = glob(filedir + "*.xyz")
         indices = np.unique([x.split("/")[-1].split("_")[1].strip('.xyz') for x in files])
         self.indices = [int(x) for x in indices]
-        reactants_files = []
-        products_files = []
 
         r_mols = []
         p_mols = []
@@ -458,6 +457,43 @@ class B2R2:
 
         return np.concatenate((b2r2_reactants_sum, b2r2_products_sum), axis=1)
 
+class SPAHM:
+    #TODO
+    def __init__(self):
+        return
+
+    def get_cyclo_data_and_rep(self):
+        spahm = np.load('data/cyclo/Cyclo_SPAHM-b.npy', allow_pickle=True)
+        df = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
+        barriers = []
+        for idx in spahm[:, 0]:
+            idx = int(idx)
+            barrier = df[df['rxn_id'] == idx]['G_act'].item()
+            barriers.append(barrier)
+        self.barriers = barriers
+        self.spahm_b = np.array([x for x in spahm[:,1]])
+        return
+
+    def get_gdb_data_and_rep(self):
+        spahm = np.load("data/gdb7-22-ts/GDB7-corr_SPAHM-b.npy", allow_pickle=True)
+        df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
+        barriers = []
+        for idx in spahm[:, 0]:
+            idx = int(idx)
+            barrier = df[df['idx'] == idx]['dE0'].item()
+            barriers.append(barrier)
+        self.barriers = barriers
+        self.spahm_b = np.array([x for x in spahm[:,1]])
+        return
+
+    def get_proparg_data_and_rep(self):
+        spahm = np.load("data/proparg/Proparg_SPAHM-b.npy", allow_pickle=True)
+        df = pd.read_csv("data/proparg/data.csv", index_col=0)
+        barriers = [df[df['label'] == x]['dErxn'].item() for x in spahm[:,0]]
+        self.barriers = barriers
+        self.spahm_b = np.array([x for x in spahm[:,1]])
+        return
+
 class QML:
     def __init__(self):
         self.ncharges = []
@@ -552,7 +588,7 @@ class QML:
         self.mols_reactants = [[qml.Compound(x)] for x in all_reactants]
         self.mols_products = [[qml.Compound(x)] for x in all_products]
 
-        ncharges = [mol.nuclear_charges for mol in list_reactants]
+        self.ncharges = [mol.nuclear_charges for mol in list_reactants]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
 
         return

@@ -1,1 +1,5 @@
 *slatm.npy
+*checkpoint*
+outputs/*
+runs/*
+cache_dir/*

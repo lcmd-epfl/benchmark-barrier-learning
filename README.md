@@ -24,4 +24,5 @@
 - csv files with atom mapped SMILES from rxnmapper are in `data/dataset/all_auto_mapped_rxns.csv`
 - Random atom maps are generated using `src/random_mapper.py` and the corresponding csv in `data/dataset/random_mapped_rxns.csv`
 - csv files were prepared for usage with `chemprop` amd saved as `submit_all_rxns.csv` or `submit_random_rxns.csv`
-- Results of the CGR runs can be found in `results` (#TODO waiting on last runs to finish)
+- Python files specifying how each CGR model was run are in `src`
+- Results of the CGR runs can be found in `results` 

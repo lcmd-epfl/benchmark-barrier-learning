@@ -148,6 +148,7 @@ if __name__ == "__main__":
         # for now have to load spahm
         sp = SPAHM()
         sp.get_gdb_data_and_rep()
+        spahm = sp.spahm_b
         sp_barriers = sp.barriers
 
         print("reps generated/loaded, predicting")
@@ -234,14 +235,6 @@ if __name__ == "__main__":
         sp = SPAHM()
         sp.get_proparg_data_and_rep()
         sp_barriers = sp.barriers
-
-        barriers_spahm = []
-        for idx in spahm_a[:, 0]:
-            idx = int(idx)
-            barrier = df[df['rxn_id'] == idx]['G_act'].item()
-            barriers_spahm.append(barrier)
-
-        spahm = np.array([x for x in spahm[:,1]])
 
         print("reps generated/loaded, predicting")
 

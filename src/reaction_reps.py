@@ -489,9 +489,13 @@ class SPAHM:
     def get_proparg_data_and_rep(self):
         spahm = np.load("data/proparg/Proparg_SPAHM-b.npy", allow_pickle=True)
         df = pd.read_csv("data/proparg/data.csv", index_col=0)
+        df['label'] = df['mol'] + df['enan']
+
         barriers = [df[df['label'] == x]['dErxn'].item() for x in spahm[:,0]]
+
         self.barriers = barriers
-        self.spahm_b = np.array([x for x in spahm[:,1]])
+        self.spahm_b = np.array(spahm)
+        assert len(self.barriers) == len(self.spahm_b)
         return
 
 class QML:

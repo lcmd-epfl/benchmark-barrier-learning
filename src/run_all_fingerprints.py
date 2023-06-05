@@ -137,7 +137,7 @@ if __name__ == "__main__":
             slatm = np.load(slatm_save)
 
         b2r2 = B2R2()
-        b2r2.get_cyclo_data()
+        b2r2.get_GDB7_ccsd_data()
         b2r2_save = 'data/gdb7-22-ts/b2r2.npy'
         if not os.path.exists(b2r2_save):
             b2r2 = b2r2.get_b2r2_l()
@@ -161,7 +161,7 @@ if __name__ == "__main__":
             maes_drfp = np.load(drfp_save)
         print(f'drfp mae {np.mean(maes_drfp)} +- {np.std(maes_drfp)}')
 
-        mfp_save = f'data/gdb7-22-ts/drfp_{CV}_fold.npy'
+        mfp_save = f'data/gdb7-22-ts/mfp_{CV}_fold.npy'
         if not os.path.exists(mfp_save):
             maes_mfp = predict_CV(mfp, barriers, CV=CV, mode='rf')
             np.save(mfp_save, maes_mfp)
@@ -195,17 +195,18 @@ if __name__ == "__main__":
 
     if proparg:
         print("Running for proparg dataset")
+        print("PROBLEMS WITH CSV FILES HERE. NEED TO CHECK SMILES.")
         # first 2d fingerprints drfp, mfp
         twodim = TWODIM()
         drfp_save = 'data/proparg/drfp.npy'
         if not os.path.exists(drfp_save):
-            drfp = twodim.get_gdb_DRFP()
+            drfp = twodim.get_proparg_DRFP()
             np.save(drfp_save, drfp)
         else:
             drfp = np.load(drfp_save)
         mfp_save = 'data/proparg/mfp.npy'
         if not os.path.exists(mfp_save):
-            mfp = twodim.get_gdb_MFP()
+            mfp = twodim.get_proparg_MFP()
             np.save(mfp_save, mfp)
         else:
             mfp = np.load(mfp_save)
@@ -221,6 +222,7 @@ if __name__ == "__main__":
             slatm = np.load(slatm_save)
 
         barriers = qml.barriers
+        #print('barriers shape', barriers.shape)
 
         b2r2 = B2R2()
         b2r2.get_proparg_data()

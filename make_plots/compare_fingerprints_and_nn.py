@@ -18,18 +18,21 @@ colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
 
 cyclo_dir = 'data/cyclo/'
 gdb_dir = 'data/gdb7-22-ts/'
+proparg_dir = 'data/proparg/'
 
 cyclo_lang_dir = 'outs/cyclo_bert_pretrained/results.txt'
 gdb_lang_dir = 'outs/gdb_bert_pretrained/results.txt'
-lang_dirs = [cyclo_lang_dir, gdb_lang_dir]
+proparg_lang_dir = 'outs/proparg_bert_pretrained/results.txt'
+lang_dirs = [gdb_lang_dir, cyclo_lang_dir, proparg_lang_dir]
 
 cyclo_cgr_dir = 'results/cyclo_true/test_scores.csv'
 gdb_cgr_dir = 'results/gdb_true/test_scores.csv'
-cgr_dirs = [cyclo_cgr_dir, gdb_cgr_dir]
+proparg_cgr_dir = 'results/proparg/test_scores.csv'
+cgr_dirs = [gdb_cgr_dir, cyclo_cgr_dir, proparg_cgr_dir]
 
-titles = ['Cyclo-23-TS', 'GDB7-22-TS']
-fig, axes = plt.subplots(nrows=1, ncols=2)
-for i, db in enumerate([cyclo_dir, gdb_dir]):
+titles = ['GDB7-22-TS', 'Cyclo-23-TS', 'Proparg-21-TS']
+fig, axes = plt.subplots(nrows=1, ncols=3)
+for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     lang_dir = lang_dirs[i]
     cgr_dir = cgr_dirs[i]
     mfp_mae, mfp_std = get_maes(db + 'mfp_10_fold.npy')

@@ -491,10 +491,14 @@ class SPAHM:
         df = pd.read_csv("data/proparg/data.csv", index_col=0)
         df['label'] = df['mol'] + df['enan']
 
-        barriers = [df[df['label'] == x]['dErxn'].item() for x in spahm[:,0]]
+        barriers = []
+        for label in spahm[:,0]:
+            df_match = df[df['label'] == label]
+            barrier = df_match['dErxn'].item()
+            barriers.append(barrier)
 
         self.barriers = barriers
-        self.spahm_b = np.array(spahm)
+        self.spahm_b = np.array([x for x in spahm[:,1]])
         assert len(self.barriers) == len(self.spahm_b)
         return
 

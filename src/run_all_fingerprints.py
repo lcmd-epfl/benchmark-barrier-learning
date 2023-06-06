@@ -195,7 +195,6 @@ if __name__ == "__main__":
 
     if proparg:
         print("Running for proparg dataset")
-        print("PROBLEMS WITH CSV FILES HERE. NEED TO CHECK SMILES.")
         # first 2d fingerprints drfp, mfp
         twodim = TWODIM()
         drfp_save = 'data/proparg/drfp.npy'
@@ -236,6 +235,7 @@ if __name__ == "__main__":
         # for now have to load spahm
         sp = SPAHM()
         sp.get_proparg_data_and_rep()
+        spahm = sp.spahm_b
         sp_barriers = sp.barriers
 
         print("reps generated/loaded, predicting")
@@ -248,7 +248,7 @@ if __name__ == "__main__":
             maes_drfp = np.load(drfp_save)
         print(f'drfp mae {np.mean(maes_drfp)} +- {np.std(maes_drfp)}')
 
-        mfp_save = f'data/proparg/drfp_{CV}_fold.npy'
+        mfp_save = f'data/proparg/mfp_{CV}_fold.npy'
         if not os.path.exists(mfp_save):
             maes_mfp = predict_CV(mfp, barriers, CV=CV, mode='rf')
             np.save(mfp_save, maes_mfp)
@@ -264,6 +264,7 @@ if __name__ == "__main__":
             maes_slatm = np.load(slatm_save)
         print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
 
+        # SOMETHING WRONG !
         spahm_save = f'data/proparg/spahm_{CV}_fold.npy'
         if not os.path.exists(spahm_save):
             maes_spahm = predict_CV(spahm, barriers, CV=CV, mode='krr', kernel='rbf')

@@ -89,14 +89,14 @@
     "reaction_mode": "reac_diff",
     "reaction_solvent": false,
     "reproducibility": {
-        "command_line": "python CGR_proparg_random.py",
+        "command_line": "python CGR.py",
         "git_has_uncommitted_changes": true,
         "git_root": "/home/vangerwe/atom-map",
-        "git_url": "https://github.com/puckvg/atom/tree/152887ddf36ac90752ef011f6ed920c2d291a68e",
-        "time": "Tue May 30 22:13:58 2023"
+        "git_url": "https://github.com/puckvg/atom/tree/f9fb2e9b58209667f60a3f6bb8ea470ffff8d189",
+        "time": "Mon Jun  5 16:04:38 2023"
     },
     "resume_experiment": false,
-    "save_dir": "/home/vangerwe/atom-map/results/proparg",
+    "save_dir": "/home/vangerwe/atom-map/results/proparg-short",
     "save_preds": false,
     "save_smiles_splits": false,
     "seed": 0,

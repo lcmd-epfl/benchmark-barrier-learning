@@ -264,10 +264,9 @@ if __name__ == "__main__":
             maes_slatm = np.load(slatm_save)
         print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
 
-        # SOMETHING WRONG !
         spahm_save = f'data/proparg/spahm_{CV}_fold.npy'
         if not os.path.exists(spahm_save):
-            maes_spahm = predict_CV(spahm, barriers, CV=CV, mode='krr', kernel='rbf')
+            maes_spahm = predict_CV(spahm, sp_barriers, CV=CV, mode='krr', kernel='rbf')
             np.save(spahm_save, maes_spahm)
         else:
             maes_spahm = np.load(spahm_save)

@@ -487,19 +487,23 @@ class SPAHM:
         return
 
     def get_proparg_data_and_rep(self):
-        spahm = np.load("data/proparg/Proparg_SPAHM-b.npy", allow_pickle=True)
+        spahm = np.load("data/proparg/SPAHM_b.npy", allow_pickle=True)
+        spahm_labels = np.loadtxt("data/proparg/id_rxn-Proparg.txt", dtype=str)
+        assert len(spahm) == len(spahm_labels), 'data mismatch for spahm'
+
         df = pd.read_csv("data/proparg/data.csv", index_col=0)
         df['label'] = df['mol'] + df['enan']
 
         barriers = []
-        for label in spahm[:,0]:
+        for label in spahm_labels:
             df_match = df[df['label'] == label]
             barrier = df_match['dErxn'].item()
             barriers.append(barrier)
 
         self.barriers = barriers
-        self.spahm_b = np.array([x for x in spahm[:,1]])
+        self.spahm_b = spahm
         assert len(self.barriers) == len(self.spahm_b)
+
         return
 
 class QML:

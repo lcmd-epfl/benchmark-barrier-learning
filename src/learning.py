@@ -128,4 +128,25 @@ def predict_CV(X, y, CV=5, kernel='rbf', mode='krr', seed=1, test_size=0.2):
 
     return maes
 
+def learning_curve_KRR(X, y, CV=5, n_points=5, kernel='rbf', seed=1, test_size=0.2):
+    tr_fractions = np.logspace(-1, 0, num=n_points, endpoint=True)
+    maes = np.zeros((CV, n_points))
+
+    for i in range(CV):
+        print("CV iteration",i)
+        seed += i
+        X_train_all, X_test_val, y_train_all, y_test_val = train_test_split(X, y, random_state=seed, test_size=test_size)
+        X_test, X_val, y_test, y_val = train_test_split(X_test_val, y_test_val, shuffle=False, test_size=0.5)
+
+        sigma, l2reg = opt_hyperparams(X_train_all, X_val, y_train_all, y_val, kernel=kernel)
+
+        tr_sizes = [int(tr_fraction * len(X_train_all)) for tr_fraction in tr_fractions]
+        for j, tr_size in enumerate(tr_sizes):
+            X_train = X_train_all[:tr_size]
+            y_train = y_train_all[:tr_size]
+            print(f"dataset size {len(X)}, train size {len(X_train)}, test size {len(X_test)}, val size {len(X_val)}")
+            mae, _ = predict_KRR(X_train, X_test, y_train, y_test, sigma=sigma, l2reg=l2reg, gamma=sigma, kernel=kernel)
+            maes[i,j] = mae
+
+    return maes
 

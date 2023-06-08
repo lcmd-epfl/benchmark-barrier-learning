@@ -475,15 +475,26 @@ class SPAHM:
         return
 
     def get_gdb_data_and_rep(self):
-        spahm = np.load("data/gdb7-22-ts/GDB7-corr_SPAHM-b.npy", allow_pickle=True)
+        spahm_b = np.load("data/gdb7-22-ts/GDB7-corr_SPAHM-b.npy", allow_pickle=True)
         df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
         barriers = []
-        for idx in spahm[:, 0]:
+        for idx in spahm_b[:, 0]:
             idx = int(idx)
             barrier = df[df['idx'] == idx]['dE0'].item()
             barriers.append(barrier)
+
+        spahm_e_labels = list(np.loadtxt('data/gdb7-22-ts/id_rxn.txt', dtype=str))
+        spahm_b_labels = list(spahm_b[:,0])
+        assert spahm_e_labels == spahm_b_labels
+        spahm_e = np.load("data/gdb7-22-ts/GDB7-corr_spahm-e.npy", allow_pickle=True)
+
+        spahm_a = np.load('data/gdb7-22-ts/GDB7-corr_SPAHM-a.npy', allow_pickle=True)
+        spahm_a_labels = list(spahm_a[:,0])
+        assert spahm_a_labels == spahm_b_labels
+        self.spahm_a = np.array([x for x in spahm_a[:,1]])
         self.barriers = barriers
-        self.spahm_b = np.array([x for x in spahm[:,1]])
+        self.spahm_b = np.array([x for x in spahm_b[:,1]])
+        self.spahm_e = spahm_e
         return
 
     def get_proparg_data_and_rep(self):

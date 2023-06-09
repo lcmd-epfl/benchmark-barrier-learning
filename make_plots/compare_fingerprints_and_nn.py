@@ -55,7 +55,7 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     axes[i].bar(6, cgr_mae, yerr=cgr_std, color='blue')
 
     axes[i].set_xticks(list(range(7)))
-    axes[i].set_xticklabels(['MFP', 'DRFP', 'SLATM', '$B^2R^2_l$', 'SPA$^H$M$_b$', 'RXNFP', 'CGR'], rotation=90)
+    axes[i].set_xticklabels(['MFP', 'DRFP', 'SLATM', '$B^2R^2_l$', 'SPA$^H$M$_b$', 'BERT+RXNFP', 'CGR'], rotation=90)
 axes[0].set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")
 
 plt.tight_layout()

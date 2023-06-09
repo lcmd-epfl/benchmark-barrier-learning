@@ -75,12 +75,10 @@ def opt_hyperparams(
                 mae, y_pred = predict_KRR(
                     X_train, X_val, y_train, y_val, sigma=sigma, l2reg=l2reg, kernel=kernel
                 )
-                print(f"MAE {mae} for sigma {sigma} and l2reg {l2reg}")
             if kernel == 'laplacian':
                 mae, y_pred = predict_KRR(
                     X_train, X_val, y_train, y_val, gamma=sigma, l2reg=l2reg, kernel=kernel
                 )
-                print(f"MAE {mae} for gamma {sigma} and l2reg {l2reg}")
             maes[i, j] = mae
 
     min_j, min_k = np.unravel_index(np.argmin(maes, axis=None), maes.shape)
@@ -141,6 +139,7 @@ def learning_curve_KRR(X, y, CV=5, n_points=5, kernel='rbf', seed=1, test_size=0
         sigma, l2reg = opt_hyperparams(X_train_all, X_val, y_train_all, y_val, kernel=kernel)
 
         tr_sizes = [int(tr_fraction * len(X_train_all)) for tr_fraction in tr_fractions]
+        print('tr sizes', tr_sizes)
         for j, tr_size in enumerate(tr_sizes):
             X_train = X_train_all[:tr_size]
             y_train = y_train_all[:tr_size]
@@ -148,5 +147,5 @@ def learning_curve_KRR(X, y, CV=5, n_points=5, kernel='rbf', seed=1, test_size=0
             mae, _ = predict_KRR(X_train, X_test, y_train, y_test, sigma=sigma, l2reg=l2reg, gamma=sigma, kernel=kernel)
             maes[i,j] = mae
 
-    return maes
+    return tr_sizes, maes
 

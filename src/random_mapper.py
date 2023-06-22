@@ -108,7 +108,7 @@ if __name__ == "__main__":
         mod_rxn_smiles = [reset_smiles(x, shuffle='both') for x in rxn_smiles]
         proparg_df["rxn_smiles"] = mod_rxn_smiles
         proparg_df.to_csv("data/proparg/random_mapped_rxns.csv")
-        job_df = proparg_df[['rxn_smiles', 'dErxn']]
+        job_df = proparg_df[['rxn_smiles', 'Eafw']]
         job_df.to_csv("data/proparg/submit_random_rxns.csv", index=False)
 
         print("File for proparg atom maps saved")

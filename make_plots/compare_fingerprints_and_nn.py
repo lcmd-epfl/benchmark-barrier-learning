@@ -13,7 +13,7 @@ def get_maes(npy, txt=False, csv=False):
         maes = np.load(npy)
     return np.mean(maes), np.std(maes)
 
-matplotlib.rcParams.update({"font.size":14})
+matplotlib.rcParams.update({"font.size":11})
 colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
 
 cyclo_dir = 'data/cyclo/'
@@ -30,7 +30,7 @@ gdb_cgr_dir = 'results/gdb_true/test_scores.csv'
 proparg_cgr_dir = 'results/proparg/test_scores.csv'
 cgr_dirs = [gdb_cgr_dir, cyclo_cgr_dir, proparg_cgr_dir]
 
-titles = ['GDB7-22-TS', 'Cyclo-23-TS', 'Proparg-21-TS']
+titles = ['(a) GDB7-22-TS', '(b) Cyclo-23-TS', '(c) Proparg-21-TS']
 fig, axes = plt.subplots(nrows=1, ncols=3)
 for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     lang_dir = lang_dirs[i]
@@ -56,7 +56,7 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
 
     axes[i].set_xticks(list(range(7)))
     axes[i].set_xticklabels(['MFP', 'DRFP', 'SLATM', '$B^2R^2_l$', 'SPA$^H$M$_b$', 'BERT+RXNFP', 'CGR'], rotation=90)
-axes[0].set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")
+axes[0].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
 
 plt.tight_layout()
 plt.savefig('figures/compare_all_models.pdf')

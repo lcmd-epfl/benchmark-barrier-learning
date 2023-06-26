@@ -153,74 +153,12 @@ class B2R2:
             for i in range(len(data))
         ]
         all_mols = [qml.Compound(x) for x in reactants_files + products_files]
-        self.barriers = data.dErxn.to_numpy()
+        self.barriers = data.Eafw.to_numpy()
         self.ncharges = [mol.nuclear_charges for mol in all_mols]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
 
         self.mols_reactants = [[qml.Compound(x)] for x in reactants_files]
         self.mols_products = [[qml.Compound(x)] for x in products_files]
-
-        return
-
-    def get_hydroform_data(self):
-        co_df = pd.read_csv("data/hydroform/Co_clean.csv")
-        names = co_df["name"].to_list()
-        labels = [name[3:] for name in names]
-        co_reactants = [
-            "data/hydroform/geometries/co/r/" + label + "_reactant.xyz"
-            for label in labels
-        ]
-        co_products = [
-            "data/hydroform/geometries/co/p/" + label + "_product.xyz"
-            for label in labels
-        ]
-        self.co_barriers = co_df["f_barr"].to_numpy()
-        self.mols_reactants_co = [[qml.Compound(x)] for x in co_reactants]
-        self.mols_products_co = [[qml.Compound(x)] for x in co_products]
-
-        ir_df = pd.read_csv("data/hydroform/Ir_clean.csv")
-        names = ir_df["name"].to_list()
-        labels = [name[3:] for name in names]
-        ir_reactants = [
-            "data/hydroform/geometries/ir/r/" + label + "_reactant.xyz"
-            for label in labels
-        ]
-        ir_products = [
-            "data/hydroform/geometries/ir/p/" + label + "_product.xyz"
-            for label in labels
-        ]
-        self.ir_barriers = ir_df["f_barr"].to_numpy()
-        self.mols_reactants_ir = [[qml.Compound(x)] for x in ir_reactants]
-        self.mols_products_ir = [[qml.Compound(x)] for x in ir_products]
-
-        rh_df = pd.read_csv("data/hydroform/Rh_clean.csv")
-        names = rh_df["name"].to_list()
-        labels = [name[3:] for name in names]
-        rh_reactants = [
-            "data/hydroform/geometries/rh/r/" + label + "_reactant.xyz"
-            for label in labels
-        ]
-        rh_products = [
-            "data/hydroform/geometries/rh/p/" + label + "_product.xyz"
-            for label in labels
-        ]
-        self.rh_barriers = rh_df["f_barr"].to_numpy()
-        self.mols_reactants_rh = [[qml.Compound(x)] for x in rh_reactants]
-        self.mols_products_rh = [[qml.Compound(x)] for x in rh_products]
-
-        self.barriers = np.concatenate(
-            (self.co_barriers, self.ir_barriers, self.rh_barriers), axis=0
-        )
-
-        all_reactants = co_reactants + ir_reactants + rh_reactants
-        all_products = co_products + ir_products + rh_products
-        list_reactants = [qml.Compound(x) for x in all_reactants]
-
-        self.mols_reactants = [[qml.Compound(x)] for x in all_reactants]
-        self.mols_products = [[qml.Compound(x)] for x in all_products]
-
-        self.ncharges = [mol.nuclear_charges for mol in list_reactants]
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
 
         return
 
@@ -551,68 +489,6 @@ class QML:
 
         self.mols_reactants = [[qml.Compound(x)] for x in reactants_files]
         self.mols_products = [[qml.Compound(x)] for x in products_files]
-
-        return
-
-    def get_hydroform_data(self):
-        co_df = pd.read_csv("data/hydroform/Co_clean.csv")
-        names = co_df["name"].to_list()
-        labels = [name[3:] for name in names]
-        co_reactants = [
-            "data/hydroform/geometries/co/r/" + label + "_reactant.xyz"
-            for label in labels
-        ]
-        co_products = [
-            "data/hydroform/geometries/co/p/" + label + "_product.xyz"
-            for label in labels
-        ]
-        self.co_barriers = co_df["f_barr"].to_numpy()
-        self.mols_reactants_co = [[qml.Compound(x)] for x in co_reactants]
-        self.mols_products_co = [[qml.Compound(x)] for x in co_products]
-
-        ir_df = pd.read_csv("data/hydroform/Ir_clean.csv")
-        names = ir_df["name"].to_list()
-        labels = [name[3:] for name in names]
-        ir_reactants = [
-            "data/hydroform/geometries/ir/r/" + label + "_reactant.xyz"
-            for label in labels
-        ]
-        ir_products = [
-            "data/hydroform/geometries/ir/p/" + label + "_product.xyz"
-            for label in labels
-        ]
-        self.ir_barriers = ir_df["f_barr"].to_numpy()
-        self.mols_reactants_ir = [[qml.Compound(x)] for x in ir_reactants]
-        self.mols_products_ir = [[qml.Compound(x)] for x in ir_products]
-
-        rh_df = pd.read_csv("data/hydroform/Rh_clean.csv")
-        names = rh_df["name"].to_list()
-        labels = [name[3:] for name in names]
-        rh_reactants = [
-            "data/hydroform/geometries/rh/r/" + label + "_reactant.xyz"
-            for label in labels
-        ]
-        rh_products = [
-            "data/hydroform/geometries/rh/p/" + label + "_product.xyz"
-            for label in labels
-        ]
-        self.rh_barriers = rh_df["f_barr"].to_numpy()
-        self.mols_reactants_rh = [[qml.Compound(x)] for x in rh_reactants]
-        self.mols_products_rh = [[qml.Compound(x)] for x in rh_products]
-
-        self.barriers = np.concatenate(
-            (self.co_barriers, self.ir_barriers, self.rh_barriers), axis=0
-        )
-
-        all_reactants = co_reactants + ir_reactants + rh_reactants
-        all_products = co_products + ir_products + rh_products
-        list_reactants = [qml.Compound(x) for x in all_reactants]
-
-        self.mols_reactants = [[qml.Compound(x)] for x in all_reactants]
-        self.mols_products = [[qml.Compound(x)] for x in all_products]
-
-        self.ncharges = [mol.nuclear_charges for mol in list_reactants]
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
 
         return
 

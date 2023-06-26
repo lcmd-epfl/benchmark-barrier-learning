@@ -29,7 +29,7 @@ ax.set_yticks(yticks)
 ax.set_yticklabels([str(x) for x in yticks])
 
 ax.minorticks_off()
-ax.set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol")
+ax.set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol")
 ax.set_xlabel("$N_{\mathrm{train}}$")
 ax.legend()
 

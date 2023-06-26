@@ -18,7 +18,7 @@ proparg_random_df = pd.read_csv('results/proparg/test_scores.csv')
 proparg_spahm = np.load('data/proparg/spahm_10_fold.npy')
 
 #matplotlib.rcParams["figure.figsize"] = (10, 4.4)
-matplotlib.rcParams.update({"font.size":14})
+matplotlib.rcParams.update({"font.size":11})
 colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
 
 fig, axes = plt.subplots(nrows=1, ncols=3)

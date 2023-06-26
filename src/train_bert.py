@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     elif dataset == 'proparg':
         df = pd.read_csv("data/proparg/data.csv")
-        target_label = 'dErxn'
+        target_label = 'Eafw'
         save_path = 'outs/proparg_bert_pretrained'
 
     rxn_smiles_list = [remove_atom_mapping_rxn(x) for x in df['rxn_smiles'].to_list()]

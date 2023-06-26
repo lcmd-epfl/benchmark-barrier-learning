@@ -85,14 +85,14 @@ class TWODIM:
 
     def get_proparg_MFP(self):
         data = pd.read_csv("data/proparg/random_mapped_rxns.csv", index_col=0)
-        self.barriers = data['dErxn'].to_numpy()
+        self.barriers = data['Eafw'].to_numpy()
         rxn_smiles = data['rxn_smiles']
         mfps = [get_MFP(x) for x in rxn_smiles]
         return np.vstack(mfps)
 
     def get_proparg_DRFP(self):
         data = pd.read_csv("data/proparg/random_mapped_rxns.csv", index_col=0)
-        self.barriers = data['dErxn'].to_numpy()
+        self.barriers = data['Eafw'].to_numpy()
         rxn_smiles = data['rxn_smiles']
         drfps = [get_DRFP(x) for x in rxn_smiles]
         return np.vstack(drfps)
@@ -446,7 +446,7 @@ class SPAHM:
         barriers = []
         for label in spahm_labels:
             df_match = df[df['label'] == label]
-            barrier = df_match['dErxn'].item()
+            barrier = df_match['Eafw'].item()
             barriers.append(barrier)
 
         self.barriers = barriers
@@ -483,7 +483,7 @@ class QML:
             for i in range(len(data))
         ]
         all_mols = [qml.Compound(x) for x in reactants_files + products_files]
-        self.barriers = data.dErxn.to_numpy()
+        self.barriers = data.Eafw.to_numpy()
         self.ncharges = [mol.nuclear_charges for mol in all_mols]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
 

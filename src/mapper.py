@@ -8,6 +8,7 @@ def argparse():
     parser = ap.ArgumentParser()
     parser.add_argument('-c', '--cyclo', action='store_true')
     parser.add_argument('-g', '--gdb', action='store_true')
+    parser.add_argument('-gm', '--gdb_mod', action='store_true')
     parser.add_argument('-p', '--proparg', action='store_true')
     args = parser.parse_args()
     return args
@@ -18,7 +19,6 @@ def clear_atom_map(mol):
     return mol
 
 def reset_smiles(rxn_smiles):
-  #  print('rxn smiles', rxn_smiles)
     reactants, products = rxn_smiles.split('>>')
     split_reactants = reactants.split('.')
     n_reactants = len(split_reactants)
@@ -30,7 +30,6 @@ def reset_smiles(rxn_smiles):
     product_mol = clear_atom_map(product_mol)
     product_smiles = Chem.MolToSmiles(product_mol)
     mod_rxn_smiles = '.'.join(reactant_smiles) + '>>' + product_smiles
-  #  print('mod', mod_rxn_smiles)
     return mod_rxn_smiles
 
 def get_maps_and_confidence(list_rxn_smiles):
@@ -46,6 +45,7 @@ if __name__ == '__main__':
     args = argparse()
     cyclo = args.cyclo
     gdb = args.gdb
+    gdb_mod = args.gdb_mod
     proparg = args.proparg
 
     if cyclo:
@@ -65,9 +65,23 @@ if __name__ == '__main__':
         rxn_smiles = gdb_df['rxn_smiles']
 
         mod_rxn_smiles = rxn_smiles.apply(reset_smiles).to_list()
+
         maps = get_maps_and_confidence(mod_rxn_smiles)
 
         with open('data/gdb7-22-ts/maps_gdb.pkl', 'wb') as f:
+            pickle.dump(maps, f)
+
+        print("File for gdb atom maps saved")
+
+    if gdb_mod:
+        gdb_df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz_cleaned_nomap.csv", index_col=0)
+        rxn_smiles = gdb_df['rxn_smiles']
+
+        mod_rxn_smiles = rxn_smiles.apply(reset_smiles).to_list()
+
+        maps = get_maps_and_confidence(mod_rxn_smiles)
+
+        with open('data/gdb7-22-ts/maps_mod_gdb.pkl', 'wb') as f:
             pickle.dump(maps, f)
 
         print("File for gdb atom maps saved")

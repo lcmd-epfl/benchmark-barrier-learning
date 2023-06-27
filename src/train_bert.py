@@ -27,7 +27,7 @@ def argparse():
     args.n_randomizations = int(args.n_randomizations)
     args.train_size = float(args.train_size)
     args.num_train_epochs = int(args.num_train_epochs)
-    args.batch_size = int(args.train_batch_size)
+    args.train_batch_size = int(args.train_batch_size)
     return args
 
 def remove_atom_mapping(smi):
@@ -116,6 +116,8 @@ if __name__ == "__main__":
 
     if n_randomizations > 0:
         data_aug = True
+    else:
+        data_aug = False
 
     print("Using dataset", dataset)
 

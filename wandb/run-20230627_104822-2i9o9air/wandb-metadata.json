@@ -1,0 +1,27 @@
+{
+    "root": "/home/puck/projects/benchmark-digdisc",
+    "program": "src/train_bert.py",
+    "git": {
+        "remote": "https://github.com/lcmd-epfl/benchmark-barrier-learning.git",
+        "commit": "5c87f4f4bdad3edac2df37e904d745bae718b1de"
+    },
+    "email": "puck.vangerwen@gmail.com",
+    "startedAt": "2023-06-27T10:48:22.499307",
+    "host": "puck-epfl",
+    "username": "puck",
+    "executable": "/home/puck/anaconda3/envs/bert-rxnfp/bin/python",
+    "os": "Linux-5.19.0-45-generic-x86_64-with-debian-bookworm-sid",
+    "python": "3.6.13",
+    "cpu_count": 8,
+    "args": [
+        "-d=cyclo",
+        "-CV=1",
+        "-t",
+        "-p"
+    ],
+    "state": "running",
+    "jobType": null,
+    "mode": "run",
+    "project": "lang-rxn",
+    "heartbeatAt": "2023-06-27T10:56:23.619972"
+}

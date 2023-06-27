@@ -4,10 +4,12 @@ import pandas as pd
 import pkg_resources
 import torch
 from rxnfp.models import SmilesClassificationModel
+from transformers import BertForSequenceClassification, BertConfig
 from sklearn.model_selection import train_test_split
 import numpy as np
 import argparse as ap
 import glob
+import random
 
 def argparse():
     parser = ap.ArgumentParser()
@@ -15,11 +17,17 @@ def argparse():
     parser.add_argument('-p', '--predict', action='store_true')
     parser.add_argument('-d', '--dataset', default='gdb')
     parser.add_argument('-CV', '--CV', default=1)
-    parser.add_argument('-test_size', '--test_size', default=0.2)
+    parser.add_argument('-train_size', '--train_size', default=0.8)
+    parser.add_argument('-n_rand', '--n_randomizations', default=0)
+    parser.add_argument('-n_epochs', '--num_train_epochs', default=15)
+    parser.add_argument('-n_batch', '--train_batch_size', default=16)
     args = parser.parse_args()
 
     args.CV = int(args.CV)
-    args.test_size = float(args.test_size)
+    args.n_randomizations = int(args.n_randomizations)
+    args.train_size = float(args.train_size)
+    args.num_train_epochs = int(args.num_train_epochs)
+    args.batch_size = int(args.train_batch_size)
     return args
 
 def remove_atom_mapping(smi):
@@ -39,13 +47,75 @@ def remove_atom_mapping_rxn(rxn_smiles):
     p_smi = remove_atom_mapping(p)
     return r_smi+'>>'+p_smi
 
+def randomize_smiles(smiles, random_type="rotated", isomericSmiles=True):
+    """
+    From: https://github.com/undeadpixel/reinvent-randomized and https://github.com/GLambard/SMILES-X
+    Returns a random SMILES given a SMILES of a molecule.
+    :param mol: A Mol object
+    :param random_type: The type (unrestricted, restricted, rotated) of randomization performed.
+    :return : A random SMILES string of the same molecule or None if the molecule is invalid.
+    """
+    mol = Chem.MolFromSmiles(smiles)
+    if not mol:
+        return None
+
+    if random_type == "unrestricted":
+        return Chem.MolToSmiles(mol, canonical=False, doRandom=True, isomericSmiles=isomericSmiles)
+    elif random_type == "restricted":
+        new_atom_order = list(range(mol.GetNumAtoms()))
+        random.shuffle(new_atom_order)
+        random_mol = Chem.RenumberAtoms(mol, newOrder=new_atom_order)
+        return Chem.MolToSmiles(random_mol, canonical=False, isomericSmiles=isomericSmiles)
+    elif random_type == 'rotated':
+        n_atoms = mol.GetNumAtoms()
+        rotation_index = random.randint(0, n_atoms-1)
+        atoms = list(range(n_atoms))
+        new_atoms_order = (atoms[rotation_index%len(atoms):]+atoms[:rotation_index%len(atoms)])
+        rotated_mol = Chem.RenumberAtoms(mol,new_atoms_order)
+        return Chem.MolToSmiles(rotated_mol, canonical=False, isomericSmiles=isomericSmiles)
+    raise ValueError("Type '{}' is not valid".format(random_type))
+
+def randomize_rxn(rxn, random_type):
+    """
+    Split reaction into precursors and products, then randomize all molecules.
+    """
+    precursors, product = rxn.split('>>')
+    precursors_list = precursors.split('.')
+
+    randomized_precursors = [randomize_smiles(precursor, random_type) for precursor in precursors_list]
+    randomized_product = randomize_smiles(product, random_type)
+    return f"{'.'.join(randomized_precursors)}>>{randomized_product}"
+
+
+def do_randomizations_on_df(df, n_randomizations=1, random_type='rotated', seed=42):
+    """
+    Randomize all molecule SMILES of the reactions in a dataframe.
+    Expected to have column 'text' with the reactions and 'label' with the property to predict.
+    """
+    new_texts = []
+    new_labels = []
+    random.seed(seed)
+
+    for i, row in df.iterrows():
+        if random_type != '':
+            randomized_rxns = [randomize_rxn(row['text'], random_type=random_type) for i in range(n_randomizations)]
+        new_texts.extend(randomized_rxns)
+        new_labels.extend([row['labels']] * len(randomized_rxns))
+    return pd.DataFrame({'text': new_texts, 'labels': new_labels})
+
 if __name__ == "__main__":
     args = argparse()
     train = args.train
     predict = args.predict
     dataset = args.dataset
     CV = args.CV
-    test_size = args.test_size
+    train_size = args.train_size
+    num_train_epochs = args.num_train_epochs
+    batch_size = args.train_batch_size
+    n_randomizations = args.n_randomizations
+
+    if n_randomizations > 0:
+        data_aug = True
 
     print("Using dataset", dataset)
 
@@ -71,14 +141,21 @@ if __name__ == "__main__":
     df = df[['clean_rxn_smiles', target_label]]
     df.columns = ['text', 'labels']
     seed = 0
+    wandb_name = str(num_train_epochs) + '_epochs_' + str(batch_size) + '_batches_' + str(n_randomizations) + '_smiles_rand'
 
+    save_path = save_path + '/' + wandb_name
     maes = []
+
+    if data_aug:
+        assert len(do_randomizations_on_df(df, n_randomizations=3, random_type='rotated')) == 3 * len(df)
     for i in range(CV):
+
+        if CV > 1:
+            wandb_name = wandb_name + '.cv' + str(CV+1)
         print("CV iter", i+1, '/', CV)
         save_iter_path = save_path + f"/split_{i+1}"
         seed += 1
-        train_df, test_df = train_test_split(df, test_size=test_size, random_state=seed)
-
+        train_df, test_df = train_test_split(df, train_size=train_size, random_state=seed)
         mean = train_df['labels'].mean()
         std = train_df['labels'].std()
         train_df['labels'] = (train_df['labels'] - mean)/std
@@ -86,20 +163,37 @@ if __name__ == "__main__":
 
         print('tr size', len(train_df), 'te size', len(test_df))
 
+        if data_aug:
+            # now augmentation
+            train_df = do_randomizations_on_df(train_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
+            test_df = do_randomizations_on_df(test_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
+            print('after augmentation tr size', len(train_df), 'te size', len(test_df))
+
+
+        # need this ?
+        MODEL_CLASSES = {
+            "bert": (BertConfig, BertForSequenceClassification, SmilesTokenizer),
+        }
+
         if train:
-            model_args = {'regression':True, 'evaluate_during_training':False, 'num_labels':1, 'manual_seed':2}
+            print('wandb run name', wandb_name)
+            model_args = {'regression':True, 'evaluate_during_training':False, 'num_labels':1, 'manual_seed':2,
+                          'num_train_epochs':num_train_epochs, 'wandb_project':'lang-rxn', 'train_batch_size':batch_size,
+                          'wandb_kwargs':{'name':wandb_name}}
 
             model_path = pkg_resources.resource_filename(
                             "rxnfp",
                             f"models/transformers/bert_pretrained" # change pretrained to ft to start from the other base model
             )
+
+            # inherits from simpletransformers.classification ClassificationModel
             bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
                                                    use_cuda=torch.cuda.is_available())
 
             bert.train_model(train_df, output_dir=save_iter_path, eval_df=test_df)
 
         if predict:
-            path = glob.glob(save_iter_path+'/checkpoint*/', recursive=True)
+            path = glob.glob(save_iter_path+f'/checkpoint*{num_train_epochs}/', recursive=True)
             assert len(path) == 1
             model_path = path[0]
             print(f"using model path {model_path}")

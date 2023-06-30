@@ -125,6 +125,7 @@ class TWODIM:
         drfps = [get_DRFP(x) for x in rxn_smiles]
         return np.vstack(drfps)
 
+
 class B2R2:
     """Reps available in B2R2 series"""
 
@@ -395,6 +396,58 @@ class B2R2:
 
         return np.concatenate((b2r2_reactants_sum, b2r2_products_sum), axis=1)
 
+class Mixed:
+    """mix spahm and MFP"""
+    def __init__(self):
+        self.sp = SPAHM()
+        self.twodim = TWODIM()
+        return
+
+    def get_cyclo_data_and_rep(self):
+        df = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
+        self.sp.get_cyclo_data_and_rep()
+        self.barriers = self.sp.barriers
+        mfp = self.twodim.get_cyclo_MFP()
+        spahm_b = self.sp.spahm_b
+        indices = self.sp.indices
+        shuffle_indices = []
+        for idx in indices:
+            df_idx = df.index[df['rxn_id'] == int(idx)][0]
+            shuffle_indices.append(df_idx)
+        mfp = np.array(mfp)[shuffle_indices]
+        # now concat
+        fp = np.concatenate((mfp, spahm_b), axis=1)
+        return fp
+
+    def get_gdb_data_and_rep(self):
+        df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
+        self.sp.get_gdb_data_and_rep()
+        self.barriers = self.sp.barriers
+        mfp = self.twodim.get_gdb_MFP()
+        spahm_b = self.sp.spahm_b
+        indices = self.sp.indices
+        shuffle_indices = []
+        for idx in indices:
+            df_idx = df.index[df['idx'] == int(idx)][0]
+            shuffle_indices.append(df_idx)
+        fp = np.concatenate((mfp, spahm_b),axis=1)
+        return fp
+
+    def get_proparg_data_and_rep(self):
+        df = pd.read_csv("data/proparg/data.csv", index_col=0)
+        df['label'] = df['mol'] + df['enan']
+        spahm_labels = np.loadtxt("data/proparg/id_rxn-Proparg.txt", dtype=str)
+        self.sp.get_proparg_data_and_rep()
+        self.barriers = self.sp.barriers
+        mfp = self.twodim.get_proparg_MFP()
+        spahm_b = self.sp.spahm_b
+        shuffle_indices = []
+        for label in spahm_labels:
+            df_idx = df.index[df['label'] == label][0]
+            shuffle_indices.append(df_idx)
+        fp = np.concatenate((mfp, spahm_b), axis=1)
+        return fp
+
 class SPAHM:
     #TODO
     def __init__(self):
@@ -404,6 +457,7 @@ class SPAHM:
         spahm = np.load('data/cyclo/Cyclo_SPAHM-b.npy', allow_pickle=True)
         df = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
         barriers = []
+        self.indices = spahm[:,0]
         for idx in spahm[:, 0]:
             idx = int(idx)
             barrier = df[df['rxn_id'] == idx]['G_act'].item()
@@ -416,6 +470,7 @@ class SPAHM:
         spahm_b = np.load("data/gdb7-22-ts/GDB7-corr_SPAHM-b.npy", allow_pickle=True)
         df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
         barriers = []
+        self.indices = spahm_b[:,0]
         for idx in spahm_b[:, 0]:
             idx = int(idx)
             barrier = df[df['idx'] == idx]['dE0'].item()

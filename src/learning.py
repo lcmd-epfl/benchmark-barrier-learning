@@ -105,8 +105,15 @@ def predict_CV(X, y, CV=5, kernel='rbf', mode='krr', seed=1, test_size=0.2):
         print("CV iteration", i)
         seed += i
         X_train, X_test_val, y_train, y_test_val = train_test_split(X, y, random_state=seed, test_size=test_size)
-        X_test, X_val, y_test, y_val = train_test_split(X_test_val, y_test_val, shuffle=False, test_size=0.5)
-        print('train size', len(X_train), 'val size', len(X_val), 'test size', len(X_test))
+        if mode == 'krr':
+            X_test, X_val, y_test, y_val = train_test_split(X_test_val, y_test_val, shuffle=False, test_size=0.5)
+            print('train size', len(X_train), 'val size', len(X_val), 'test size', len(X_test))
+        elif mode == 'rf':
+            X_test = X_test_val
+            y_test = y_test_val
+            print('train size', len(X_train), 'test size', len(X_test))
+        else:
+            return ValueError('invalid argument for train mode. should be rf or krr.')
 
         # hyperparam opt 
         if mode == 'krr':
@@ -120,8 +127,7 @@ def predict_CV(X, y, CV=5, kernel='rbf', mode='krr', seed=1, test_size=0.2):
         elif mode == 'rf':
             mae, _ = predict_RF(X_train, X_test, y_train, y_test)
         else:
-            print('mode is not recognised. exiting')
-            return 
+            return ValueError('invalid argument for train mode. should be rf or krr.')
         maes[i] = mae
 
     return maes

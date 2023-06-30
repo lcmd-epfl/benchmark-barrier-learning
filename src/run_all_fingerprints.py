@@ -1,5 +1,5 @@
 import argparse as ap
-from src.reaction_reps import TWODIM, QML, B2R2, SPAHM
+from src.reaction_reps import TWODIM, QML, B2R2, SPAHM, Mixed
 from src.learning import predict_CV
 import numpy as np
 import os
@@ -66,6 +66,10 @@ if __name__ == "__main__":
         sp_barriers = sp.barriers
         spahm = sp.spahm_b
 
+        # mixed fp
+        mx = Mixed()
+        mixed = mx.get_cyclo_data_and_rep()
+
         print("reps generated/loaded, predicting")
 
         drfp_save = f'data/cyclo/drfp_{CV}_fold.npy'
@@ -107,6 +111,14 @@ if __name__ == "__main__":
         else:
             maes_b2r2 = np.load(b2r2_save)
         print(f'b2r2 mae {np.mean(maes_b2r2)} +- {np.std(maes_b2r2)}')
+
+        mixed_save = f'data/cyclo/mixed_{CV}_fold.npy'
+        if not os.path.exists(mixed_save):
+            maes_mixed = predict_CV(mixed, sp_barriers, CV=CV, mode='rf')
+            np.save(mixed_save, maes_mixed)
+        else:
+            maes_mixed = np.load(mixed_save)
+        print(f'mixed mae {np.mean(maes_mixed)} +- {np.std(maes_mixed)}')
 
     if gdb:
         print("Running for gdb dataset")
@@ -151,6 +163,10 @@ if __name__ == "__main__":
         spahm = sp.spahm_b
         sp_barriers = sp.barriers
 
+        # mixed fp
+        mx = Mixed()
+        mixed = mx.get_gdb_data_and_rep()
+
         print("reps generated/loaded, predicting")
 
         drfp_save = f'data/gdb7-22-ts/drfp_{CV}_fold.npy'
@@ -192,6 +208,14 @@ if __name__ == "__main__":
         else:
             maes_b2r2 = np.load(b2r2_save)
         print(f'b2r2 mae {np.mean(maes_b2r2)} +- {np.std(maes_b2r2)}')
+
+        mixed_save = f'data/gdb7-22-ts/mixed_{CV}_fold.npy'
+        if not os.path.exists(mixed_save):
+            maes_mixed = predict_CV(mixed, sp_barriers, CV=CV, mode='rf')
+            np.save(mixed_save, maes_mixed)
+        else:
+            maes_mixed = np.load(mixed_save)
+        print(f'mixed mae {np.mean(maes_mixed)} +- {np.std(maes_mixed)}')
 
     if proparg:
         print("Running for proparg dataset")
@@ -238,6 +262,10 @@ if __name__ == "__main__":
         spahm = sp.spahm_b
         sp_barriers = sp.barriers
 
+        # mixed fp
+        mx = Mixed()
+        mixed = mx.get_proparg_data_and_rep()
+
         print("reps generated/loaded, predicting")
 
         drfp_save = f'data/proparg/drfp_{CV}_fold.npy'
@@ -279,3 +307,11 @@ if __name__ == "__main__":
         else:
             maes_b2r2 = np.load(b2r2_save)
         print(f'b2r2 mae {np.mean(maes_b2r2)} +- {np.std(maes_b2r2)}')
+
+        mixed_save = f'data/proparg/mixed_{CV}_fold.npy'
+        if not os.path.exists(mixed_save):
+            maes_mixed = predict_CV(mixed, sp_barriers, CV=CV, mode='rf')
+            np.save(mixed_save, maes_mixed)
+        else:
+            maes_mixed = np.load(mixed_save)
+        print(f'mixed mae {np.mean(maes_mixed)} +- {np.std(maes_mixed)}')

@@ -4,3 +4,4 @@
 outputs/*
 runs/*
 cache_dir/*
+wandb/*

@@ -143,9 +143,12 @@ if __name__ == "__main__":
     df = df[['clean_rxn_smiles', target_label]]
     df.columns = ['text', 'labels']
     seed = 0
+
     wandb_name_orig = str(num_train_epochs) + '_epochs_' + str(batch_size) + '_batches_' + str(n_randomizations) + '_smiles_rand'
 
     save_path = save_path + '/' + wandb_name_orig
+
+
     maes = []
 
     if data_aug:
@@ -161,6 +164,11 @@ if __name__ == "__main__":
         seed += 1
 
         # todo proper hyperopt maybe for data aug?
+
+        print("CV iter", i+1, '/', CV)
+        save_iter_path = save_path + f"/split_{i+1}"
+        seed += 1
+
         train_df, test_df = train_test_split(df, train_size=train_size, random_state=seed)
         mean = train_df['labels'].mean()
         std = train_df['labels'].std()

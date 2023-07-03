@@ -1,0 +1,100 @@
+2023-06-27 17:23:19,149 DEBUG   MainThread:53483 [wandb_config.py:_load_defaults():133] no defaults not found in config-defaults.yaml
+2023-06-27 17:23:19,348 DEBUG   MainThread:53483 [meta.py:_setup_code_git():49] probe for git information
+2023-06-27 17:23:19,385 DEBUG   MainThread:53483 [run_manager.py:__init__():547] Initialized sync for lang-rxn/h0iyejo2
+2023-06-27 17:23:19,389 INFO    MainThread:53483 [run_manager.py:wrap_existing_process():1147] wrapping existing process 53454
+2023-06-27 17:23:19,389 WARNING MainThread:53483 [io_wrap.py:register():104] SIGWINCH handler was not None: <Handlers.SIG_DFL: 0>
+2023-06-27 17:23:19,453 INFO    MainThread:53483 [run_manager.py:init_run():926] system metrics and metadata threads started
+2023-06-27 17:23:19,453 INFO    MainThread:53483 [run_manager.py:init_run():965] upserting run before process can begin, waiting at most 10 seconds
+2023-06-27 17:23:19,736 INFO    Thread-15 :53483 [run_manager.py:_upsert_run():1054] saving pip packages
+2023-06-27 17:23:19,737 INFO    Thread-15 :53483 [run_manager.py:_upsert_run():1056] initializing streaming files api
+2023-06-27 17:23:19,737 INFO    Thread-15 :53483 [run_manager.py:_upsert_run():1063] unblocking file change observer, beginning sync with W&B servers
+2023-06-27 17:23:19,737 INFO    MainThread:53483 [run_manager.py:wrap_existing_process():1164] informing user process we are ready to proceed
+2023-06-27 17:23:19,739 INFO    MainThread:53483 [run_manager.py:_sync_etc():1296] entering loop for messages from user process
+2023-06-27 17:23:20,334 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/config.yaml
+2023-06-27 17:23:20,633 INFO    Thread-4  :53483 [run_manager.py:_on_file_created():681] file/dir created: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/wandb-metadata.json
+2023-06-27 17:23:20,634 INFO    Thread-4  :53483 [run_manager.py:_on_file_created():681] file/dir created: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:20,639 INFO    Thread-4  :53483 [run_manager.py:_on_file_created():681] file/dir created: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/requirements.txt
+2023-06-27 17:23:21,331 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:21,331 INFO    Thread-4  :53483 [run_manager.py:_on_file_created():681] file/dir created: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/wandb-summary.json
+2023-06-27 17:23:21,332 INFO    Thread-4  :53483 [run_manager.py:_on_file_created():681] file/dir created: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/media
+2023-06-27 17:23:22,337 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:23,337 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:24,337 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:25,338 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:26,339 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:27,339 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:28,340 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:29,340 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:30,341 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:31,341 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:32,342 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:33,342 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:34,343 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:35,343 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:36,344 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/wandb-metadata.json
+2023-06-27 17:23:36,344 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:37,344 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:38,347 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:39,347 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:40,348 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:41,348 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:42,349 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:43,349 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:44,350 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:45,350 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:46,351 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:47,351 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:48,352 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:48,352 INFO    Thread-4  :53483 [run_manager.py:_on_file_created():681] file/dir created: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/wandb-events.jsonl
+2023-06-27 17:23:49,352 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:50,353 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:51,353 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:52,354 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/wandb-metadata.json
+2023-06-27 17:23:52,354 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:53,356 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:54,358 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:55,359 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:56,359 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:57,360 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:58,360 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:23:59,361 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:00,361 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/wandb-history.jsonl
+2023-06-27 17:24:00,362 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:00,365 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/wandb-summary.json
+2023-06-27 17:24:01,362 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:02,363 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:03,363 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:04,364 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:05,364 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:06,365 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:07,365 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:08,365 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/wandb-metadata.json
+2023-06-27 17:24:08,366 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:09,366 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:10,366 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:11,367 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:12,368 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:13,368 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:14,369 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:15,369 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:16,370 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:17,370 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:18,371 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:18,371 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/wandb-events.jsonl
+2023-06-27 17:24:19,371 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:20,372 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:21,372 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:22,373 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:23,374 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:24,374 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/wandb-metadata.json
+2023-06-27 17:24:24,374 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:25,375 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:26,375 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:27,376 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:28,376 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:29,377 INFO    Thread-4  :53483 [run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+jo2:run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:26,375 INFO    Thread-4  :53483 [h0iyejo2:run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:27,376 INFO    Thread-4  :53483 [h0iyejo2:run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:28,376 INFO    Thread-4  :53483 [h0iyejo2:run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log
+2023-06-27 17:24:29,377 INFO    Thread-4  :53483 [h0iyejo2:run_manager.py:_on_file_modified():692] file/dir modified: /home/puck/projects/benchmark-digdisc/wandb/run-20230627_152318-h0iyejo2/output.log

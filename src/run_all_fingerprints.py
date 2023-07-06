@@ -3,6 +3,7 @@ from src.reaction_reps import TWODIM, QML, B2R2, SPAHM, Mixed
 from src.learning import predict_CV
 import numpy as np
 import os
+
 def parse_args():
     parser = ap.ArgumentParser()
     parser.add_argument('-c', '--cyclo', action='store_true')
@@ -90,7 +91,7 @@ if __name__ == "__main__":
 
         slatm_save = f'data/cyclo/slatm_{CV}_fold.npy'
         if not os.path.exists(slatm_save):
-            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', kernel='rbf')
+            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/cyclo/slatm_hypers.csv')
             np.save(slatm_save, maes_slatm)
         else:
             maes_slatm = np.load(slatm_save)
@@ -98,7 +99,7 @@ if __name__ == "__main__":
 
         spahm_save = f'data/cyclo/spahm_{CV}_fold.npy'
         if not os.path.exists(spahm_save):
-            maes_spahm = predict_CV(spahm, sp_barriers, CV=CV, mode='krr', kernel='rbf')
+            maes_spahm = predict_CV(spahm, sp_barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/cyclo/spahm_hypers.csv')
             np.save(spahm_save, maes_spahm)
         else:
             maes_spahm = np.load(spahm_save)
@@ -106,7 +107,7 @@ if __name__ == "__main__":
 
         b2r2_save = f'data/cyclo/b2r2_{CV}_fold.npy'
         if not os.path.exists(b2r2_save):
-            maes_b2r2 = predict_CV(b2r2, barriers, CV=CV, mode='krr', kernel='rbf')
+            maes_b2r2 = predict_CV(b2r2, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/cyclo/b2r2_hypers.csv')
             np.save(b2r2_save, maes_b2r2)
         else:
             maes_b2r2 = np.load(b2r2_save)
@@ -187,7 +188,7 @@ if __name__ == "__main__":
 
         slatm_save = f'data/gdb7-22-ts/slatm_{CV}_fold.npy'
         if not os.path.exists(slatm_save):
-            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', kernel='rbf')
+            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/gdb7-22-ts/slatm_hypers.csv')
             np.save(slatm_save, maes_slatm)
         else:
             maes_slatm = np.load(slatm_save)
@@ -195,7 +196,7 @@ if __name__ == "__main__":
 
         spahm_save = f'data/gdb7-22-ts/spahm_{CV}_fold.npy'
         if not os.path.exists(spahm_save):
-            maes_spahm = predict_CV(spahm, sp_barriers, CV=CV, mode='krr', kernel='laplacian')
+            maes_spahm = predict_CV(spahm, sp_barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/gdb7-22-ts/spahm_hypers.csv')
             np.save(spahm_save, maes_spahm)
         else:
             maes_spahm = np.load(spahm_save)
@@ -203,7 +204,7 @@ if __name__ == "__main__":
 
         b2r2_save = f'data/gdb7-22-ts/b2r2_{CV}_fold.npy'
         if not os.path.exists(b2r2_save):
-            maes_b2r2 = predict_CV(b2r2, barriers, CV=CV, mode='krr', kernel='rbf')
+            maes_b2r2 = predict_CV(b2r2, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/gdb7-22-ts/b2r2_hypers.csv')
             np.save(b2r2_save, maes_b2r2)
         else:
             maes_b2r2 = np.load(b2r2_save)
@@ -286,7 +287,7 @@ if __name__ == "__main__":
 
         slatm_save = f'data/proparg/slatm_{CV}_fold.npy'
         if not os.path.exists(slatm_save):
-            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', kernel='rbf')
+            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/proparg/slatm_hypers.csv')
             np.save(slatm_save, maes_slatm)
         else:
             maes_slatm = np.load(slatm_save)
@@ -294,7 +295,7 @@ if __name__ == "__main__":
 
         spahm_save = f'data/proparg/spahm_{CV}_fold.npy'
         if not os.path.exists(spahm_save):
-            maes_spahm = predict_CV(spahm, sp_barriers, CV=CV, mode='krr', kernel='rbf')
+            maes_spahm = predict_CV(spahm, sp_barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/proparg/spahm_hypers.csv')
             np.save(spahm_save, maes_spahm)
         else:
             maes_spahm = np.load(spahm_save)
@@ -302,7 +303,7 @@ if __name__ == "__main__":
 
         b2r2_save = f'data/proparg/b2r2_{CV}_fold.npy'
         if not os.path.exists(b2r2_save):
-            maes_b2r2 = predict_CV(b2r2, barriers, CV=CV, mode='krr', kernel='rbf')
+            maes_b2r2 = predict_CV(b2r2, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/proparg/b2r2_hypers.csv')
             np.save(b2r2_save, maes_b2r2)
         else:
             maes_b2r2 = np.load(b2r2_save)

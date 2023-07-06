@@ -25,25 +25,28 @@ sp_barriers = sp.barriers
 print("reps generated/loaded, predicting")
 
 CV=10
-kernel = 'rbf'
-slatm_fname = f'data/gdb7-22-ts/slatm_lc_{CV}_fold_{kernel}.npy'
+slatm_fname = f'data/gdb7-22-ts/slatm_lc_{CV}_fold.npy'
 if not os.path.exists(slatm_fname):
-    tr_sizes, lc_slatm = learning.learning_curve_KRR(slatm, barriers, CV=CV, kernel=kernel)
+    print("Running SLATM LC...")
+    tr_sizes, lc_slatm = learning.learning_curve_KRR(slatm, barriers, CV=CV, save_hypers=True, save_file='data/gdb7-22-ts/slatm_lc_hypers.csv')
     np.save(slatm_fname, lc_slatm)
     np.save('data/gdb7-22-ts/tr_sizes.npy', tr_sizes)
 
-kernel = 'laplacian'
-spahm_a_fname = f'data/gdb7-22-ts/spahm_a_lc_{CV}_fold_{kernel}.npy'
+
+spahm_a_fname = f'data/gdb7-22-ts/spahm_a_lc_{CV}_fold.npy'
 if not os.path.exists(spahm_a_fname):
-    _, lc_spahm_a = learning.learning_curve_KRR(spahm_a, sp_barriers, CV=CV, kernel=kernel)
+    print("Running SPAHM(a) LC...")
+    _, lc_spahm_a = learning.learning_curve_KRR(spahm_a, sp_barriers, CV=CV, save_hypers=True, save_file='data/gdb7-22-ts/spahm_a_lc_hypers.csv')
     np.save(spahm_a_fname, lc_spahm_a)
 
-spahm_b_fname = f'data/gdb7-22-ts/spahm_b_lc_{CV}_fold_{kernel}.npy'
+spahm_b_fname = f'data/gdb7-22-ts/spahm_b_lc_{CV}_fold.npy'
 if not os.path.exists(spahm_b_fname):
-    _, lc_spahm_b = learning.learning_curve_KRR(spahm_b, sp_barriers, CV=CV, kernel=kernel)
+    print("Running SPAHM(b) LC...")
+    _, lc_spahm_b = learning.learning_curve_KRR(spahm_b, sp_barriers, CV=CV, save_hypers=True, save_file='data/gdb7-22-ts/spahm_b_lc_hypers.csv')
     np.save(spahm_b_fname, lc_spahm_b)
 
-spahm_e_fname = f'data/gdb7-22-ts/spahm_e_lc_{CV}_fold_{kernel}.npy'
+spahm_e_fname = f'data/gdb7-22-ts/spahm_e_lc_{CV}_fold.npy'
 if not os.path.exists(spahm_e_fname):
-    _, lc_spahm_e = learning.learning_curve_KRR(spahm_e, sp_barriers, CV=CV, kernel='laplacian')
+    print("Running SPAHM(e) LC...")
+    _, lc_spahm_e = learning.learning_curve_KRR(spahm_e, sp_barriers, CV=CV, save_hypers=True, save_file='data/gdb7-22-ts/spahm_e_lc_hypers.csv')
     np.save(spahm_e_fname, lc_spahm_e)

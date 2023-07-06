@@ -156,13 +156,9 @@ if __name__ == "__main__":
     for i in range(CV):
 
         if CV > 1:
-            wandb_name = wandb_name_orig + '.cv' + str(CV+1)
+            wandb_name = wandb_name_orig + '.cv' + str(i+1)
         else:
             wandb_name = wandb_name_orig
-        print("CV iter", i+1, '/', CV)
-        save_iter_path = save_path + f"/split_{i+1}"
-        seed += 1
-
         # todo proper hyperopt maybe for data aug?
 
         print("CV iter", i+1, '/', CV)
@@ -213,6 +209,7 @@ if __name__ == "__main__":
             print(f"using model path {model_path}")
             trained_bert = SmilesClassificationModel('bert', model_path, num_labels=1, args={'regression':True},
                                                      use_cuda=torch.cuda.is_available())
+            print(test_df.text.values)
             predictions = trained_bert.predict(test_df.text.values)[0]
             predictions = predictions * std + mean
 

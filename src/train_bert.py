@@ -183,7 +183,6 @@ if __name__ == "__main__":
             test_df = do_randomizations_on_df(test_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
             print('after augmentation tr size', len(train_df), 'te size', len(test_df))
 
-
         # need this ?
         MODEL_CLASSES = {
             "bert": (BertConfig, BertForSequenceClassification, SmilesTokenizer),
@@ -213,7 +212,8 @@ if __name__ == "__main__":
             print(f"using model path {model_path}")
             trained_bert = SmilesClassificationModel('bert', model_path, num_labels=1, args={'regression':True},
                                                      use_cuda=torch.cuda.is_available())
-            predictions = trained_bert.predict(test_df.text.values)[0]
+            print('SMILES to predict', test_df.text.values)
+            predictions = trained_bert.predict(test_df.text.values.tolist())[0]
             predictions = predictions * std + mean
 
             true = test_df['labels'] * std + mean

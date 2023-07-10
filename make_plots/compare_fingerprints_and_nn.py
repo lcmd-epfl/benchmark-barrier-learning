@@ -13,16 +13,16 @@ def get_maes(npy, txt=False, csv=False):
         maes = np.load(npy)
     return np.mean(maes), np.std(maes)
 
-matplotlib.rcParams.update({"font.size":11})
+matplotlib.rcParams.update({"font.size":13})
 colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
 
 cyclo_dir = 'data/cyclo/'
 gdb_dir = 'data/gdb7-22-ts/'
 proparg_dir = 'data/proparg/'
 
-cyclo_lang_dir = 'outs/cyclo_bert_pretrained/results.txt'
-gdb_lang_dir = 'outs/gdb_bert_pretrained/results.txt'
-proparg_lang_dir = 'outs/proparg_bert_pretrained/results.txt'
+cyclo_lang_dir = 'outs/cyclo_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
+gdb_lang_dir = 'outs/gdb_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
+proparg_lang_dir = 'outs/proparg_bert_pretrained/5_epochs_8_batches_0_smiles_rand/results.txt'
 lang_dirs = [gdb_lang_dir, cyclo_lang_dir, proparg_lang_dir]
 
 cyclo_cgr_dir = 'results/cyclo_true/test_scores.csv'
@@ -47,15 +47,15 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     axes[i].set_title(titles[i])
     axes[i].bar(0, mfp_mae, yerr=mfp_std, color=colors[0])
     axes[i].bar(1, drfp_mae, yerr=drfp_std, color=colors[1])
-    axes[i].bar(2, slatm_mae, yerr=slatm_std, color=colors[2])
-    axes[i].bar(3, b2r2_mae, yerr=b2r2_std, color=colors[3])
-    axes[i].bar(4, spahm_mae, yerr=spahm_std, color=colors[4])
+    axes[i].bar(2, rxnfp_mae, yerr=rxnfp_std, color=colors[5])
+    axes[i].bar(3, slatm_mae, yerr=slatm_std, color=colors[2])
+    axes[i].bar(4, b2r2_mae, yerr=b2r2_std, color=colors[3])
+    axes[i].bar(5, spahm_mae, yerr=spahm_std, color=colors[4])
 
-    axes[i].bar(5, rxnfp_mae, yerr=rxnfp_std, color=colors[5])
     axes[i].bar(6, cgr_mae, yerr=cgr_std, color='blue')
 
     axes[i].set_xticks(list(range(7)))
-    axes[i].set_xticklabels(['MFP', 'DRFP', 'SLATM', '$B^2R^2_l$', 'SPA$^H$M$_b$', 'BERT+RXNFP', 'CGR'], rotation=90)
+    axes[i].set_xticklabels(['MFP', 'DRFP', 'BERT+RXNFP', 'SLATM', '$B^2R^2_l$', 'SPA$^H$M(b)',  'CGR'], rotation=90)
 axes[0].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
 
 plt.tight_layout()

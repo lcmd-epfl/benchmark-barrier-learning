@@ -57,49 +57,64 @@ def opt_hyperparams(
      sigmas = [1,10,100,1000],
     gammas = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1],
     l2regs = [1e-10, 1e-7, 1e-4],
+    kernels=['rbf', 'laplacian']
 ):
     """Optimize hyperparameters for KRR with gaussian or 
     laplacian kernel.
     """
 
-    # RBF
-    kernel = 'rbf'
-    maes_rbf = np.zeros((len(sigmas), len(l2regs)))
-    for i, sigma in enumerate(sigmas):
-        for j, l2reg in enumerate(l2regs):
-            mae, y_pred = predict_KRR(
-                    X_train, X_val, y_train, y_val, sigma=sigma, l2reg=l2reg, kernel=kernel
+    if 'rbf' in kernels:
+        print("Hyperparam search for rbf kernel")
+        # RBF
+        kernel = 'rbf'
+        maes_rbf = np.zeros((len(sigmas), len(l2regs)))
+        for i, sigma in enumerate(sigmas):
+            for j, l2reg in enumerate(l2regs):
+                mae, y_pred = predict_KRR(
+                        X_train, X_val, y_train, y_val, sigma=sigma, l2reg=l2reg, kernel=kernel
+                        )
+             #   print(f'mae={mae} for params {kernel, sigma, l2reg}')
+                maes_rbf[i, j] = mae
+        min_i, min_j = np.unravel_index(np.argmin(maes_rbf, axis=None), maes_rbf.shape)
+        min_sigma = sigmas[min_i]
+        min_l2reg_rbf = l2regs[min_j]
+        min_mae_rbf = maes_rbf[min_i, min_j]
+
+    elif 'laplacian' in kernels:
+        print("Hyperparam search for laplacian kernel")
+        # Laplacian
+        kernel = 'laplacian'
+        maes_lap = np.zeros((len(gammas), len(l2regs)))
+        for i, gamma in enumerate(gammas):
+            for j, l2reg in enumerate(l2regs):
+                mae, y_pred = predict_KRR(
+                    X_train, X_val, y_train, y_val, gamma=gamma, l2reg=l2reg, kernel=kernel
                     )
-         #   print(f'mae={mae} for params {kernel, sigma, l2reg}')
-            maes_rbf[i, j] = mae
-    min_i, min_j = np.unravel_index(np.argmin(maes_rbf, axis=None), maes_rbf.shape)
-    min_sigma = sigmas[min_i]
-    min_l2reg_rbf = l2regs[min_j]
-    min_mae_rbf = maes_rbf[min_i, min_j]
+                print(f'mae={mae} for params {kernel, gamma, l2reg}')
+                maes_lap[i, j] = mae
+        min_i, min_j = np.unravel_index(np.argmin(maes_lap, axis=None), maes_lap.shape)
+        min_gamma = gammas[min_i]
+        min_l2reg_lap = l2regs[min_j]
+        min_mae_lap = maes_lap[min_i, min_j]
 
-    # Laplacian
-    kernel = 'laplacian'
-    maes_lap = np.zeros((len(gammas), len(l2regs)))
-    for i, gamma in enumerate(gammas):
-        for j, l2reg in enumerate(l2regs):
-            mae, y_pred = predict_KRR(
-                X_train, X_val, y_train, y_val, gamma=gamma, l2reg=l2reg, kernel=kernel
-                )
-           # print(f'mae={mae} for params {kernel, gamma, l2reg}')
-            maes_lap[i, j] = mae
-    min_i, min_j = np.unravel_index(np.argmin(maes_lap, axis=None), maes_lap.shape)
-    min_gamma = gammas[min_i]
-    min_l2reg_lap = l2regs[min_j]
-    min_mae_lap = maes_lap[min_i, min_j]
+    else:
+        raise ValueError('cannot understand kernels')
 
-    if min_sigma < min_gamma:
-        print(f'best mae {min_mae_rbf} params rbf {min_sigma} {min_l2reg_rbf}')
+    if 'laplacian' in kernels and 'rbf' in kernels:
+        if min_sigma < min_gamma:
+            print(f'best mae {min_mae_rbf} params rbf {min_sigma} {min_l2reg_rbf}')
+            return 'rbf', min_sigma, min_l2reg_rbf
+        else:
+            print(f'best mae {min_mae_lap} params laplacian {min_gamma} {min_l2reg_lap}')
+            return 'laplacian', min_gamma, min_l2reg_lap
+    elif 'laplacian' in kernels:
+        return 'laplacian', min_gamma, min_l2reg_lap
+    elif 'rbf' in kernels:
         return 'rbf', min_sigma, min_l2reg_rbf
     else:
-        print(f'best mae {min_mae_lap} params laplacian {min_gamma} {min_l2reg_lap}')
-        return 'laplacian', min_gamma, min_l2reg_lap
+        raise ValueError('cannot understand kernels')
 
-def predict_CV(X, y, CV=5, mode='krr', seed=1, test_size=0.2, save_hypers=False, save_file=''):
+def predict_CV(X, y, CV=5, mode='krr', seed=1, test_size=0.2, save_hypers=False, save_file='', opt_kernels=['laplacian']):
 
     print("Learning mode", mode)
 
@@ -124,10 +139,11 @@ def predict_CV(X, y, CV=5, mode='krr', seed=1, test_size=0.2, save_hypers=False,
         # hyperparam opt 
         if mode == 'krr':
             print("Optimising hypers...")
-            kernel, sigma, l2reg = opt_hyperparams(X_train, X_val, y_train, y_val)
+            kernel, sigma, l2reg = opt_hyperparams(X_train, X_val, y_train, y_val, kernels=opt_kernels)
             kernels.append(kernel)
             sigmas.append(sigma)
             l2regs.append(l2reg)
+            print(f"best params {kernel, sigma, l2reg}")
             print("Making prediction with optimal params...")
             mae, _ = predict_KRR(X_train, X_test, 
                                 y_train, y_test, 
@@ -146,7 +162,7 @@ def predict_CV(X, y, CV=5, mode='krr', seed=1, test_size=0.2, save_hypers=False,
         df.to_csv(save_file)
     return maes
 
-def learning_curve_KRR(X, y, CV=5, n_points=5, seed=1, test_size=0.2, save_hypers=False, save_file=''):
+def learning_curve_KRR(X, y, CV=5, n_points=5, seed=1, test_size=0.2, save_hypers=False, save_file='', kernels=['laplacian']):
     tr_fractions = np.logspace(-1, 0, num=n_points, endpoint=True)
     maes = np.zeros((CV, n_points))
     kernels = []
@@ -160,7 +176,7 @@ def learning_curve_KRR(X, y, CV=5, n_points=5, seed=1, test_size=0.2, save_hyper
         X_test, X_val, y_test, y_val = train_test_split(X_test_val, y_test_val, shuffle=False, test_size=0.5)
 
         print("Optimising hypers...")
-        kernel, sigma, l2reg = opt_hyperparams(X_train_all, X_val, y_train_all, y_val)
+        kernel, sigma, l2reg = opt_hyperparams(X_train_all, X_val, y_train_all, y_val, kernels=kernels)
         kernels.append(kernel)
         sigmas.append(sigma)
         l2regs.append(l2reg)

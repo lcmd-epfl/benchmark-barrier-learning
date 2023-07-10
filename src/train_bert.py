@@ -19,8 +19,8 @@ def argparse():
     parser.add_argument('-CV', '--CV', default=1)
     parser.add_argument('-train_size', '--train_size', default=0.8)
     parser.add_argument('-n_rand', '--n_randomizations', default=0)
-    parser.add_argument('-n_epochs', '--num_train_epochs', default=15)
-    parser.add_argument('-n_batch', '--train_batch_size', default=16)
+    parser.add_argument('-n_epochs', '--num_train_epochs', default=5)
+    parser.add_argument('-n_batch', '--train_batch_size', default=8)
     args = parser.parse_args()
 
     args.CV = int(args.CV)
@@ -179,7 +179,6 @@ if __name__ == "__main__":
             test_df = do_randomizations_on_df(test_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
             print('after augmentation tr size', len(train_df), 'te size', len(test_df))
 
-
         # need this ?
         MODEL_CLASSES = {
             "bert": (BertConfig, BertForSequenceClassification, SmilesTokenizer),
@@ -209,8 +208,9 @@ if __name__ == "__main__":
             print(f"using model path {model_path}")
             trained_bert = SmilesClassificationModel('bert', model_path, num_labels=1, args={'regression':True},
                                                      use_cuda=torch.cuda.is_available())
-            print(test_df.text.values)
-            predictions = trained_bert.predict(test_df.text.values)[0]
+
+            predictions = trained_bert.predict(test_df.text.values.tolist())[0]
+
             predictions = predictions * std + mean
 
             true = test_df['labels'] * std + mean

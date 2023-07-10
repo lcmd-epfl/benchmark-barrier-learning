@@ -4,10 +4,10 @@ import matplotlib
 
 # load LCs
 tr_sizes = np.load('data/gdb7-22-ts/tr_sizes.npy')
-slatm_lc_rbf = np.load('data/gdb7-22-ts/slatm_lc_10_fold_rbf.npy')
-spahm_a_lc = np.load('data/gdb7-22-ts/spahm_a_lc_10_fold_laplacian.npy')
-spahm_b_lc = np.load('data/gdb7-22-ts/spahm_b_lc_10_fold_laplacian.npy')
-spahm_e_lc = np.load('data/gdb7-22-ts/spahm_e_lc_10_fold_laplacian.npy')
+slatm_lc_rbf = np.load('data/gdb7-22-ts/slatm_lc_10_fold.npy')
+spahm_a_lc = np.load('data/gdb7-22-ts/spahm_a_lc_10_fold.npy')
+spahm_b_lc = np.load('data/gdb7-22-ts/spahm_b_lc_10_fold.npy')
+spahm_e_lc = np.load('data/gdb7-22-ts/spahm_e_lc_10_fold.npy')
 
 matplotlib.rcParams.update({"font.size":14})
 colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]

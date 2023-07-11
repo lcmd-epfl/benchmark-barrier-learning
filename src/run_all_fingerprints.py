@@ -1,5 +1,5 @@
 import argparse as ap
-from src.reaction_reps import TWODIM, QML, B2R2, SPAHM, Mixed
+from src.reaction_reps import TWODIM, QML, B2R2, Mixed
 from src.learning import predict_CV
 import numpy as np
 import os
@@ -61,12 +61,6 @@ if __name__ == "__main__":
         else:
             b2r2 = np.load(b2r2_save)
 
-        # for now have to load spahm
-        sp = SPAHM()
-        sp.get_cyclo_data_and_rep()
-        sp_barriers = sp.barriers
-        spahm = sp.spahm_b
-
         # mixed fp
         mx = Mixed()
         mixed = mx.get_cyclo_data_and_rep()
@@ -97,14 +91,6 @@ if __name__ == "__main__":
             maes_slatm = np.load(slatm_save)
         print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
 
-        spahm_save = f'data/cyclo/spahm_{CV}_fold.npy'
-        if not os.path.exists(spahm_save):
-            maes_spahm = predict_CV(spahm, sp_barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/cyclo/spahm_hypers.csv')
-            np.save(spahm_save, maes_spahm)
-        else:
-            maes_spahm = np.load(spahm_save)
-        print(f'spahm mae {np.mean(maes_spahm)} +- {np.std(maes_spahm)}')
-
         b2r2_save = f'data/cyclo/b2r2_{CV}_fold.npy'
         if not os.path.exists(b2r2_save):
             maes_b2r2 = predict_CV(b2r2, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/cyclo/b2r2_hypers.csv')
@@ -115,7 +101,7 @@ if __name__ == "__main__":
 
         mixed_save = f'data/cyclo/mixed_{CV}_fold.npy'
         if not os.path.exists(mixed_save):
-            maes_mixed = predict_CV(mixed, sp_barriers, CV=CV, mode='rf')
+            maes_mixed = predict_CV(mixed, barriers, CV=CV, mode='rf')
             np.save(mixed_save, maes_mixed)
         else:
             maes_mixed = np.load(mixed_save)
@@ -158,12 +144,6 @@ if __name__ == "__main__":
         else:
             b2r2 = np.load(b2r2_save)
 
-        # for now have to load spahm
-        sp = SPAHM()
-        sp.get_gdb_data_and_rep()
-        spahm = sp.spahm_b
-        sp_barriers = sp.barriers
-
         # mixed fp
         mx = Mixed()
         mixed = mx.get_gdb_data_and_rep()
@@ -194,14 +174,6 @@ if __name__ == "__main__":
             maes_slatm = np.load(slatm_save)
         print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
 
-        spahm_save = f'data/gdb7-22-ts/spahm_{CV}_fold.npy'
-        if not os.path.exists(spahm_save):
-            maes_spahm = predict_CV(spahm, sp_barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/gdb7-22-ts/spahm_hypers.csv')
-            np.save(spahm_save, maes_spahm)
-        else:
-            maes_spahm = np.load(spahm_save)
-        print(f'spahm mae {np.mean(maes_spahm)} +- {np.std(maes_spahm)}')
-
         b2r2_save = f'data/gdb7-22-ts/b2r2_{CV}_fold.npy'
         if not os.path.exists(b2r2_save):
             maes_b2r2 = predict_CV(b2r2, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/gdb7-22-ts/b2r2_hypers.csv')
@@ -212,7 +184,7 @@ if __name__ == "__main__":
 
         mixed_save = f'data/gdb7-22-ts/mixed_{CV}_fold.npy'
         if not os.path.exists(mixed_save):
-            maes_mixed = predict_CV(mixed, sp_barriers, CV=CV, mode='rf')
+            maes_mixed = predict_CV(mixed, barriers, CV=CV, mode='rf')
             np.save(mixed_save, maes_mixed)
         else:
             maes_mixed = np.load(mixed_save)
@@ -257,12 +229,6 @@ if __name__ == "__main__":
         else:
             b2r2 = np.load(b2r2_save)
 
-        # for now have to load spahm
-        sp = SPAHM()
-        sp.get_proparg_data_and_rep()
-        spahm = sp.spahm_b
-        sp_barriers = sp.barriers
-
         # mixed fp
         mx = Mixed()
         mixed = mx.get_proparg_data_and_rep()
@@ -293,14 +259,6 @@ if __name__ == "__main__":
             maes_slatm = np.load(slatm_save)
         print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
 
-        spahm_save = f'data/proparg/spahm_{CV}_fold.npy'
-        if not os.path.exists(spahm_save):
-            maes_spahm = predict_CV(spahm, sp_barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/proparg/spahm_hypers.csv')
-            np.save(spahm_save, maes_spahm)
-        else:
-            maes_spahm = np.load(spahm_save)
-        print(f'spahm mae {np.mean(maes_spahm)} +- {np.std(maes_spahm)}')
-
         b2r2_save = f'data/proparg/b2r2_{CV}_fold.npy'
         if not os.path.exists(b2r2_save):
             maes_b2r2 = predict_CV(b2r2, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/proparg/b2r2_hypers.csv')
@@ -311,7 +269,7 @@ if __name__ == "__main__":
 
         mixed_save = f'data/proparg/mixed_{CV}_fold.npy'
         if not os.path.exists(mixed_save):
-            maes_mixed = predict_CV(mixed, sp_barriers, CV=CV, mode='rf')
+            maes_mixed = predict_CV(mixed, barriers, CV=CV, mode='rf')
             np.save(mixed_save, maes_mixed)
         else:
             maes_mixed = np.load(mixed_save)

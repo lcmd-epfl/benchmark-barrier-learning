@@ -25,16 +25,16 @@ fig, axes = plt.subplots(nrows=1, ncols=3)
 for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
 
     mfp_mae, mfp_std = get_maes(db + 'mfp_10_fold.npy')
-    spahm_mae, spahm_std = get_maes(db + 'spahm_10_fold.npy')
+    b2r2_mae, b2r2_std = get_maes(db + 'b2r2_10_fold.npy')
     mixed_mae, mixed_std = get_maes(db + 'mixed_10_fold.npy')
 
     axes[i].set_title(titles[i])
     axes[i].bar(0, mfp_mae, yerr=mfp_std, color=colors[0])
-    axes[i].bar(1, spahm_mae, yerr=spahm_std, color=colors[4])
+    axes[i].bar(1, b2r2_mae, yerr=b2r2_std, color=colors[3])
     axes[i].bar(2, mixed_mae, yerr=mixed_std, color='purple')
 
     axes[i].set_xticks(list(range(3)))
-    axes[i].set_xticklabels(['MFP', 'SPA$^H$M$_b$', 'MFP+SPA$^H$M$_b$'], rotation=90)
+    axes[i].set_xticklabels(['MFP', '$B^2R^2_l$', 'MFP+$B^2R^2_l$'], rotation=90)
 axes[0].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
 
 plt.tight_layout()

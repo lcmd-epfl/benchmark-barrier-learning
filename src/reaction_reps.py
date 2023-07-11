@@ -235,62 +235,6 @@ class B2R2:
         self.mols_products = mols_products
         return
 
-    def get_cyclo_xtb_data(self):
-        # test set at lower quality geometry
-        df = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
-        barriers = df['G_act'].to_numpy()
-
-        filedir = 'data/cyclo/xyz-xtb/'
-        files = glob(filedir + "*.xyz")
-        indices = np.unique([x.split("/")[-1].split("_")[1].strip('.xyz') for x in files])
-        self.indices = [int(x) for x in indices]
-
-        r_mols = []
-        p_mols = []
-        barriers = []
-        for i, idx in enumerate(indices):
-            idx = str(idx)
-            # multiple r files
-            if os.path.exists(filedir + "Reactant_" + idx + ".xyz"):
-                rfile = filedir + "Reactant_" + idx + ".xyz"
-                r_atomtypes, r_ncharges, r_coords = reader(rfile)
-                r_mol = create_mol_obj(r_atomtypes, r_ncharges, r_coords)
-                sub_rmols.append(r_mol)
-            elif os.path.exists(filedir + "Reactant_" + idx + "_0.xyz"):
-                rfiles = glob(filedir + 'Reactant_' + idx + '_*.xyz')
-                sub_rmols = []
-                for rfile in rfiles:
-                    r_atomtypes, r_ncharges, r_coords = reader(rfile)
-                    r_mol = create_mol_obj(r_atomtypes, r_ncharges, r_coords)
-                    sub_rmols.append(r_mol)
-            else:
-                print("cannot find rfile")
-                sub_rmols.append([None])
-
-            sub_pmols = []
-            pfile = filedir + "Product_" + idx + ".xyz"
-            p_atomtypes, p_ncharges, p_coords = reader(pfile)
-            p_mol = create_mol_obj(p_atomtypes, p_ncharges, p_coords)
-            sub_pmols.append(p_mol)
-
-            if None not in sub_pmols and None not in sub_rmols:
-                r_mols.append(sub_rmols)
-                p_mols.append(sub_pmols)
-                barrier = df[df['rxn_id'] == int(idx)]['G_act'].item()
-                barriers.append(barrier)
-            else:
-                print("skipping r mols", sub_rmols, 'and p mols', sub_pmols, 'for idx', idx)
-
-        assert len(r_mols) == len(p_mols)
-        assert len(r_mols) == len(barriers)
-        self.mols_reactants = r_mols
-        self.mols_products = p_mols
-        self.barriers = barriers
-        all_r_mols = np.concatenate(r_mols)
-        self.ncharges = [x.nuclear_charges for x in all_r_mols]
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
-        return
-
     def get_b2r2_l(self, Rcut=3.5, gridspace=0.03):
         b2r2_reactants = [
             [
@@ -397,118 +341,38 @@ class B2R2:
         return np.concatenate((b2r2_reactants_sum, b2r2_products_sum), axis=1)
 
 class Mixed:
-    """mix spahm and MFP"""
+    """mix b2r2 and MFP"""
     def __init__(self):
-        self.sp = SPAHM()
+        self.b2r2 = B2R2()
         self.twodim = TWODIM()
         return
 
     def get_cyclo_data_and_rep(self):
-        df = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
-        self.sp.get_cyclo_data_and_rep()
-        self.barriers = self.sp.barriers
+        self.b2r2.get_cyclo_data()
+        rep = self.b2r2.get_b2r2_l()
+        self.barriers = self.b2r2.barriers
         mfp = self.twodim.get_cyclo_MFP()
-        spahm_b = self.sp.spahm_b
-        indices = self.sp.indices
-        shuffle_indices = []
-        for idx in indices:
-            df_idx = df.index[df['rxn_id'] == int(idx)][0]
-            shuffle_indices.append(df_idx)
-        mfp = np.array(mfp)[shuffle_indices]
         # now concat
-        fp = np.concatenate((mfp, spahm_b), axis=1)
+        fp = np.concatenate((mfp, rep), axis=1)
         return fp
 
     def get_gdb_data_and_rep(self):
-        df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
-        self.sp.get_gdb_data_and_rep()
-        self.barriers = self.sp.barriers
+        self.b2r2.get_GDB7_ccsd_data()
+        rep = self.b2r2.get_b2r2_l()
+        self.barriers = self.b2r2.barriers
         mfp = self.twodim.get_gdb_MFP()
-        spahm_b = self.sp.spahm_b
-        indices = self.sp.indices
-        shuffle_indices = []
-        for idx in indices:
-            df_idx = df.index[df['idx'] == int(idx)][0]
-            shuffle_indices.append(df_idx)
-        fp = np.concatenate((mfp, spahm_b),axis=1)
+        # now concat
+        fp = np.concatenate((mfp, rep), axis=1)
         return fp
 
     def get_proparg_data_and_rep(self):
-        df = pd.read_csv("data/proparg/data.csv", index_col=0)
-        df['label'] = df['mol'] + df['enan']
-        spahm_labels = np.loadtxt("data/proparg/id_rxn-Proparg.txt", dtype=str)
-        self.sp.get_proparg_data_and_rep()
-        self.barriers = self.sp.barriers
+        self.b2r2.get_proparg_data()
+        rep = self.b2r2.get_b2r2_l()
+        self.barriers = self.b2r2.barriers
         mfp = self.twodim.get_proparg_MFP()
-        spahm_b = self.sp.spahm_b
-        shuffle_indices = []
-        for label in spahm_labels:
-            df_idx = df.index[df['label'] == label][0]
-            shuffle_indices.append(df_idx)
-        fp = np.concatenate((mfp, spahm_b), axis=1)
+        # now concat
+        fp = np.concatenate((mfp, rep), axis=1)
         return fp
-
-class SPAHM:
-    #TODO
-    def __init__(self):
-        return
-
-    def get_cyclo_data_and_rep(self):
-        spahm = np.load('data/cyclo/Cyclo_SPAHM-b.npy', allow_pickle=True)
-        df = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
-        barriers = []
-        self.indices = spahm[:,0]
-        for idx in spahm[:, 0]:
-            idx = int(idx)
-            barrier = df[df['rxn_id'] == idx]['G_act'].item()
-            barriers.append(barrier)
-        self.barriers = barriers
-        self.spahm_b = np.array([x for x in spahm[:,1]])
-        return
-
-    def get_gdb_data_and_rep(self):
-        spahm_b = np.load("data/gdb7-22-ts/GDB7-corr_SPAHM-b.npy", allow_pickle=True)
-        df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
-        barriers = []
-        self.indices = spahm_b[:,0]
-        for idx in spahm_b[:, 0]:
-            idx = int(idx)
-            barrier = df[df['idx'] == idx]['dE0'].item()
-            barriers.append(barrier)
-
-        spahm_e_labels = list(np.loadtxt('data/gdb7-22-ts/id_rxn.txt', dtype=str))
-        spahm_b_labels = list(spahm_b[:,0])
-        assert spahm_e_labels == spahm_b_labels
-        spahm_e = np.load("data/gdb7-22-ts/GDB7-corr_spahm-e.npy", allow_pickle=True)
-
-        spahm_a = np.load('data/gdb7-22-ts/GDB7-corr_SPAHM-a.npy', allow_pickle=True)
-        spahm_a_labels = list(spahm_a[:,0])
-        assert spahm_a_labels == spahm_b_labels
-        self.spahm_a = np.array([x for x in spahm_a[:,1]])
-        self.barriers = barriers
-        self.spahm_b = np.array([x for x in spahm_b[:,1]])
-        self.spahm_e = spahm_e
-        return
-
-    def get_proparg_data_and_rep(self):
-        spahm = np.load("data/proparg/SPAHM_b.npy", allow_pickle=True)
-        spahm_labels = np.loadtxt("data/proparg/id_rxn-Proparg.txt", dtype=str)
-        assert len(spahm) == len(spahm_labels), 'data mismatch for spahm'
-
-        df = pd.read_csv("data/proparg/data.csv", index_col=0)
-        df['label'] = df['mol'] + df['enan']
-
-        barriers = []
-        for label in spahm_labels:
-            df_match = df[df['label'] == label]
-            barrier = df_match['Eafw'].item()
-            barriers.append(barrier)
-
-        self.barriers = barriers
-        self.spahm_b = spahm
-        assert len(self.barriers) == len(self.spahm_b)
-
-        return
 
 class QML:
     def __init__(self):

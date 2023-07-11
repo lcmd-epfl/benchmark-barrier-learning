@@ -13,8 +13,9 @@ def get_maes(npy, txt=False, csv=False):
         maes = np.load(npy)
     return np.mean(maes), np.std(maes)
 
-matplotlib.rcParams.update({"font.size":13})
+matplotlib.rcParams.update({"font.size":11})
 colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
+
 
 cyclo_dir = 'data/cyclo/'
 gdb_dir = 'data/gdb7-22-ts/'
@@ -39,7 +40,7 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     drfp_mae, drfp_std = get_maes(db + 'drfp_10_fold.npy')
     slatm_mae, slatm_std = get_maes(db + 'slatm_10_fold.npy')
     b2r2_mae, b2r2_std = get_maes(db + 'b2r2_10_fold.npy')
-    spahm_mae, spahm_std = get_maes(db + 'spahm_10_fold.npy')
+  #  spahm_mae, spahm_std = get_maes(db + 'spahm_10_fold.npy')
 
     rxnfp_mae, rxnfp_std = get_maes(lang_dir, txt=True)
     cgr_mae, cgr_std = get_maes(cgr_dir, csv=True)
@@ -47,16 +48,19 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     axes[i].set_title(titles[i])
     axes[i].bar(0, mfp_mae, yerr=mfp_std, color=colors[0])
     axes[i].bar(1, drfp_mae, yerr=drfp_std, color=colors[1])
-    axes[i].bar(2, rxnfp_mae, yerr=rxnfp_std, color=colors[5])
+    axes[i].bar(2, rxnfp_mae, yerr=rxnfp_std, color=colors[4])
     axes[i].bar(3, slatm_mae, yerr=slatm_std, color=colors[2])
     axes[i].bar(4, b2r2_mae, yerr=b2r2_std, color=colors[3])
-    axes[i].bar(5, spahm_mae, yerr=spahm_std, color=colors[4])
+   # axes[i].bar(5, spahm_mae, yerr=spahm_std, color=colors[4])
 
-    axes[i].bar(6, cgr_mae, yerr=cgr_std, color='blue')
+    axes[i].bar(5, cgr_mae, yerr=cgr_std, color=colors[5])
 
-    axes[i].set_xticks(list(range(7)))
-    axes[i].set_xticklabels(['MFP', 'DRFP', 'BERT+RXNFP', 'SLATM', '$B^2R^2_l$', 'SPA$^H$M(b)',  'CGR'], rotation=90)
+    axes[i].set_xticks(list(range(6)))
+    axes[i].set_xticklabels(['MFP', 'DRFP', 'BERT+RXNFP', 'SLATM', '$B^2R^2_l$', 'CGR'], rotation=90)
 axes[0].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
+axes[1].set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")
+axes[2].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
+
 
 plt.tight_layout()
 plt.savefig('figures/compare_all_models.pdf')

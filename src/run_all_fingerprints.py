@@ -54,12 +54,19 @@ if __name__ == "__main__":
 
         b2r2 = B2R2()
         b2r2.get_cyclo_data()
-        b2r2_save = 'data/cyclo/b2r2.npy'
-        if not os.path.exists(b2r2_save):
-            b2r2 = b2r2.get_b2r2_l()
-            np.save(b2r2_save, b2r2)
+        b2r2_l_save = 'data/cyclo/b2r2_l.npy'
+        if not os.path.exists(b2r2_l_save):
+            b2r2_l = b2r2.get_b2r2_l()
+            np.save(b2r2_l_save, b2r2_l)
         else:
-            b2r2 = np.load(b2r2_save)
+            b2r2_l = np.load(b2r2_l_save)
+
+        b2r2_a_save = 'data/cyclo/b2r2_a.npy'
+        if not os.path.exists(b2r2_a_save):
+            b2r2_a = b2r2.get_b2r2_a()
+            np.save(b2r2_a_save, b2r2_a)
+        else:
+            b2r2_a = np.load(b2r2_a_save)
 
         # mixed fp
         mx = Mixed()
@@ -91,13 +98,21 @@ if __name__ == "__main__":
             maes_slatm = np.load(slatm_save)
         print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
 
-        b2r2_save = f'data/cyclo/b2r2_{CV}_fold.npy'
-        if not os.path.exists(b2r2_save):
-            maes_b2r2 = predict_CV(b2r2, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/cyclo/b2r2_hypers.csv')
-            np.save(b2r2_save, maes_b2r2)
+        b2r2_l_save = f'data/cyclo/b2r2_l_{CV}_fold.npy'
+        if not os.path.exists(b2r2_l_save):
+            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/cyclo/b2r2_l_hypers.csv')
+            np.save(b2r2_l_save, maes_b2r2_l)
         else:
-            maes_b2r2 = np.load(b2r2_save)
-        print(f'b2r2 mae {np.mean(maes_b2r2)} +- {np.std(maes_b2r2)}')
+            maes_b2r2_l = np.load(b2r2_l_save)
+        print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
+
+        b2r2_a_save = f'data/cyclo/b2r2_a_{CV}_fold.npy'
+        if not os.path.exists(b2r2_a_save):
+            maes_b2r2_a = predict_CV(b2r2_a, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/cyclo/b2r2_a_hypers.csv')
+            np.save(b2r2_a_save, maes_b2r2_a)
+        else:
+            maes_b2r2_a = np.load(b2r2_a_save)
+        print(f'b2r2_a mae {np.mean(maes_b2r2_a)} +- {np.std(maes_b2r2_a)}')
 
         mixed_save = f'data/cyclo/mixed_{CV}_fold.npy'
         if not os.path.exists(mixed_save):
@@ -137,12 +152,19 @@ if __name__ == "__main__":
 
         b2r2 = B2R2()
         b2r2.get_GDB7_ccsd_data()
-        b2r2_save = 'data/gdb7-22-ts/b2r2.npy'
-        if not os.path.exists(b2r2_save):
-            b2r2 = b2r2.get_b2r2_l()
-            np.save(b2r2_save, b2r2)
+        b2r2_l_save = 'data/gdb7-22-ts/b2r2_l.npy'
+        if not os.path.exists(b2r2_l_save):
+            b2r2_l = b2r2.get_b2r2_l()
+            np.save(b2r2_l_save, b2r2_l)
         else:
-            b2r2 = np.load(b2r2_save)
+            b2r2_l = np.load(b2r2_l_save)
+
+        b2r2_a_save = 'data/gdb7-22-ts/b2r2_a.npy'
+        if not os.path.exists(b2r2_a_save):
+            b2r2_a = b2r2.get_b2r2_a()
+            np.save(b2r2_a_save, b2r2_a)
+        else:
+            b2r2_a = np.load(b2r2_a_save)
 
         # mixed fp
         mx = Mixed()
@@ -174,13 +196,21 @@ if __name__ == "__main__":
             maes_slatm = np.load(slatm_save)
         print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
 
-        b2r2_save = f'data/gdb7-22-ts/b2r2_{CV}_fold.npy'
-        if not os.path.exists(b2r2_save):
-            maes_b2r2 = predict_CV(b2r2, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/gdb7-22-ts/b2r2_hypers.csv')
-            np.save(b2r2_save, maes_b2r2)
+        b2r2_l_save = f'data/gdb7-22-ts/b2r2_l_{CV}_fold.npy'
+        if not os.path.exists(b2r2_l_save):
+            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/gdb7-22-ts/b2r2_l_hypers.csv')
+            np.save(b2r2_l_save, maes_b2r2_l)
         else:
-            maes_b2r2 = np.load(b2r2_save)
-        print(f'b2r2 mae {np.mean(maes_b2r2)} +- {np.std(maes_b2r2)}')
+            maes_b2r2_l = np.load(b2r2_l_save)
+        print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
+
+        b2r2_a_save = f'data/gdb7-22-ts/b2r2_a_{CV}_fold.npy'
+        if not os.path.exists(b2r2_a_save):
+            maes_b2r2_a = predict_CV(b2r2_a, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/gdb7-22-ts/b2r2_a_hypers.csv')
+            np.save(b2r2_a_save, maes_b2r2_a)
+        else:
+            maes_b2r2_a = np.load(b2r2_a_save)
+        print(f'b2r2_a mae {np.mean(maes_b2r2_a)} +- {np.std(maes_b2r2_a)}')
 
         mixed_save = f'data/gdb7-22-ts/mixed_{CV}_fold.npy'
         if not os.path.exists(mixed_save):
@@ -222,12 +252,19 @@ if __name__ == "__main__":
 
         b2r2 = B2R2()
         b2r2.get_proparg_data()
-        b2r2_save = 'data/proparg/b2r2.npy'
-        if not os.path.exists(b2r2_save):
-            b2r2 = b2r2.get_b2r2_l()
-            np.save(b2r2_save, b2r2)
+        b2r2_l_save = 'data/proparg/b2r2_l.npy'
+        if not os.path.exists(b2r2_l_save):
+            b2r2_l = b2r2.get_b2r2_l()
+            np.save(b2r2_l_save, b2r2_l)
         else:
-            b2r2 = np.load(b2r2_save)
+            b2r2_l = np.load(b2r2_l_save)
+
+        b2r2_a_save = 'data/proparg/b2r2_a.npy'
+        if not os.path.exists(b2r2_a_save):
+            b2r2_a = b2r2.get_b2r2_a()
+            np.save(b2r2_a_save, b2r2_a)
+        else:
+            b2r2_a = np.load(b2r2_a_save)
 
         # mixed fp
         mx = Mixed()
@@ -259,13 +296,21 @@ if __name__ == "__main__":
             maes_slatm = np.load(slatm_save)
         print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
 
-        b2r2_save = f'data/proparg/b2r2_{CV}_fold.npy'
-        if not os.path.exists(b2r2_save):
-            maes_b2r2 = predict_CV(b2r2, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/proparg/b2r2_hypers.csv')
-            np.save(b2r2_save, maes_b2r2)
+        b2r2_l_save = f'data/proparg/b2r2_l_{CV}_fold.npy'
+        if not os.path.exists(b2r2_l_save):
+            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/proparg/b2r2_l_hypers.csv')
+            np.save(b2r2_l_save, maes_b2r2_l)
         else:
-            maes_b2r2 = np.load(b2r2_save)
-        print(f'b2r2 mae {np.mean(maes_b2r2)} +- {np.std(maes_b2r2)}')
+            maes_b2r2_l = np.load(b2r2_l_save)
+        print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
+
+        b2r2_a_save = f'data/proparg/b2r2_a_{CV}_fold.npy'
+        if not os.path.exists(b2r2_a_save):
+            maes_b2r2_a = predict_CV(b2r2_a, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/proparg/b2r2_a_hypers.csv')
+            np.save(b2r2_a_save, maes_b2r2_a)
+        else:
+            maes_b2r2_a = np.load(b2r2_a_save)
+        print(f'b2r2_a mae {np.mean(maes_b2r2_a)} +- {np.std(maes_b2r2_a)}')
 
         mixed_save = f'data/proparg/mixed_{CV}_fold.npy'
         if not os.path.exists(mixed_save):

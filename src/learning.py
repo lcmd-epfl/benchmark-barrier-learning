@@ -80,7 +80,7 @@ def opt_hyperparams(
         min_l2reg_rbf = l2regs[min_j]
         min_mae_rbf = maes_rbf[min_i, min_j]
 
-    elif 'laplacian' in kernels:
+    if 'laplacian' in kernels:
         print("Hyperparam search for laplacian kernel")
         # Laplacian
         kernel = 'laplacian'
@@ -114,7 +114,7 @@ def opt_hyperparams(
     else:
         raise ValueError('cannot understand kernels')
 
-def predict_CV(X, y, CV=5, mode='krr', seed=1, test_size=0.2, save_hypers=False, save_file='', opt_kernels=['laplacian']):
+def predict_CV(X, y, CV=5, mode='krr', seed=1, test_size=0.2, save_hypers=False, save_file='', opt_kernels=['laplacian', 'rbf']):
 
     print("Learning mode", mode)
 

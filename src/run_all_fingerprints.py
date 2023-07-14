@@ -14,7 +14,6 @@ def parse_args():
     args = parser.parse_args()
     args.CV = int(args.CV)
     args.train = float(args.train)
-    # maybe hydroform ?
     return args
 
 if __name__ == "__main__":
@@ -41,7 +40,7 @@ if __name__ == "__main__":
         else:
             mfp = np.load(mfp_save)
 
-        # 3d fingerprints SLATM and SPAHMb
+        # 3d fingerprints SLATM
         qml = QML()
         qml.get_cyclo_data()
         barriers = qml.barriers
@@ -60,13 +59,6 @@ if __name__ == "__main__":
             np.save(b2r2_l_save, b2r2_l)
         else:
             b2r2_l = np.load(b2r2_l_save)
-
-        b2r2_a_save = 'data/cyclo/b2r2_a.npy'
-        if not os.path.exists(b2r2_a_save):
-            b2r2_a = b2r2.get_b2r2_a()
-            np.save(b2r2_a_save, b2r2_a)
-        else:
-            b2r2_a = np.load(b2r2_a_save)
 
         # mixed fp
         mx = Mixed()
@@ -92,7 +84,8 @@ if __name__ == "__main__":
 
         slatm_save = f'data/cyclo/slatm_{CV}_fold.npy'
         if not os.path.exists(slatm_save):
-            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/cyclo/slatm_hypers.csv')
+            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian', 'rbf'],
+                                    save_file='data/cyclo/slatm_hypers.csv')
             np.save(slatm_save, maes_slatm)
         else:
             maes_slatm = np.load(slatm_save)
@@ -100,19 +93,12 @@ if __name__ == "__main__":
 
         b2r2_l_save = f'data/cyclo/b2r2_l_{CV}_fold.npy'
         if not os.path.exists(b2r2_l_save):
-            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/cyclo/b2r2_l_hypers.csv')
+            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian'],
+                                     save_file='data/cyclo/b2r2_l_hypers.csv')
             np.save(b2r2_l_save, maes_b2r2_l)
         else:
             maes_b2r2_l = np.load(b2r2_l_save)
         print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
-
-        b2r2_a_save = f'data/cyclo/b2r2_a_{CV}_fold.npy'
-        if not os.path.exists(b2r2_a_save):
-            maes_b2r2_a = predict_CV(b2r2_a, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/cyclo/b2r2_a_hypers.csv')
-            np.save(b2r2_a_save, maes_b2r2_a)
-        else:
-            maes_b2r2_a = np.load(b2r2_a_save)
-        print(f'b2r2_a mae {np.mean(maes_b2r2_a)} +- {np.std(maes_b2r2_a)}')
 
         mixed_save = f'data/cyclo/mixed_{CV}_fold.npy'
         if not os.path.exists(mixed_save):
@@ -139,7 +125,7 @@ if __name__ == "__main__":
         else:
             mfp = np.load(mfp_save)
 
-        # 3d fingerprints SLATM and SPAHMb
+        # 3d fingerprints SLATM
         qml = QML()
         qml.get_GDB7_ccsd_data()
         barriers = qml.barriers
@@ -158,13 +144,6 @@ if __name__ == "__main__":
             np.save(b2r2_l_save, b2r2_l)
         else:
             b2r2_l = np.load(b2r2_l_save)
-
-        b2r2_a_save = 'data/gdb7-22-ts/b2r2_a.npy'
-        if not os.path.exists(b2r2_a_save):
-            b2r2_a = b2r2.get_b2r2_a()
-            np.save(b2r2_a_save, b2r2_a)
-        else:
-            b2r2_a = np.load(b2r2_a_save)
 
         # mixed fp
         mx = Mixed()
@@ -190,7 +169,8 @@ if __name__ == "__main__":
 
         slatm_save = f'data/gdb7-22-ts/slatm_{CV}_fold.npy'
         if not os.path.exists(slatm_save):
-            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/gdb7-22-ts/slatm_hypers.csv')
+            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian'],
+                                    save_file='data/gdb7-22-ts/slatm_hypers.csv')
             np.save(slatm_save, maes_slatm)
         else:
             maes_slatm = np.load(slatm_save)
@@ -198,19 +178,12 @@ if __name__ == "__main__":
 
         b2r2_l_save = f'data/gdb7-22-ts/b2r2_l_{CV}_fold.npy'
         if not os.path.exists(b2r2_l_save):
-            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/gdb7-22-ts/b2r2_l_hypers.csv')
+            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian'],
+                                     save_file='data/gdb7-22-ts/b2r2_l_hypers_laplacian.csv')
             np.save(b2r2_l_save, maes_b2r2_l)
         else:
             maes_b2r2_l = np.load(b2r2_l_save)
         print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
-
-        b2r2_a_save = f'data/gdb7-22-ts/b2r2_a_{CV}_fold.npy'
-        if not os.path.exists(b2r2_a_save):
-            maes_b2r2_a = predict_CV(b2r2_a, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/gdb7-22-ts/b2r2_a_hypers.csv')
-            np.save(b2r2_a_save, maes_b2r2_a)
-        else:
-            maes_b2r2_a = np.load(b2r2_a_save)
-        print(f'b2r2_a mae {np.mean(maes_b2r2_a)} +- {np.std(maes_b2r2_a)}')
 
         mixed_save = f'data/gdb7-22-ts/mixed_{CV}_fold.npy'
         if not os.path.exists(mixed_save):
@@ -237,7 +210,7 @@ if __name__ == "__main__":
         else:
             mfp = np.load(mfp_save)
 
-        # 3d fingerprints SLATM and SPAHMb
+        # 3d fingerprints SLATM
         qml = QML()
         qml.get_proparg_data()
         slatm_save = 'data/proparg/slatm.npy'
@@ -258,13 +231,6 @@ if __name__ == "__main__":
             np.save(b2r2_l_save, b2r2_l)
         else:
             b2r2_l = np.load(b2r2_l_save)
-
-        b2r2_a_save = 'data/proparg/b2r2_a.npy'
-        if not os.path.exists(b2r2_a_save):
-            b2r2_a = b2r2.get_b2r2_a()
-            np.save(b2r2_a_save, b2r2_a)
-        else:
-            b2r2_a = np.load(b2r2_a_save)
 
         # mixed fp
         mx = Mixed()
@@ -290,7 +256,8 @@ if __name__ == "__main__":
 
         slatm_save = f'data/proparg/slatm_{CV}_fold.npy'
         if not os.path.exists(slatm_save):
-            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/proparg/slatm_hypers.csv')
+            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian'],
+                                    save_file='data/proparg/slatm_hypers.csv')
             np.save(slatm_save, maes_slatm)
         else:
             maes_slatm = np.load(slatm_save)
@@ -298,19 +265,12 @@ if __name__ == "__main__":
 
         b2r2_l_save = f'data/proparg/b2r2_l_{CV}_fold.npy'
         if not os.path.exists(b2r2_l_save):
-            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/proparg/b2r2_l_hypers.csv')
+            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian'],
+                                     save_file='data/proparg/b2r2_l_hypers_laplacian.csv')
             np.save(b2r2_l_save, maes_b2r2_l)
         else:
             maes_b2r2_l = np.load(b2r2_l_save)
         print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
-
-        b2r2_a_save = f'data/proparg/b2r2_a_{CV}_fold.npy'
-        if not os.path.exists(b2r2_a_save):
-            maes_b2r2_a = predict_CV(b2r2_a, barriers, CV=CV, mode='krr', save_hypers=True, save_file='data/proparg/b2r2_a_hypers.csv')
-            np.save(b2r2_a_save, maes_b2r2_a)
-        else:
-            maes_b2r2_a = np.load(b2r2_a_save)
-        print(f'b2r2_a mae {np.mean(maes_b2r2_a)} +- {np.std(maes_b2r2_a)}')
 
         mixed_save = f'data/proparg/mixed_{CV}_fold.npy'
         if not os.path.exists(mixed_save):

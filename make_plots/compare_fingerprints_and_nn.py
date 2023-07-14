@@ -13,7 +13,7 @@ def get_maes(npy, txt=False, csv=False):
         maes = np.load(npy)
     return np.mean(maes), np.std(maes)
 
-matplotlib.rcParams.update({"font.size":11})
+matplotlib.rcParams.update({"font.size":12})
 colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
 
 
@@ -33,6 +33,7 @@ cgr_dirs = [gdb_cgr_dir, cyclo_cgr_dir, proparg_cgr_dir]
 
 titles = ['(a) GDB7-22-TS', '(b) Cyclo-23-TS', '(c) Proparg-21-TS']
 fig, axes = plt.subplots(nrows=1, ncols=3)
+# TODO find labelling and fix for final plot
 for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     lang_dir = lang_dirs[i]
     cgr_dir = cgr_dirs[i]
@@ -45,7 +46,7 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     rxnfp_mae, rxnfp_std = get_maes(lang_dir, txt=True)
     cgr_mae, cgr_std = get_maes(cgr_dir, csv=True)
 
-    axes[i].set_title(titles[i])
+    axes[i].set_title(titles[i], fontsize='medium')
     axes[i].bar(0, mfp_mae, yerr=mfp_std, color=colors[0])
     axes[i].bar(1, drfp_mae, yerr=drfp_std, color=colors[1])
     axes[i].bar(2, rxnfp_mae, yerr=rxnfp_std, color=colors[4])
@@ -56,7 +57,7 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     axes[i].bar(5, cgr_mae, yerr=cgr_std, color=colors[5])
 
     axes[i].set_xticks(list(range(6)))
-    axes[i].set_xticklabels(['MFP', 'DRFP', 'BERT+RXNFP', 'SLATM', '$B^2R^2_l$', 'CGR'], rotation=90)
+    axes[i].set_xticklabels(['MFP', 'DRFP', 'BERT+RXNFP', 'SLATM$_d$', '$B^2R^2_l$', 'CGR'], rotation=90)
 axes[0].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
 axes[1].set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")
 axes[2].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")

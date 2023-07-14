@@ -25,7 +25,7 @@ fig, axes = plt.subplots(nrows=1, ncols=3)
 for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
 
     mfp_mae, mfp_std = get_maes(db + 'mfp_10_fold.npy')
-    b2r2_mae, b2r2_std = get_maes(db + 'b2r2_l_10_fold.npy')
+    b2r2_mae, b2r2_std = get_maes(db + 'b2r2_l_10_fold_laplacian.npy')
     mixed_mae, mixed_std = get_maes(db + 'mixed_10_fold.npy')
 
     axes[i].set_title(titles[i])

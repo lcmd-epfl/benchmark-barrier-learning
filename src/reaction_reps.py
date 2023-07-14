@@ -484,64 +484,6 @@ class QML:
         self.mols_products = mols_products
         return
 
-    def get_cyclo_xtb_data(self):
-        # test set at lower quality geometry
-        df = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
-        barriers = df['G_act'].to_numpy()
-
-        filedir = 'data/cyclo/xyz-xtb/'
-        files = glob(filedir+"*.xyz")
-        indices = np.unique([x.split("/")[-1].split("_")[1].strip('.xyz') for x in files])
-        self.indices = [int(x) for x in indices]
-        reactants_files = []
-        products_files = []
-
-        r_mols = []
-        p_mols = []
-        barriers = []
-        for i, idx in enumerate(indices):
-            idx = str(idx)
-            # multiple r files
-            if os.path.exists(filedir+"Reactant_"+idx+".xyz"):
-                rfile = filedir+"Reactant_"+idx+".xyz"
-                r_atomtypes, r_ncharges, r_coords = reader(rfile)
-                r_mol = create_mol_obj(r_atomtypes, r_ncharges, r_coords)
-                sub_rmols.append(r_mol)
-            elif os.path.exists(filedir+"Reactant_"+idx+"_0.xyz"):
-                rfiles = glob(filedir+'Reactant_'+idx+'_*.xyz')
-                sub_rmols = []
-                for rfile in rfiles:
-                    r_atomtypes, r_ncharges, r_coords = reader(rfile)
-                    r_mol = create_mol_obj(r_atomtypes, r_ncharges, r_coords)
-                    sub_rmols.append(r_mol)
-            else:
-                print("cannot find rfile")
-                sub_rmols.append([None])
-
-            sub_pmols = []
-            pfile = filedir+"Product_"+idx+".xyz"
-            p_atomtypes, p_ncharges, p_coords = reader(pfile)
-            p_mol = create_mol_obj(p_atomtypes, p_ncharges, p_coords)
-            sub_pmols.append(p_mol)
-
-            if None not in sub_pmols and None not in sub_rmols: 
-                r_mols.append(sub_rmols)
-                p_mols.append(sub_pmols)
-                barrier = df[df['rxn_id'] == int(idx)]['G_act'].item()
-                barriers.append(barrier)
-            else:
-                print("skipping r mols", sub_rmols, 'and p mols', sub_pmols, 'for idx', idx) 
-
-        assert len(r_mols) == len(p_mols)
-        assert len(r_mols) == len(barriers)
-        self.mols_reactants = r_mols
-        self.mols_products = p_mols
-        self.barriers = barriers
-        all_r_mols = np.concatenate(r_mols)
-        self.ncharges = [x.nuclear_charges for x in all_r_mols]
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
-        return
-
     def get_SLATM(self):
         mbtypes = qml.representations.get_slatm_mbtypes(self.ncharges)
 

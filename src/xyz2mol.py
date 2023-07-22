@@ -609,7 +609,7 @@ def AC2mol(mol, AC, atoms, charge, allow_charged_fragments=True, use_graph=True)
     return [mol], BO
 
 
-def get_proto_mol(atoms):
+def get_proto_mol(atoms, mapping=False):
     """ """
     mol = Chem.MolFromSmarts("[#" + str(atoms[0]) + "]")
     rwMol = Chem.RWMol(mol)
@@ -618,6 +618,10 @@ def get_proto_mol(atoms):
         rwMol.AddAtom(a)
 
     mol = rwMol.GetMol()
+
+    if mapping:
+        for i, a in enumerate(mol.GetAtoms(), start=1):
+            a.SetAtomMapNum(i)
 
     return mol
 
@@ -806,6 +810,7 @@ def xyz2mol(
     use_huckel=False,
     embed_chiral=True,
     exportBO=False,
+    mapping=False,
 ):
     """
     Generate a rdkit molobj from atoms, coordinates and a total_charge.
@@ -827,7 +832,7 @@ def xyz2mol(
     """
 
     AC = np.array(AC)
-    mol = get_proto_mol(atoms)
+    mol = get_proto_mol(atoms, mapping=mapping)
     # Get atom connectivity (AC) matrix, list of atomic numbers, molecular charge,
     # and mol object with no connectivity information
     #AC, mol = xyz2AC(atoms, coordinates, charge, covalent_factor, use_huckel=use_huckel)

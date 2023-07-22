@@ -21,7 +21,7 @@ def check_connected(am, tol=1e-8):
     eigvals, eigvects = np.linalg.eig(lap)
     return len(np.where(abs(eigvals) < tol)[0]) < 2
 
-def smilify(filename):
+def smilify(filename, mapping=False):
     covalent_factors = [1.0, 1.05, 1.10, 1.15, 1.20]
     for covalent_factor in covalent_factors:
         assert filename[-4:] == ".xyz"
@@ -46,6 +46,7 @@ def smilify(filename):
                 allow_charged_fragments=True,
                 embed_chiral=True,
                 use_huckel=False,
+                mapping=mapping,
             )
             if isinstance(mol, list):
                 mol = mol[0]

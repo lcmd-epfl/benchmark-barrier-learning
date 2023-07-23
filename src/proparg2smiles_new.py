@@ -50,13 +50,20 @@ def construct_ligands():
         if '1002' in scaffolds[i, 'bp']:
             scaffolds[i, 'Mebp'] = concatenate_fragments(scaffolds[i, 'bp'], frags['Me'], 1002)
 
+    scaffolds_3aMebp = concatenate_fragments(scaffolds[1, 'bp'], frags['Me'].replace('1002','1003'), 1003)
+    scaffolds_3aMebp = concatenate_fragments(scaffolds_3aMebp, frags['Me'], 1002)
+
     ligands = {}
     for (Y, R), scaffold in scaffolds.items():
         for X, X_frag in X_frags.items():
-            tmp = concatenate_fragments(scaffold, X_frag, 1004)
+            key = f'{Y}{X}{R}'
+            if key=='3aMebp':
+                tmp = concatenate_fragments(scaffolds_3aMebp, X_frag, 1004)
+            else:
+                tmp = concatenate_fragments(scaffold, X_frag, 1004)
             tmp = concatenate_fragments(tmp, tmp, 1001)
             tmp = clean_smiles(tmp)
-            ligands[f'{Y}{X}{R}'] = tmp
+            ligands[key] = tmp
 
     return ligands
 

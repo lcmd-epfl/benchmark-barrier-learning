@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from types import SimpleNamespace
 from rdkit import Chem
 
 
@@ -70,38 +71,49 @@ def construct_ligands():
 
 def construct_reactants_products(ligands):
 
-    products = {}
-    reactants = {}
+    reactions = {}
 
-    for key, lig in ligands.items():
+    for key, ligand in ligands.items():
 
-        lig = lig.replace('[O-]', 'O%31', 1).replace('[O-]', 'O%32', 1)
+        lig_1dent = ligand.replace('[O-]', 'O%31', 1)
+        lig = lig_1dent.replace('[O-]', 'O%32', 1)
 
         center_product = '[Si+](Cl)(Cl)%31%32%33'
         product = 'C(#CCC(C1=CC=CC=C1)O%33)[H]'
         complex_product = lig+'.'+center_product+'.'+product
-        complex_product = clean_smiles(complex_product)
-        products[key] = complex_product
 
         center_reactant = '[Si](Cl)(Cl)%31%32%33%34'
         reactant1 = 'C=C=C%33'
-        reactant2 = 'C1(=CC=CC=C1)C=[O+]%34' if True else 'C1(=CC=CC=C1)[CH+][O]%34'   # TODO ask Simone
+        # TODO ask Simone
+        reactant2 = 'C1(=CC=CC=C1)C=[O+]%34' if True else 'C1(=CC=CC=C1)[CH+][O]%34'
         complex_reactant = lig+'.'+ center_reactant+'.'+reactant1+'.'+reactant2
-        complex_reactant = clean_smiles(complex_reactant)
-        reactants[key] = complex_reactant
 
-    return products, reactants
+        # TODO ask Simone
+        center_reactant_5val = '[Si+](Cl)(Cl)%31%33%34'
+        complex_reactant_1SiONbond = lig_1dent+'.'+center_reactant_5val+'.'+reactant1+'.'+reactant2
+
+        # TODO ask Simone
+        center_product_4val = '[Si](Cl)(Cl)%31%33'
+        complex_product_1SiONbond = lig_1dent+'.'+center_product_4val+'.'+product
+
+        reactions[key] = SimpleNamespace(reactant = clean_smiles(complex_reactant),
+                                         product  = clean_smiles(complex_product),
+                                         reactant_1SiONbond = clean_smiles(complex_reactant_1SiONbond),
+                                         product_1SiONbond  = clean_smiles(complex_product_1SiONbond))
+    return reactions
 
 
 def main(data_dir='benchmark-barrier-learning/data/proparg'):
 
     ligands = construct_ligands()
-    products, reactants = construct_reactants_products(ligands)
+    reactions = construct_reactants_products(ligands)
 
     for key in ligands.keys():
         print(key)
-        print(products[key])
-        print(reactants[key])
+        print(reactions[key].reactant)
+        print(reactions[key].reactant_1SiONbond)
+        print(reactions[key].product)
+        print(reactions[key].product_1SiONbond)
         print()
 
 

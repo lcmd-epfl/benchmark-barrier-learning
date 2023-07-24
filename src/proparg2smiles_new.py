@@ -209,7 +209,7 @@ def main(data_dir='data/proparg'):
     ligands = construct_ligands()
     reactions = construct_reactants_products(ligands)
 
-    df = pd.read_csv(f'{data_dir}/data.csv', index_col=0)
+    df = pd.read_csv(f'{data_dir}/data_corrupt.csv', index_col=0)
     labels = df['mol'].values
     enans  = df['enan'].values
 

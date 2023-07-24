@@ -25,7 +25,7 @@ def get_atoms_in_order(smi):
 
 
 def main(data_dir='data/proparg'):
-    df = pd.read_csv(f'{data_dir}/data.csv', index_col=0)
+    df = pd.read_csv(f'{data_dir}/data_corrupt.csv', index_col=0)
     labels = df['mol'].values
     enans  = df['enan'].values
 

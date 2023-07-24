@@ -79,39 +79,34 @@ if __name__ == "__main__":
     cyclo = args.cyclo
     gdb = args.gdb
     proparg = args.proparg
-    proparg_good = args.proparg_good
+    proparg_arom = args.proparg_arom
 
     if cyclo:
         cyclo_df = pd.read_csv('data/cyclo/full_dataset.csv', index_col=0)
         rxn_smiles = cyclo_df['rxn_smiles']
         mod_rxn_smiles = [reset_smiles(x, shuffle='product') for x in rxn_smiles]
-        cyclo_df["rxn_smiles"] = mod_rxn_smiles
+        cyclo_df["rxn_smiles_random"] = mod_rxn_smiles
         cyclo_df.to_csv("data/cyclo/random_mapped_rxns.csv")
-        job_df = cyclo_df[['rxn_smiles', 'G_act']]
+        job_df = cyclo_df[['rxn_smiles_random', 'G_act']]
         job_df.to_csv("data/cyclo/submit_random_rxns.csv", index=False)
-
         print("File for cyclo atom maps saved")
 
     if gdb:
         gdb_df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv", index_col=0)
         rxn_smiles = gdb_df['rxn_smiles']
         mod_rxn_smiles = [reset_smiles(x, shuffle='reactant') for x in rxn_smiles]
-        gdb_df["rxn_smiles"] = mod_rxn_smiles
+        gdb_df["rxn_smiles_random"] = mod_rxn_smiles
         gdb_df.to_csv("data/gdb7-22-ts/random_mapped_rxns.csv")
-        job_df = gdb_df[['rxn_smiles', 'dE0']]
+        job_df = gdb_df[['rxn_smiles_random', 'dE0']]
         job_df.to_csv("data/gdb7-22-ts/submit_random_rxns.csv", index=False)
-
         print("File for gdb atom maps saved")
 
     if proparg:
-        proparg_df = pd.read_csv("../data/proparg/data.csv", index_col=0)
+        proparg_df = pd.read_csv("data/proparg/data.csv", index_col=0)
         rxn_smiles = proparg_df['rxn_smiles']
         mod_rxn_smiles = [reset_smiles(x, shuffle='both') for x in rxn_smiles]
-        proparg_df["rxn_smiles"] = mod_rxn_smiles
-        proparg_df.to_csv("../data/proparg/random_mapped_rxns.csv")
-        job_df = proparg_df[['rxn_smiles', 'Eafw']]
-        job_df.to_csv("../data/proparg/submit_random_rxns.csv", index=False)
-
+        proparg_df["rxn_smiles_random"] = mod_rxn_smiles
+        proparg_df.to_csv("data/proparg/data.csv")
         print("File for proparg atom maps saved")
 
     if proparg_arom:
@@ -121,7 +116,4 @@ if __name__ == "__main__":
         mod_rxn_smiles = [reset_smiles(x, shuffle='both', sanitize=False) for x in rxn_smiles]
         proparg_df["rxn_smiles_random"] = mod_rxn_smiles
         proparg_df.to_csv("data/proparg/data_fixarom_smiles.csv")
-      #  job_df = proparg_df[['rxn_smiles_random', 'Eafw']]
-      #  job_df.to_csv("data/proparg/submit_good_rxns.csv", index=False)
-
         print("File for proparg atom maps saved")

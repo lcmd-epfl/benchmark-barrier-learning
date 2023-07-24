@@ -1,7 +1,9 @@
 *slatm.npy
-*GDB7-corr_SPAHM-b.npy 
+*GDB7-corr_SPAHM-b.npy
 *checkpoint*
 outputs/*
 runs/*
 cache_dir/*
 wandb/*
+
+*.pyc

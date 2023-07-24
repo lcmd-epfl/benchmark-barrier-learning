@@ -8,7 +8,7 @@ def argparse():
     parser.add_argument('-c', '--cyclo', action='store_true')
     parser.add_argument('-g', '--gdb', action='store_true')
     parser.add_argument('-p', '--proparg', action='store_true')
-    parser.add_argument('--proparg_good', action='store_true')
+    parser.add_argument('--proparg_arom', action='store_true')
     args = parser.parse_args()
     return args
 
@@ -114,13 +114,13 @@ if __name__ == "__main__":
 
         print("File for proparg atom maps saved")
 
-    if proparg_good:
-        # these are smiles generated differently ?
-        proparg_df = pd.read_csv("data/proparg/data_good-smiles_mapped.csv", index_col=0)
+    if proparg_arom:
+        # smiles generated from proparg2smiles_fixarom.py
+        proparg_df = pd.read_csv("data/proparg/data_fixarom_smiles.csv", index_col=0)
         rxn_smiles = proparg_df['rxn_smiles_mapped']
         mod_rxn_smiles = [reset_smiles(x, shuffle='both', sanitize=False) for x in rxn_smiles]
         proparg_df["rxn_smiles_random"] = mod_rxn_smiles
-        proparg_df.to_csv("data/proparg/data_good-smiles_mapped.csv")
+        proparg_df.to_csv("data/proparg/data_fixarom_smiles.csv")
       #  job_df = proparg_df[['rxn_smiles_random', 'Eafw']]
       #  job_df.to_csv("data/proparg/submit_good_rxns.csv", index=False)
 

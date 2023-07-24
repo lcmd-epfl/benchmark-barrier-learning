@@ -1,7 +1,8 @@
 import argparse as ap
-from rdkit import Chem
-import pandas as pd
 import numpy as np
+import pandas as pd
+from rdkit import Chem
+
 
 def argparse():
     parser = ap.ArgumentParser()
@@ -9,111 +10,57 @@ def argparse():
     parser.add_argument('-g', '--gdb', action='store_true')
     parser.add_argument('-p', '--proparg', action='store_true')
     parser.add_argument('--proparg_arom', action='store_true')
+    parser.add_argument('--seed', type=int, default=2)
     args = parser.parse_args()
     return args
 
-def set_random_atom_map(mol, seed=2):
-    init_maps = get_init_maps(mol)
-    print('initial maps', init_maps)
-    np.random.seed(seed)
-    np.random.shuffle(init_maps)
-    print('random maps', init_maps)
-    for i, atom in enumerate(mol.GetAtoms()):
-        atom.SetAtomMapNum(init_maps[i])
 
-    return mol
+def set_random_atom_map(mol):
+    atoms   = np.array([at.GetSymbol() for at in mol.GetAtoms()])
+    mapping = np.array([at.GetAtomMapNum() for at in mol.GetAtoms()])
+    for q in sorted(set(atoms)):
+        idx = np.where(atoms==q)
+        maps_q = mapping[idx]
+        np.random.shuffle(maps_q)
+        mapping[idx] = maps_q
+    for m, atom in zip(mapping, mol.GetAtoms()):
+        atom.SetAtomMapNum(int(m))
 
-def clear_atom_map(mol):
-    for atom in mol.GetAtoms():
-        atom.SetAtomMapNum(0)
-    return mol
 
-def set_atom_map(mol):
-    for i, atom in enumerate(mol.GetAtoms()):
-        atom.SetAtomMapNum(i+1)
-    return mol
-
-def get_init_maps(mol):
-    maps = []
-    for i,atom in enumerate(mol.GetAtoms()):
-        num = atom.GetAtomMapNum()
-        if num == 0:
-            maps.append(i+1)
-        else:
-            maps.append(num)
-    return maps
-
-def reset_smiles(rxn_smiles, shuffle='product', sanitize=True):
-    print('rxn smiles', rxn_smiles)
+def reset_smiles(rxn_smiles, shuffle='product'):
     reactant_smiles, product_smiles = rxn_smiles.split('>>')
 
     if shuffle == 'reactant':
-        reactant_mol = Chem.MolFromSmiles(reactant_smiles)
-        reactant_mol = Chem.AddHs(reactant_mol)
-        reactant_mol = set_random_atom_map(reactant_mol)
+        reactant_mol = Chem.MolFromSmiles(reactant_smiles, sanitize=False)
+        set_random_atom_map(reactant_mol)
         reactant_smiles = Chem.MolToSmiles(reactant_mol)
 
     if shuffle == 'product':
-        product_mol = Chem.MolFromSmiles(product_smiles)
-        #product_mol = Chem.AddHs(product_mol)
-        product_mol = set_random_atom_map(product_mol)
-        product_smiles = Chem.MolToSmiles(product_mol)
-
-    if shuffle == 'both':
-        reactant_mol = Chem.MolFromSmiles(reactant_smiles, sanitize=sanitize)
-        reactant_mol = Chem.AddHs(reactant_mol)
-        reactant_mol = set_atom_map(reactant_mol)
-        reactant_smiles = Chem.MolToSmiles(reactant_mol)
-        product_mol = Chem.MolFromSmiles(product_smiles)
-        # product_mol = Chem.AddHs(product_mol)
-        product_mol = set_random_atom_map(product_mol)
+        product_mol = Chem.MolFromSmiles(product_smiles, sanitize=False)
+        set_random_atom_map(product_mol)
         product_smiles = Chem.MolToSmiles(product_mol)
 
     mod_rxn_smiles = reactant_smiles + '>>' + product_smiles
-    print('mod rxn smiles', mod_rxn_smiles)
-    print('\n')
     return mod_rxn_smiles
 
+
 if __name__ == "__main__":
+
     args = argparse()
-    cyclo = args.cyclo
-    gdb = args.gdb
-    proparg = args.proparg
-    proparg_arom = args.proparg_arom
 
-    if cyclo:
-        cyclo_df = pd.read_csv('data/cyclo/full_dataset.csv', index_col=0)
-        rxn_smiles = cyclo_df['rxn_smiles']
-        mod_rxn_smiles = [reset_smiles(x, shuffle='product') for x in rxn_smiles]
-        cyclo_df["rxn_smiles_random"] = mod_rxn_smiles
-        cyclo_df.to_csv("data/cyclo/random_mapped_rxns.csv")
-        job_df = cyclo_df[['rxn_smiles_random', 'G_act']]
-        job_df.to_csv("data/cyclo/submit_random_rxns.csv", index=False)
-        print("File for cyclo atom maps saved")
+    datasets = (
+        (args.cyclo,        "data/cyclo/full_dataset.csv",          'rxn_smiles',        'product'),
+        (args.gdb,          "data/gdb7-22-ts/ccsdtf12_dz.csv",      'rxn_smiles',        'reactant'),
+        (args.proparg,      "data/proparg/data.csv",                'rxn_smiles_mapped', 'product'),
+        (args.proparg_arom, "data/proparg/data_fixarom_smiles.csv", 'rxn_smiles_mapped', 'product'),
+    )
 
-    if gdb:
-        gdb_df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv", index_col=0)
-        rxn_smiles = gdb_df['rxn_smiles']
-        mod_rxn_smiles = [reset_smiles(x, shuffle='reactant') for x in rxn_smiles]
-        gdb_df["rxn_smiles_random"] = mod_rxn_smiles
-        gdb_df.to_csv("data/gdb7-22-ts/random_mapped_rxns.csv")
-        job_df = gdb_df[['rxn_smiles_random', 'dE0']]
-        job_df.to_csv("data/gdb7-22-ts/submit_random_rxns.csv", index=False)
-        print("File for gdb atom maps saved")
-
-    if proparg:
-        proparg_df = pd.read_csv("data/proparg/data.csv", index_col=0)
-        rxn_smiles = proparg_df['rxn_smiles']
-        mod_rxn_smiles = [reset_smiles(x, shuffle='both') for x in rxn_smiles]
-        proparg_df["rxn_smiles_random"] = mod_rxn_smiles
-        proparg_df.to_csv("data/proparg/data.csv")
-        print("File for proparg atom maps saved")
-
-    if proparg_arom:
-        # smiles generated from proparg2smiles_fixarom.py
-        proparg_df = pd.read_csv("data/proparg/data_fixarom_smiles.csv", index_col=0)
-        rxn_smiles = proparg_df['rxn_smiles_mapped']
-        mod_rxn_smiles = [reset_smiles(x, shuffle='both', sanitize=False) for x in rxn_smiles]
-        proparg_df["rxn_smiles_random"] = mod_rxn_smiles
-        proparg_df.to_csv("data/proparg/data_fixarom_smiles.csv")
-        print("File for proparg atom maps saved")
+    for flag, dfile, src_column, component in datasets:
+        if flag:
+            np.random.seed(args.seed)
+            proparg_df = pd.read_csv(dfile, index_col=0)
+            rxn_smiles = proparg_df[src_column]
+            mod_rxn_smiles = [reset_smiles(x, shuffle=component) for x in rxn_smiles]
+            proparg_df["rxn_smiles_random"] = mod_rxn_smiles
+            proparg_df.to_csv(dfile)
+            print(f"Random atom maps overwritten in {dfile}")

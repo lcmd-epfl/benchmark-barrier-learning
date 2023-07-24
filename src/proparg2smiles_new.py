@@ -229,6 +229,8 @@ def main(data_dir='data/proparg'):
             continue
 
         df.loc[(df['mol']==label) & (df['enan']==enan), 'rxn_smiles_mapped'] = reactant_mapped+'>>'+product_mapped
+
+    df = df.drop('rxn_smiles', axis=1)
     df.to_csv('proparg-mapped.csv')
 
 if __name__=='__main__':

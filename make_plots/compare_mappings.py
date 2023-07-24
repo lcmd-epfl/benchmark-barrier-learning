@@ -18,17 +18,26 @@ proparg_random_df = pd.read_csv('results/proparg/test_scores.csv')
 proparg_slatm = np.load('data/proparg/slatm_10_fold.npy')
 
 #matplotlib.rcParams["figure.figsize"] = (10, 4.4)
+<<<<<<< HEAD
 matplotlib.rcParams.update({"font.size":12})
+=======
+matplotlib.rcParams.update({"font.size":13})
+>>>>>>> 3538ae3f4f1b5e3a20b353d36b2c04431de5d5a3
 colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
 
 fig, axes = plt.subplots(nrows=1, ncols=3)
 
 ax = axes[1]
+<<<<<<< HEAD
 ax.set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")
 
 ax.set_title('(b) Cyclo-23-TS', fontsize='medium')
-labels = ['CGR True', 'CGR RXNMapper', 'CGR Random', 'SLATM']
+
+labels = ['CGR True', 'CGR RXNMapper', 'CGR Random', 'SLATM$_d$']
+
 colors = ['blue', 'purple', 'magenta', "#00A79F"]
+ax.set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")
+
 for i, df in enumerate([cyclo_true_df, cyclo_rxnmapper_df, cyclo_random_df]):
     ax.bar(i, df['Mean mae'], yerr=df['Standard deviation mae'], color=colors[i])
 ax.bar(3, np.mean(cyclo_slatm), yerr=np.std(cyclo_slatm), color=colors[3])
@@ -45,14 +54,17 @@ ax.set_xticks(list(range(len(labels))))
 ax.set_xticklabels(labels, rotation=90)
 
 ax = axes[2]
-ax.set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
+
 ax.set_title('(c) Proparg-21-TS', fontsize='medium')
+ax.set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
+
+>>>>>>> 3538ae3f4f1b5e3a20b353d36b2c04431de5d5a3
 for i in range(2):
     ax.bar(i, 0, color=colors[i])
 ax.bar(2, proparg_random_df['Mean mae'], yerr=proparg_random_df['Standard deviation mae'], color=colors[2])
 ax.bar(3, np.mean(proparg_slatm), yerr=np.std(proparg_slatm), color=colors[3])
 ax.set_xticks([0,1,2,3])
-ax.set_xticklabels(['', '', 'CGR Random', 'SLATM'], rotation=90)
+ax.set_xticklabels(['', '', 'CGR Random', 'SLATM$_d$'], rotation=90)
 figname = 'figures/atom_mapping_quality.pdf'
 
 plt.tight_layout()

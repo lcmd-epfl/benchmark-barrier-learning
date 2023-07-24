@@ -55,7 +55,7 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     mfp_mae, mfp_std = get_maes(db + 'mfp_10_fold.npy')
     drfp_mae, drfp_std = get_maes(db + 'drfp_10_fold.npy')
     slatm_mae, slatm_std = get_maes(db + 'slatm_10_fold.npy')
-    b2r2_mae, b2r2_std = get_maes(db + 'b2r2_10_fold.npy')
+    b2r2_mae, b2r2_std = get_maes(db + 'b2r2_l_10_fold.npy')
   #  spahm_mae, spahm_std = get_maes(db + 'spahm_10_fold.npy')
 
     rxnfp_mae, rxnfp_std = get_maes(lang_dir, txt=True)
@@ -83,7 +83,7 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
 
 
     axes[i].set_xticks(list(range(6)))
-    axes[i].set_xticklabels(['MFP', 'DRFP', 'BERT+RXNFP', 'SLATM', '$B^2R^2_l$', 'CGR'], rotation=90)
+    axes[i].set_xticklabels(['MFP', 'DRFP', 'BERT+RXNFP', 'SLATM$_d$', '$B^2R^2_l$', 'CGR'], rotation=90)
 axes[0].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
 axes[1].set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")
 axes[2].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")

@@ -54,7 +54,7 @@ def predict_KRR(X_train, X_test, y_train, y_test, sigma=100, l2reg=1e-6, gamma=0
 
 def opt_hyperparams(
     X_train, X_val, y_train, y_val,
-     sigmas = [1,10,100,1000],
+     sigmas = [1,10,100,1000, 1e4],
     gammas = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1],
     l2regs = [1e-10, 1e-7, 1e-4],
     kernels=['rbf', 'laplacian']
@@ -73,14 +73,14 @@ def opt_hyperparams(
                 mae, y_pred = predict_KRR(
                         X_train, X_val, y_train, y_val, sigma=sigma, l2reg=l2reg, kernel=kernel
                         )
-             #   print(f'mae={mae} for params {kernel, sigma, l2reg}')
+                print(f'mae={mae} for params {kernel, sigma, l2reg}')
                 maes_rbf[i, j] = mae
         min_i, min_j = np.unravel_index(np.argmin(maes_rbf, axis=None), maes_rbf.shape)
         min_sigma = sigmas[min_i]
         min_l2reg_rbf = l2regs[min_j]
         min_mae_rbf = maes_rbf[min_i, min_j]
 
-    elif 'laplacian' in kernels:
+    if 'laplacian' in kernels:
         print("Hyperparam search for laplacian kernel")
         # Laplacian
         kernel = 'laplacian'
@@ -97,9 +97,6 @@ def opt_hyperparams(
         min_l2reg_lap = l2regs[min_j]
         min_mae_lap = maes_lap[min_i, min_j]
 
-    else:
-        raise ValueError('cannot understand kernels')
-
     if 'laplacian' in kernels and 'rbf' in kernels:
         if min_sigma < min_gamma:
             print(f'best mae {min_mae_rbf} params rbf {min_sigma} {min_l2reg_rbf}')
@@ -114,7 +111,7 @@ def opt_hyperparams(
     else:
         raise ValueError('cannot understand kernels')
 
-def predict_CV(X, y, CV=5, mode='krr', seed=1, test_size=0.2, save_hypers=False, save_file='', opt_kernels=['laplacian']):
+def predict_CV(X, y, CV=5, mode='krr', seed=1, test_size=0.2, save_hypers=False, save_file='', opt_kernels=['laplacian', 'rbf']):
 
     print("Learning mode", mode)
 

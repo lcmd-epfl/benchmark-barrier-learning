@@ -64,6 +64,8 @@ def reset_smiles(rxn_smiles, shuffle='product'):
         reactant_mol = Chem.AddHs(reactant_mol)
         reactant_mol = set_atom_map(reactant_mol)
         reactant_smiles = Chem.MolToSmiles(reactant_mol)
+        # reactant is 1,2,3,4..
+
         product_mol = Chem.MolFromSmiles(product_smiles)
         # product_mol = Chem.AddHs(product_mol)
         product_mol = set_random_atom_map(product_mol)
@@ -103,12 +105,12 @@ if __name__ == "__main__":
         print("File for gdb atom maps saved")
 
     if proparg:
-        proparg_df = pd.read_csv("data/proparg/data.csv", index_col=0)
+        proparg_df = pd.read_csv("../data/proparg/data.csv", index_col=0)
         rxn_smiles = proparg_df['rxn_smiles']
         mod_rxn_smiles = [reset_smiles(x, shuffle='both') for x in rxn_smiles]
         proparg_df["rxn_smiles"] = mod_rxn_smiles
-        proparg_df.to_csv("data/proparg/random_mapped_rxns.csv")
+        proparg_df.to_csv("../data/proparg/random_mapped_rxns.csv")
         job_df = proparg_df[['rxn_smiles', 'Eafw']]
-        job_df.to_csv("data/proparg/submit_random_rxns.csv", index=False)
+        job_df.to_csv("../data/proparg/submit_random_rxns.csv", index=False)
 
         print("File for proparg atom maps saved")

@@ -61,14 +61,14 @@ def make_rdkit_graph(smi, charge):
     return make_nx_graph(atoms, bonds), atoms, mol
 
 
-def map_smiles(xyz, smi1, smi2, normal_Si_coordnum, charge=1):
+def map_smiles(xyz, smi_normal, smi_alt, normal_Si_coordnum, charge=1):
 
     # Make graphs.
-    # Choose SMILES from normal (smi1) and alternative (smi2)
+    # Choose SMILES from normal and alternative
     # based on Silicon coordination number
     G2, xyz_atoms = make_xyz_graph(xyz)
     Si_coordnum = len(G2.edges(np.where(xyz_atoms=='Si')[0][0]))
-    smi = smi1 if Si_coordnum==normal_Si_coordnum else smi2
+    smi = smi_normal if Si_coordnum==normal_Si_coordnum else smi_alt
     G1, rdkit_atoms, mol = make_rdkit_graph(smi, charge)
 
     # Match graphs
@@ -90,8 +90,13 @@ def map_smiles(xyz, smi1, smi2, normal_Si_coordnum, charge=1):
     return Chem.MolToSmiles(mol)
 
 
-def clean_smiles(x, sanitize=True):
-    return Chem.MolToSmiles(Chem.MolFromSmiles(x, sanitize=sanitize))
+def clean_smiles(x, full_sanitize=True):
+    if full_sanitize:
+        mol = Chem.MolFromSmiles(x, sanitize=True)
+    else:
+        mol = Chem.MolFromSmiles(x, sanitize=False)
+        sanitize_mol_no_valence_check(mol)
+    return Chem.MolToSmiles(mol)
 
 
 def construct_ligands():
@@ -164,26 +169,38 @@ def construct_reactants_products(ligands):
         lig_1dent = ligand.replace('[O-]', 'O%31', 1)
         lig = lig_1dent.replace('[O-]', 'O%32', 1)
 
+        center_reactant = '[Si--](Cl)(Cl)%31%32%33%34'
+        reactant1 = 'C=C=C%33'
+        reactant2 = 'C1(=CC=CC=C1)C=[O+]%34' if True else 'C1(=CC=CC=C1)[CH+][O]%34'
+        complex_reactant = lig+'.'+ center_reactant+'.'+reactant1+'.'+reactant2
+
         center_product = '[Si-](Cl)(Cl)%31%32%33'
         product = 'C(#CCC(C1=CC=CC=C1)O%33)[H]'
         complex_product = lig+'.'+center_product+'.'+product
 
-        center_reactant = '[Si--](Cl)(Cl)%31%32%33%34'
-        reactant1 = 'C=C=C%33'
-        # TODO ask Simone
-        reactant2 = 'C1(=CC=CC=C1)C=[O+]%34' if True else 'C1(=CC=CC=C1)[CH+][O]%34'
-        complex_reactant = lig+'.'+ center_reactant+'.'+reactant1+'.'+reactant2
+        # some structures fave only 1 bond with bipy dioxide:
 
         center_reactant_5val = '[Si-](Cl)(Cl)%31%33%34'
-        complex_reactant_1SiONbond = lig_1dent+'.'+center_reactant_5val+'.'+reactant1+'.'+reactant2
+        complex_reactant_alt = lig_1dent+'.'+center_reactant_5val+'.'+reactant1+'.'+reactant2
 
         center_product_4val = '[Si](Cl)(Cl)%31%33'
-        complex_product_1SiONbond = lig_1dent+'.'+center_product_4val+'.'+product
+        complex_product_alt = lig_1dent+'.'+center_product_4val+'.'+product
 
-        reactions[key] = SimpleNamespace(reactant = clean_smiles(complex_reactant, sanitize=False),
+        reactions[key] = SimpleNamespace(reactant = clean_smiles(complex_reactant, full_sanitize=False),
                                          product  = clean_smiles(complex_product),
-                                         reactant_1SiONbond = clean_smiles(complex_reactant_1SiONbond),
-                                         product_1SiONbond  = clean_smiles(complex_product_1SiONbond))
+                                         reactant_alt = clean_smiles(complex_reactant_alt),
+                                         product_alt = clean_smiles(complex_product_alt))
+        if False and key=='1abp':
+            from rdkit.Chem import Draw
+            def draw_smiles(x, tag):
+                mol = Chem.MolFromSmiles(x, sanitize=False)
+                sanitize_mol_no_valence_check(mol)
+                Draw.MolToFile(mol, tag+'.png', kekulize=False, size=(600,600))
+            draw_smiles(reactions[key].reactant, 'reactant')
+            draw_smiles(reactions[key].product, 'product')
+            draw_smiles(reactions[key].reactant_alt, 'reactant_alt')
+            draw_smiles(reactions[key].product_alt, 'product_alt')
+
     return reactions
 
 
@@ -202,8 +219,8 @@ def main(data_dir='data/proparg'):
         smis = reactions[label[:-1]]
 
         try:
-            reactant_mapped = map_smiles(xyz_reactant, smis.reactant, smis.reactant_1SiONbond, 6)
-            product_mapped  = map_smiles(xyz_product,  smis.product,  smis.product_1SiONbond,  5)
+            reactant_mapped = map_smiles(xyz_reactant, smis.reactant, smis.reactant_alt, 6)
+            product_mapped  = map_smiles(xyz_product,  smis.product,  smis.product_alt,  5)
             arm, apm = map(get_atoms_in_order, (reactant_mapped, product_mapped))
             assert np.all(arm==apm)
 

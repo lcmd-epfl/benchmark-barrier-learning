@@ -10,9 +10,19 @@ import networkx
 import networkx.algorithms.isomorphism as iso
 
 
+def sanitize_mol_no_valence_check(mol):
+    # rdkit doesn't like "hypervalent" atoms.
+    # The standard sanitization would fail even on [SiF6]^{-2}
+    # with SMILES 'F[Si-2](F)(F)(F)(F)F' (https://pubchem.ncbi.nlm.nih.gov/compound/Hexafluorosilicate)
+    # Solution:
+    # https://sourceforge.net/p/rdkit/mailman/message/32599798/
+    mol.UpdatePropertyCache(strict=False)
+    Chem.SanitizeMol(mol, Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_PROPERTIES)
+
+
 def get_atoms_in_order(smi):
     mol = Chem.MolFromSmiles(smi, sanitize=False)
-    Chem.SanitizeMol(mol)
+    sanitize_mol_no_valence_check(mol)
     atoms   = np.array([at.GetSymbol() for at in mol.GetAtoms()])
     mapping = np.array([at.GetAtomMapNum() for at in mol.GetAtoms()])
     assert np.all(mapping > 0)
@@ -41,15 +51,17 @@ def make_xyz_graph(filename):
     return make_nx_graph(atoms, bonds), atoms
 
 
-def make_rdkit_graph(smi):
-    mol = Chem.MolFromSmiles(smi)
+def make_rdkit_graph(smi, charge):
+    mol = Chem.MolFromSmiles(smi, sanitize=False)
+    sanitize_mol_no_valence_check(mol)
     mol = Chem.AddHs(mol)
+    assert Chem.GetFormalCharge(mol)==charge
     atoms = np.array([at.GetSymbol() for at in mol.GetAtoms()])
     bonds = np.array(sorted(sorted((i.GetBeginAtomIdx(), i.GetEndAtomIdx())) for i in mol.GetBonds()))
     return make_nx_graph(atoms, bonds), atoms, mol
 
 
-def map_smiles(xyz, smi1, smi2, normal_Si_coordnum):
+def map_smiles(xyz, smi1, smi2, normal_Si_coordnum, charge=1):
 
     # Make graphs.
     # Choose SMILES from normal (smi1) and alternative (smi2)
@@ -57,7 +69,7 @@ def map_smiles(xyz, smi1, smi2, normal_Si_coordnum):
     G2, xyz_atoms = make_xyz_graph(xyz)
     Si_coordnum = len(G2.edges(np.where(xyz_atoms=='Si')[0][0]))
     smi = smi1 if Si_coordnum==normal_Si_coordnum else smi2
-    G1, rdkit_atoms, mol = make_rdkit_graph(smi)
+    G1, rdkit_atoms, mol = make_rdkit_graph(smi, charge)
 
     # Match graphs
     GM = iso.GraphMatcher(G1, G2, node_match=iso.categorical_node_match('q', None))
@@ -78,8 +90,8 @@ def map_smiles(xyz, smi1, smi2, normal_Si_coordnum):
     return Chem.MolToSmiles(mol)
 
 
-def clean_smiles(x):
-    return Chem.MolToSmiles(Chem.MolFromSmiles(x))
+def clean_smiles(x, sanitize=True):
+    return Chem.MolToSmiles(Chem.MolFromSmiles(x, sanitize=sanitize))
 
 
 def construct_ligands():
@@ -152,25 +164,23 @@ def construct_reactants_products(ligands):
         lig_1dent = ligand.replace('[O-]', 'O%31', 1)
         lig = lig_1dent.replace('[O-]', 'O%32', 1)
 
-        center_product = '[Si+](Cl)(Cl)%31%32%33'
+        center_product = '[Si-](Cl)(Cl)%31%32%33'
         product = 'C(#CCC(C1=CC=CC=C1)O%33)[H]'
         complex_product = lig+'.'+center_product+'.'+product
 
-        center_reactant = '[Si](Cl)(Cl)%31%32%33%34'
+        center_reactant = '[Si--](Cl)(Cl)%31%32%33%34'
         reactant1 = 'C=C=C%33'
         # TODO ask Simone
         reactant2 = 'C1(=CC=CC=C1)C=[O+]%34' if True else 'C1(=CC=CC=C1)[CH+][O]%34'
         complex_reactant = lig+'.'+ center_reactant+'.'+reactant1+'.'+reactant2
 
-        # TODO ask Simone
-        center_reactant_5val = '[Si+](Cl)(Cl)%31%33%34'
+        center_reactant_5val = '[Si-](Cl)(Cl)%31%33%34'
         complex_reactant_1SiONbond = lig_1dent+'.'+center_reactant_5val+'.'+reactant1+'.'+reactant2
 
-        # TODO ask Simone
         center_product_4val = '[Si](Cl)(Cl)%31%33'
         complex_product_1SiONbond = lig_1dent+'.'+center_product_4val+'.'+product
 
-        reactions[key] = SimpleNamespace(reactant = clean_smiles(complex_reactant),
+        reactions[key] = SimpleNamespace(reactant = clean_smiles(complex_reactant, sanitize=False),
                                          product  = clean_smiles(complex_product),
                                          reactant_1SiONbond = clean_smiles(complex_reactant_1SiONbond),
                                          product_1SiONbond  = clean_smiles(complex_product_1SiONbond))

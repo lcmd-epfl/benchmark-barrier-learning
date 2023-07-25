@@ -84,14 +84,14 @@ class TWODIM:
         self.barriers = []
 
     def get_proparg_MFP(self):
-        data = pd.read_csv("data/proparg/random_mapped_rxns.csv", index_col=0)
+        data = pd.read_csv("data/proparg/data.csv", index_col=0)
         self.barriers = data['Eafw'].to_numpy()
         rxn_smiles = data['rxn_smiles']
         mfps = [get_MFP(x) for x in rxn_smiles]
         return np.vstack(mfps)
 
     def get_proparg_DRFP(self):
-        data = pd.read_csv("data/proparg/random_mapped_rxns.csv", index_col=0)
+        data = pd.read_csv("data/proparg/data.csv", index_col=0)
         self.barriers = data['Eafw'].to_numpy()
         rxn_smiles = data['rxn_smiles']
         drfps = [get_DRFP(x) for x in rxn_smiles]
@@ -339,40 +339,6 @@ class B2R2:
         b2r2_products_sum = np.array([sum(x) for x in b2r2_products])
 
         return np.concatenate((b2r2_reactants_sum, b2r2_products_sum), axis=1)
-
-class Mixed:
-    """mix b2r2 and MFP"""
-    def __init__(self):
-        self.b2r2 = B2R2()
-        self.twodim = TWODIM()
-        return
-
-    def get_cyclo_data_and_rep(self):
-        self.b2r2.get_cyclo_data()
-        rep = self.b2r2.get_b2r2_l()
-        self.barriers = self.b2r2.barriers
-        mfp = self.twodim.get_cyclo_MFP()
-        # now concat
-        fp = np.concatenate((mfp, rep), axis=1)
-        return fp
-
-    def get_gdb_data_and_rep(self):
-        self.b2r2.get_GDB7_ccsd_data()
-        rep = self.b2r2.get_b2r2_l()
-        self.barriers = self.b2r2.barriers
-        mfp = self.twodim.get_gdb_MFP()
-        # now concat
-        fp = np.concatenate((mfp, rep), axis=1)
-        return fp
-
-    def get_proparg_data_and_rep(self):
-        self.b2r2.get_proparg_data()
-        rep = self.b2r2.get_b2r2_l()
-        self.barriers = self.b2r2.barriers
-        mfp = self.twodim.get_proparg_MFP()
-        # now concat
-        fp = np.concatenate((mfp, rep), axis=1)
-        return fp
 
 class QML:
     def __init__(self):

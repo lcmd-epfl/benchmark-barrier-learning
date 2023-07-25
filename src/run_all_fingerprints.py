@@ -1,5 +1,5 @@
 import argparse as ap
-from src.reaction_reps import TWODIM, QML, B2R2, Mixed
+from src.reaction_reps import TWODIM, QML, B2R2
 from src.learning import predict_CV
 import numpy as np
 import os
@@ -60,9 +60,6 @@ if __name__ == "__main__":
         else:
             b2r2_l = np.load(b2r2_l_save)
 
-        # mixed fp
-        mx = Mixed()
-        mixed = mx.get_cyclo_data_and_rep()
 
         print("reps generated/loaded, predicting")
 
@@ -100,13 +97,6 @@ if __name__ == "__main__":
             maes_b2r2_l = np.load(b2r2_l_save)
         print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
 
-        mixed_save = f'data/cyclo/mixed_{CV}_fold.npy'
-        if not os.path.exists(mixed_save):
-            maes_mixed = predict_CV(mixed, barriers, CV=CV, mode='rf')
-            np.save(mixed_save, maes_mixed)
-        else:
-            maes_mixed = np.load(mixed_save)
-        print(f'mixed mae {np.mean(maes_mixed)} +- {np.std(maes_mixed)}')
 
     if gdb:
         print("Running for gdb dataset")
@@ -145,11 +135,6 @@ if __name__ == "__main__":
         else:
             b2r2_l = np.load(b2r2_l_save)
 
-        # mixed fp
-        mx = Mixed()
-        mixed = mx.get_gdb_data_and_rep()
-
-        print("reps generated/loaded, predicting")
 
         drfp_save = f'data/gdb7-22-ts/drfp_{CV}_fold.npy'
         if not os.path.exists(drfp_save):
@@ -185,14 +170,6 @@ if __name__ == "__main__":
             maes_b2r2_l = np.load(b2r2_l_save)
         print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
 
-        mixed_save = f'data/gdb7-22-ts/mixed_{CV}_fold.npy'
-        if not os.path.exists(mixed_save):
-            maes_mixed = predict_CV(mixed, barriers, CV=CV, mode='rf')
-            np.save(mixed_save, maes_mixed)
-        else:
-            maes_mixed = np.load(mixed_save)
-        print(f'mixed mae {np.mean(maes_mixed)} +- {np.std(maes_mixed)}')
-
     if proparg:
         print("Running for proparg dataset")
         # first 2d fingerprints drfp, mfp
@@ -219,9 +196,8 @@ if __name__ == "__main__":
             np.save(slatm_save, slatm)
         else:
             slatm = np.load(slatm_save)
-
+        twod_barriers = twodim.barriers
         barriers = qml.barriers
-        #print('barriers shape', barriers.shape)
 
         b2r2 = B2R2()
         b2r2.get_proparg_data()
@@ -232,15 +208,12 @@ if __name__ == "__main__":
         else:
             b2r2_l = np.load(b2r2_l_save)
 
-        # mixed fp
-        mx = Mixed()
-        mixed = mx.get_proparg_data_and_rep()
-
         print("reps generated/loaded, predicting")
-
+        print('barriers shape', np.array(twod_barriers).shape)
+        print('drfp shape', np.array(drfp).shape)
         drfp_save = f'data/proparg/drfp_{CV}_fold.npy'
         if not os.path.exists(drfp_save):
-            maes_drfp = predict_CV(drfp, barriers, CV=CV, mode='rf')
+            maes_drfp = predict_CV(drfp, twod_barriers, CV=CV, mode='rf')
             np.save(drfp_save, maes_drfp)
         else:
             maes_drfp = np.load(drfp_save)
@@ -248,7 +221,7 @@ if __name__ == "__main__":
 
         mfp_save = f'data/proparg/mfp_{CV}_fold.npy'
         if not os.path.exists(mfp_save):
-            maes_mfp = predict_CV(mfp, barriers, CV=CV, mode='rf')
+            maes_mfp = predict_CV(mfp, twod_barriers, CV=CV, mode='rf')
             np.save(mfp_save, maes_mfp)
         else:
             maes_mfp = np.load(mfp_save)
@@ -271,11 +244,3 @@ if __name__ == "__main__":
         else:
             maes_b2r2_l = np.load(b2r2_l_save)
         print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
-
-        mixed_save = f'data/proparg/mixed_{CV}_fold.npy'
-        if not os.path.exists(mixed_save):
-            maes_mixed = predict_CV(mixed, barriers, CV=CV, mode='rf')
-            np.save(mixed_save, maes_mixed)
-        else:
-            maes_mixed = np.load(mixed_save)
-        print(f'mixed mae {np.mean(maes_mixed)} +- {np.std(maes_mixed)}')

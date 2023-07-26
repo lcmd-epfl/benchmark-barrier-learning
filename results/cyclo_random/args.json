@@ -26,7 +26,7 @@
     "crossval_index_file": null,
     "crossval_index_sets": null,
     "cuda": true,
-    "data_path": "/home/vangerwe/atom-map/data/cyclo/submit_random_rxns.csv",
+    "data_path": "../../data/cyclo/full_dataset.csv",
     "data_weights_path": null,
     "dataset_type": "regression",
     "depth": 3,
@@ -89,14 +89,14 @@
     "reaction_mode": "reac_diff",
     "reaction_solvent": false,
     "reproducibility": {
-        "command_line": "python CGR_cyclo_random.py",
+        "command_line": "python ../../src/cgr.py --cyclo --random",
         "git_has_uncommitted_changes": true,
-        "git_root": "/home/vangerwe/atom-map",
-        "git_url": "https://github.com/puckvg/atom/tree/69f31c0e42ebb65085ca8b5e81e95c4da929e761",
-        "time": "Tue May 30 11:13:07 2023"
+        "git_root": "/home/xe/WORK/puck-benchmark-barrier-learning/benchmark-barrier-learning",
+        "git_url": "https://github.com/lcmd-epfl/benchmark-barrier-learning/tree/0070f76916550a699cca1fbc1764045286168ec4",
+        "time": "Tue Jul 25 17:18:15 2023"
     },
     "resume_experiment": false,
-    "save_dir": "/home/vangerwe/atom-map/results/cyclo_random",
+    "save_dir": "./",
     "save_preds": false,
     "save_smiles_splits": false,
     "seed": 0,
@@ -112,17 +112,20 @@
     "separate_val_phase_features_path": null,
     "show_individual_scores": false,
     "smiles_columns": [
-        "rxn_smiles"
+        "rxn_smiles_random"
     ],
     "spectra_activation": "exp",
     "spectra_phase_mask_path": null,
     "spectra_target_floor": 1e-08,
     "split_key_molecule": 0,
-    "split_sizes": [
-        0.8,
-        0.1,
-        0.1
-    ],
+    "split_sizes": {
+        "_type": "tuple",
+        "_value": [
+            0.8,
+            0.1,
+            0.1
+        ]
+    },
     "split_type": "random",
     "target_columns": [
         "G_act"

@@ -1,8 +1,10 @@
 # Benchmarking of reaction representations
 
 ## Installation
-- #TODO 
-- Especially how to generate SPAHM 
+- Due to the dependencies of the qml python package, numpy needs to be installed first and foremost, therefore a `requirements.txt` file is provided
+- Recommend to first create a conda env: `conda create -n benchmark-rxn`
+- `conda install pip`
+- Then install requirements like `xargs -L 1 pip install < requirements.txt`
 
 ## 2D and 3D fingerprints
 - 2D reps here are the DRFP and MFP

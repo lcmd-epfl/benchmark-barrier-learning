@@ -61,7 +61,7 @@ dependencies:
       - python-dateutil==2.8.2
       - pytz==2023.3
       - pyyaml==6.0.1
-      - qml==0.4.0.12
+      - qml @ git+https://github.com/puckvg/qml
       - rdkit==2023.3.2
       - rdkit-pypi==2022.9.5
       - regex==2023.6.3

@@ -1,6 +1,7 @@
 # Benchmarking of reaction representations
 
 ## Installation
+#TODO env not working for bert / rxnmapper.
 - Due to the dependencies of the qml python package, numpy needs to be installed first and foremost, therefore a `requirements.txt` file is provided
 - Recommend to first create a conda env: `conda create -n benchmark-rxn`
 - `conda install pip`

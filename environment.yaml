@@ -1,4 +1,4 @@
-name: benchmark-rxn
+name: test-rxn
 channels:
   - nvidia
   - pyg

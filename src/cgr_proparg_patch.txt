@@ -1,0 +1,12 @@
+--- /home/xe/SOFT/miniconda3/envs/chemprop-old/lib/python3.8/site-packages/chemprop/rdkit.py	2023-07-25 14:44:09.549110306 +0200
++++ rdkit.py	2023-07-25 15:03:43.578513099 +0200
+@@ -12,7 +12,8 @@
+         mol = Chem.MolFromSmiles(s, sanitize = False)
+         Chem.SanitizeMol(mol, sanitizeOps = Chem.SanitizeFlags.SANITIZE_ALL^Chem.SanitizeFlags.SANITIZE_ADJUSTHS)
+     else:
+-        mol = Chem.MolFromSmiles(s)
++        mol = Chem.MolFromSmiles(s, sanitize = False)
++        Chem.SanitizeMol(mol, Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_PROPERTIES)
+     if add_h:
+         mol = Chem.AddHs(mol)
+     return mol

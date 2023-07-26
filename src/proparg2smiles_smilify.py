@@ -44,7 +44,8 @@ def main(data_dir='data/proparg'):
             rsmi_mapped = ''
         df.loc[(df['mol']==label) & (df['enan']==enan), 'rxn_smiles_mapped'] = rsmi_mapped
         df.loc[(df['mol']==label) & (df['enan']==enan), 'rxn_smiles'] = rsmi
-    df.to_csv('proparg-mapped.csv')
+    print(f'overwriting {data_dir}/data.csv...')
+    df.to_csv(f'{data_dir}/data.csv')
 
 
 if __name__=='__main__':

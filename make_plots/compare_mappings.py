@@ -5,12 +5,12 @@ import numpy as np
 
 # read results
 cyclo_true_df = pd.read_csv('results/cyclo_true/test_scores.csv')
-cyclo_rxnmapper_df = pd.read_csv('results/cyclo_all/test_scores.csv')
+cyclo_rxnmapper_df = pd.read_csv('results/cyclo_rxnmapper/test_scores.csv')
 cyclo_random_df = pd.read_csv('results/cyclo_random/test_scores.csv')
 cyclo_slatm = np.load('data/cyclo/slatm_10_fold.npy')
 
 gdb_true_df = pd.read_csv('results/gdb_true/test_scores.csv')
-gdb_rxnmapper_df = pd.read_csv('results/gdb_all/test_scores.csv')
+gdb_rxnmapper_df = pd.read_csv('results/gdb_rxnmapper/test_scores.csv')
 gdb_random_df = pd.read_csv('results/gdb_random/test_scores.csv')
 gdb_slatm = np.load('data/gdb7-22-ts/slatm_10_fold.npy')
 

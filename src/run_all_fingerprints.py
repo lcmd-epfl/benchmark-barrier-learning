@@ -209,8 +209,6 @@ if __name__ == "__main__":
             b2r2_l = np.load(b2r2_l_save)
 
         print("reps generated/loaded, predicting")
-        print('barriers shape', np.array(twod_barriers).shape)
-        print('drfp shape', np.array(drfp).shape)
         drfp_save = f'data/proparg/drfp_{CV}_fold.npy'
         if not os.path.exists(drfp_save):
             maes_drfp = predict_CV(drfp, twod_barriers, CV=CV, mode='rf')

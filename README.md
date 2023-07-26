@@ -1,8 +1,7 @@
 # Benchmarking of reaction representations
 
 ## Installation
-- #TODO 
-- Especially how to generate SPAHM 
+`conda env create -f environment.yaml`
 
 ## 2D and 3D fingerprints
 - 2D reps here are the DRFP and MFP

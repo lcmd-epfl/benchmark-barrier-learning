@@ -87,8 +87,6 @@ if __name__ == '__main__':
         print("File for gdb atom maps saved")
 
     if proparg:
-        # Doesn't work !
-        print("For proparg tokens cannot be generated with RXNMapper. Trying anyway...")
         proparg_df = pd.read_csv("data/proparg/data.csv", index_col=0)
         rxn_smiles = proparg_df['rxn_smiles']
 

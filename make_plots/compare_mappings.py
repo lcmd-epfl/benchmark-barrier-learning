@@ -3,65 +3,44 @@ import matplotlib
 import pandas as pd
 import numpy as np
 
-# read results
-cyclo_true_df = pd.read_csv('results/cyclo_true/test_scores.csv')
-cyclo_rxnmapper_df = pd.read_csv('results/cyclo_all/test_scores.csv')
-cyclo_random_df = pd.read_csv('results/cyclo_random/test_scores.csv')
-cyclo_slatm = np.load('data/cyclo/slatm_10_fold.npy')
+datasets = ['gdb', 'cyclo', 'proparg']
+labels = ['CGR True', 'CGR RXNMapper', 'CGR Random', 'SLATM$_d$']
+keys = ['true_df', 'rxnmapper_df', 'random_df', 'slatm']
+#colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
+colors = ['blue', 'purple', 'magenta', "#00A79F"]
 
-gdb_true_df = pd.read_csv('results/gdb_true/test_scores.csv')
-gdb_rxnmapper_df = pd.read_csv('results/gdb_all/test_scores.csv')
-gdb_random_df = pd.read_csv('results/gdb_random/test_scores.csv')
-gdb_slatm = np.load('data/gdb7-22-ts/slatm_10_fold.npy')
+data = {}
+for dataset in datasets:
+    data[dataset] = {}
+    for key in keys[:-1]:
+        data[dataset][key] = pd.read_csv(f'results/{dataset}_{key[:-3]}/test_scores.csv')
+    slatm = np.load(f'data/{"gdb7-22-ts" if dataset=="gdb" else dataset}/slatm_10_fold.npy')
+    data[dataset]['slatm'] = {'Mean mae': np.mean(slatm), 'Standard deviation mae': np.std(slatm)}
 
-proparg_true_df = pd.read_csv('results/proparg_true/test_scores.csv')
-proparg_random_df = pd.read_csv('results/proparg_random/test_scores.csv')
-proparg_slatm = np.load('data/proparg/slatm_10_fold.npy')
+data['gdb']['title'] = '(a) GDB7-22-TS'
+data['cyclo']['title'] = '(b) Cyclo-23-TS'
+data['proparg']['title'] = '(c) Proparg-21-TS'
 
-#matplotlib.rcParams["figure.figsize"] = (10, 4.4)
+data['gdb']['ylabel'] = "MAE $\Delta E^\ddag$ [kcal/mol]"
+data['cyclo']['ylabel'] = "MAE $\Delta G^\ddag$ [kcal/mol]"
+data['proparg']['ylabel'] = "MAE $\Delta E^\ddag$ [kcal/mol]"
+
 matplotlib.rcParams.update({"font.size":13})
-colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
-
 fig, axes = plt.subplots(nrows=1, ncols=3)
 
-ax = axes[1]
-ax.set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")
+for ax, dataset_name in zip(axes, datasets):
 
-ax.set_title('(b) Cyclo-23-TS', fontsize='medium')
+    dataset = data[dataset_name]
+    ax.set_title(dataset['title'], fontsize='medium')
+    ax.set_ylabel(dataset['ylabel'])
 
-labels = ['CGR True', 'CGR RXNMapper', 'CGR Random', 'SLATM$_d$']
+    for i, key in enumerate(keys):
+        df = dataset[key]
+        ax.bar(i, df['Mean mae'], yerr=df['Standard deviation mae'], color=colors[i])
+    ax.set_xticks(list(range(len(labels))))
+    ax.set_xticklabels(labels, rotation=90)
 
-colors = ['blue', 'purple', 'magenta', "#00A79F"]
-ax.set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")
-
-for i, df in enumerate([cyclo_true_df, cyclo_rxnmapper_df, cyclo_random_df]):
-    ax.bar(i, df['Mean mae'], yerr=df['Standard deviation mae'], color=colors[i])
-ax.bar(3, np.mean(cyclo_slatm), yerr=np.std(cyclo_slatm), color=colors[3])
-ax.set_xticks(list(range(len(labels))))
-ax.set_xticklabels(labels, rotation=90)
-
-ax = axes[0]
-ax.set_title('(a) GDB7-22-TS', fontsize='medium')
-ax.set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
-for i, df in enumerate([gdb_true_df, gdb_rxnmapper_df, gdb_random_df]):
-    ax.bar(i, df['Mean mae'], yerr=df['Standard deviation mae'], color=colors[i])
-ax.bar(3, np.mean(gdb_slatm), yerr=np.std(gdb_slatm), color=colors[3])
-ax.set_xticks(list(range(len(labels))))
-ax.set_xticklabels(labels, rotation=90)
-
-ax = axes[2]
-
-ax.set_title('(c) Proparg-21-TS', fontsize='medium')
-ax.set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
-
-ax.bar(0, proparg_true_df['Mean mae'], yerr=proparg_true_df['Standard deviation mae'], color=colors[0])
-ax.bar(1, 0, color=colors[1])
-ax.bar(2, proparg_random_df['Mean mae'], yerr=proparg_random_df['Standard deviation mae'], color=colors[2])
-ax.bar(3, np.mean(proparg_slatm), yerr=np.std(proparg_slatm), color=colors[3])
-ax.set_xticks([0,1,2,3])
-ax.set_xticklabels(['CGR True', '', 'CGR Random', 'SLATM$_d$'], rotation=90)
 figname = 'figures/atom_mapping_quality.pdf'
-
 plt.tight_layout()
 plt.savefig(figname)
 #plt.show()

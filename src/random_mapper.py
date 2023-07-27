@@ -60,9 +60,9 @@ if __name__ == "__main__":
     for flag, dfile, src_column, component in datasets:
         if flag:
             np.random.seed(args.seed)
-            proparg_df = pd.read_csv(dfile, index_col=0)
-            rxn_smiles = proparg_df[src_column]
+            df = pd.read_csv(dfile, index_col=0)
+            rxn_smiles = df[src_column]
             mod_rxn_smiles = [reset_smiles(x, shuffle=component) for x in rxn_smiles]
-            proparg_df["rxn_smiles_random"] = mod_rxn_smiles
-            proparg_df.to_csv(dfile)
+            df["rxn_smiles_random"] = mod_rxn_smiles
+            df.to_csv(dfile)
             print(f"Random atom maps overwritten in {dfile}")

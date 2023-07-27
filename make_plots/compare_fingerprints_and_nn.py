@@ -33,6 +33,11 @@ cyclo_dir = 'data/cyclo/'
 gdb_dir = 'data/gdb7-22-ts/'
 proparg_dir = 'data/proparg/'
 
+cyclo_std = np.std(pd.read_csv(cyclo_dir+'full_dataset.csv')['G_act'].to_numpy())
+gdb_std = np.std(pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")['dE0'].to_numpy())
+proparg_std = np.std(pd.read_csv("data/proparg/data.csv")['Eafw'].to_numpy())
+stds = [gdb_std, cyclo_std, proparg_std]
+
 cyclo_lang_dir = 'outs/cyclo_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
 gdb_lang_dir = 'outs/gdb_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
 proparg_lang_dir = 'outs/proparg_bert_pretrained/5_epochs_8_batches_0_smiles_rand/results.txt'
@@ -46,8 +51,8 @@ cgr_dirs = [gdb_cgr_dir, cyclo_cgr_dir, proparg_cgr_dir]
 titles = ['(a) GDB7-22-TS', '(b) Cyclo-23-TS', '(c) Proparg-21-TS']
 fig, axes = plt.subplots(nrows=1, ncols=3)
 
-axes[0].set_ylim(0,22)
-axes[1].set_ylim(0,8)
+axes[0].set_ylim(0,22.5)
+axes[1].set_ylim(0,10)
 axes[2].set_ylim(0,2.4)
 for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
 
@@ -64,12 +69,12 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     drfp_mae, drfp_std = get_maes(db + 'drfp_10_fold.npy')
     slatm_mae, slatm_std = get_maes(db + 'slatm_10_fold.npy')
     b2r2_mae, b2r2_std = get_maes(db + 'b2r2_l_10_fold.npy')
-  #  spahm_mae, spahm_std = get_maes(db + 'spahm_10_fold.npy')
 
     rxnfp_mae, rxnfp_std = get_maes(lang_dir, txt=True)
     cgr_mae, cgr_std = get_maes(cgr_dir, csv=True)
 
     axes[i].set_title(titles[i], fontsize='medium')
+    axes[i].axhline(stds[i], color='black', alpha=0.5, linestyle='dashed', label='std')
     axes[i].bar(0, mfp_mae, yerr=mfp_std, color=colors[0])
     axes[i].text(0 - 0.26, mfp_mae + add, round_with_std(mfp_mae, mfp_std), rotation=90, fontsize='x-small', fontweight='bold')
     axes[i].bar(1, drfp_mae, yerr=drfp_std, color=colors[1])

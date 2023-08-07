@@ -84,14 +84,14 @@ class TWODIM:
         self.barriers = []
 
     def get_proparg_MFP(self):
-        data = pd.read_csv("data/proparg/data.csv", index_col=0)
+        data = pd.read_csv("data/proparg/data_fixarom_smiles_stereo.csv", index_col=0)
         self.barriers = data['Eafw'].to_numpy()
         rxn_smiles = data['rxn_smiles']
         mfps = [get_MFP(x) for x in rxn_smiles]
         return np.vstack(mfps)
 
     def get_proparg_DRFP(self):
-        data = pd.read_csv("data/proparg/data.csv", index_col=0)
+        data = pd.read_csv("data/proparg/data_fixarom_smiles_stereo.csv", index_col=0)
         self.barriers = data['Eafw'].to_numpy()
         rxn_smiles = data['rxn_smiles']
         drfps = [get_DRFP(x) for x in rxn_smiles]

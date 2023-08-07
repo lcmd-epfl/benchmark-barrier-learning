@@ -31,10 +31,13 @@ def argparse():
     return args
 
 def remove_atom_mapping(smi):
-    mol = Chem.MolFromSmiles(smi)
-    if mol is None:
-        print("could not convert smi", smi, "to mol")
-        return smi
+    m = Chem.MolFromSmiles(smi)
+    if m is None:
+        mol = Chem.MolFromSmiles(smi, sanitize=False)
+        Chem.SanitizeMol(mol, sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_ADJUSTHS)
+    else:
+        mol = m
+
     for atom in mol.GetAtoms():
         if atom.HasProp("molAtomMapNumber"):
             atom.ClearProp("molAtomMapNumber")
@@ -132,9 +135,9 @@ if __name__ == "__main__":
         save_path = 'outs/cyclo_bert_pretrained'
 
     elif dataset == 'proparg':
-        df = pd.read_csv("data/proparg/data.csv")
+        df = pd.read_csv("data/proparg/data_fixarom_smiles_stereo.csv")
         target_label = 'Eafw'
-        save_path = 'outs/proparg_bert_pretrained'
+        save_path = 'outs/proparg_bert_pretrained_stereo'
 
     rxn_smiles_list = [remove_atom_mapping_rxn(x) for x in df['rxn_smiles'].to_list()]
     df['clean_rxn_smiles'] = rxn_smiles_list

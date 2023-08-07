@@ -31,8 +31,16 @@ def argparse():
     return args
 
 def remove_atom_mapping(smi):
-    mol = Chem.MolFromSmiles(smi)
-    if mol is None:
+    m = Chem.MolFromSmiles(smi)
+    if m is None:
+        mol = Chem.MolFromSmiles(s, sanitize=False)
+        Chem.SanitizeMol(mol, sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_ADJUSTHS)
+    else:
+        mol = m
+
+    return mol
+
+if mol is None:
         print("could not convert smi", smi, "to mol")
         return smi
     for atom in mol.GetAtoms():

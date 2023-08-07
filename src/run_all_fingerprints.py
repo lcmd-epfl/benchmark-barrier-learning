@@ -27,7 +27,7 @@ if __name__ == "__main__":
         print("Running for cyclo dataset")
         # first 2d fingerprints drfp, mfp
         twodim = TWODIM()
-        drfp_save = 'data/cyclo/drfp.npy'
+        drfp_save = 'data/cyclo/drfp_stereo.npy'
         if not os.path.exists(drfp_save):
             drfp = twodim.get_cyclo_DRFP()
             np.save(drfp_save, drfp)
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         print("Running for gdb dataset")
         # first 2d fingerprints drfp, mfp
         twodim = TWODIM()
-        drfp_save = 'data/gdb7-22-ts/drfp.npy'
+        drfp_save = 'data/gdb7-22-ts/drfp_stereo.npy'
         if not os.path.exists(drfp_save):
             drfp = twodim.get_gdb_DRFP()
             np.save(drfp_save, drfp)
@@ -174,7 +174,7 @@ if __name__ == "__main__":
         print("Running for proparg dataset")
         # first 2d fingerprints drfp, mfp
         twodim = TWODIM()
-        drfp_save = 'data/proparg/drfp.npy'
+        drfp_save = 'data/proparg/drfp_stereo.npy'
         if not os.path.exists(drfp_save):
             drfp = twodim.get_proparg_DRFP()
             np.save(drfp_save, drfp)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from types import SimpleNamespace
+import argparse
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -178,7 +179,7 @@ def construct_reactants_products(ligands):
         product = 'C(#CCC(C1=CC=CC=C1)O%33)[H]'
         complex_product = lig+'.'+center_product+'.'+product
 
-        # some structures fave only 1 bond with bipy dioxide:
+        # some structures have only 1 bond with bipy dioxide:
 
         center_reactant_5val = '[Si-](Cl)(Cl)%31%33%34'
         complex_reactant_alt = lig_1dent+'.'+center_reactant_5val+'.'+reactant1+'.'+reactant2
@@ -204,10 +205,68 @@ def construct_reactants_products(ligands):
     return reactions
 
 
-def main(data_dir='data/proparg'):
+def construct_reactants_products_stereo(ligands):
+
+    # see https://www.rdkit.org/docs/RDKit_Book.html#octahedral
+    # substituents:
+    # 0 -Cl
+    # 1 -ON\
+    # 2 -ON/
+    # 3 -CHO-Ph
+    # 4 -CH=C=CH2
+    # 5 -Cl
+    # ligand rearrangements (see https://www.rsc.org/suppdata/d1/sc/d1sc00482d/d1sc00482d1.pdf)
+    #      A B C D E F
+    # 1)   0 5 1 2 3 4    @OH1
+    # 2)   0 3 1 2 5 4    @OH7
+    # 3)   0 3 1 2 4 5    @OH6
+    # 4)   0 4 1 2 5 3    @OH5
+    # 5)   0 4 1 2 3 5    @OH3
+    OH_dict = {1: 1, 2: 7, 3: 6, 4: 5, 5: 3}
+    T_dict = {'R': '@', 'S': '@@'}
+
+    reactions = {}
+
+    for key, ligand in ligands.items():
+
+        for n in OH_dict.keys():
+            for enan in T_dict.keys():
+
+                lig_1dent = ligand.replace('[O-]', 'O%31', 1)
+                lig = lig_1dent.replace('[O-]', 'O%32', 1)
+
+                center_reactant = f'[Si@OH{OH_dict[n]}--]%30%31%32%33%34%35.Cl%30.Cl%35'
+                reactant1 = 'C=C=C%34'
+                reactant2 = 'C1(=CC=CC=C1)C=[O+]%33' if True else 'C1(=CC=CC=C1)[CH+][O]%33'
+                complex_reactant = lig+'.'+ center_reactant+'.'+reactant1+'.'+reactant2
+
+                center_product = '[Si-](Cl)(Cl)%31%32%34'
+                product = f'C(#CC[C{T_dict[enan]}H](C1=CC=CC=C1)O%34)[H]'
+                complex_product = lig+'.'+center_product+'.'+product
+
+                # some structures have only 1 bond with bipy dioxide:
+
+                center_reactant_5val = '[Si-](Cl)(Cl)%31%34%33'
+                complex_reactant_alt = lig_1dent+'.'+center_reactant_5val+'.'+reactant1+'.'+reactant2
+
+                center_product_4val = '[Si](Cl)(Cl)%31%34'
+                complex_product_alt = lig_1dent+'.'+center_product_4val+'.'+product
+
+
+                reactions[f'{key}{n}{enan}'] = SimpleNamespace(reactant = clean_smiles(complex_reactant, full_sanitize=False),
+                                                               product  = clean_smiles(complex_product),
+                                                               reactant_alt = clean_smiles(complex_reactant_alt),
+                                                               product_alt = clean_smiles(complex_product_alt))
+    return reactions
+
+
+def main(data_dir='data/proparg', stereo=False):
 
     ligands = construct_ligands()
-    reactions = construct_reactants_products(ligands)
+    if stereo:
+        reactions = construct_reactants_products_stereo(ligands)
+    else:
+        reactions = construct_reactants_products(ligands)
 
     df = pd.read_csv(f'{data_dir}/data.csv', index_col=0)
     labels = df['mol'].values
@@ -216,7 +275,11 @@ def main(data_dir='data/proparg'):
     for label, enan in tqdm(zip(labels, enans), total=len(df)):
 
         xyz_reactant, xyz_product = [f'{data_dir}/data_{comp}_xyz/{label}{enan}.xyz' for comp in ('react', 'prod')]
-        smis = reactions[label[:-1]]
+        if stereo:
+            key = label+enan
+        else:
+            key = label[:-1]
+        smis = reactions[key]
 
         try:
             reactant_mapped = map_smiles(xyz_reactant, smis.reactant, smis.reactant_alt, 6)
@@ -230,8 +293,12 @@ def main(data_dir='data/proparg'):
 
         df.loc[(df['mol']==label) & (df['enan']==enan), 'rxn_smiles_mapped'] = reactant_mapped+'>>'+product_mapped
 
-    df = df.drop('rxn_smiles', axis=1)
+    if stereo:
+        df.drop(axis=1, inplace=True, labels=set(df.columns.values)-{'Unnamed: 0', 'mol', 'enan', 'Eafw', 'rxn_smiles_mapped'})
     df.to_csv('proparg-mapped.csv')
 
 if __name__=='__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--stereo', action='store_true')
+    args = parser.parse_args()
+    main(stereo=args.stereo)

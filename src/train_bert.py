@@ -34,7 +34,10 @@ def remove_atom_mapping(smi):
     m = Chem.MolFromSmiles(smi)
     if m is None:
         mol = Chem.MolFromSmiles(smi, sanitize=False)
-        Chem.SanitizeMol(mol, sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_ADJUSTHS)
+        if mol is None:
+            print("could not convert smi", smi, "to mol")
+            return smi
+        Chem.SanitizeMol(mol, sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_PROPERTIES)
     else:
         mol = m
 

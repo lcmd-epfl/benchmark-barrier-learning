@@ -180,7 +180,7 @@ if __name__ == "__main__":
             np.save(drfp_save, drfp)
         else:
             drfp = np.load(drfp_save)
-        mfp_save = 'data/proparg/mfp.npy'
+        mfp_save = 'data/proparg/mfp_stereo.npy'
         if not os.path.exists(mfp_save):
             mfp = twodim.get_proparg_MFP()
             np.save(mfp_save, mfp)

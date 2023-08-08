@@ -89,11 +89,8 @@
     "reaction_mode": "reac_diff",
     "reaction_solvent": false,
     "reproducibility": {
-        "command_line": "python ../../src/cgr_proparg.py",
-        "git_has_uncommitted_changes": true,
-        "git_root": "/home/xe/WORK/PAPERS/2023_BENCHMARK/benchmark-barrier-learning",
-        "git_url": "https://github.com/lcmd-epfl/benchmark-barrier-learning/tree/b5cb4c1cdb713b5ef9abb27da48a98bed1925044",
-        "time": "Mon Aug  7 14:50:17 2023"
+        "command_line": "python ../../src/cgr_proparg.py --smiles stereo --mapping true",
+        "time": "Tue Aug  8 16:15:19 2023"
     },
     "resume_experiment": false,
     "save_dir": "./",

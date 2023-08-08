@@ -35,7 +35,7 @@ def remove_atom_mapping(smi):
     if m is None:
         mol = Chem.MolFromSmiles(smi, sanitize=False)
         if mol is None:
-            print("could not convert smi", smi, "to mol")
+            print('cannot remove atom mapping from smi')
             return smi
         Chem.SanitizeMol(mol, sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_PROPERTIES)
         mol = Chem.RemoveHs(mol, sanitize=False)
@@ -47,6 +47,7 @@ def remove_atom_mapping(smi):
         if atom.HasProp("molAtomMapNumber"):
             atom.ClearProp("molAtomMapNumber")
     smiles = Chem.MolToSmiles(mol)
+
     return smiles
 
 def remove_atom_mapping_rxn(rxn_smiles):

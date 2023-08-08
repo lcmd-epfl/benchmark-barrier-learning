@@ -38,6 +38,8 @@ def remove_atom_mapping(smi):
             print("could not convert smi", smi, "to mol")
             return smi
         Chem.SanitizeMol(mol, sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_PROPERTIES)
+        mol = Chem.RemoveHs(mol, sanitize=False)
+        Chem.SanitizeMol(mol, sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_PROPERTIES)
     else:
         mol = m
 

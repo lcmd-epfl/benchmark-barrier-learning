@@ -42,5 +42,5 @@ for ax, dataset_name in zip(axes, datasets):
 
 figname = 'figures/atom_mapping_quality.pdf'
 plt.tight_layout()
-plt.savefig(figname)
+#plt.savefig(figname)
 #plt.show()

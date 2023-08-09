@@ -80,11 +80,14 @@ def reader(xyz):
 class TWODIM:
     """Simple 2D reps based on SMILES"""
 
-    def __init__(self, proparg_stereo=False):
+    def __init__(self, proparg_stereo=False, proparg_combinatorial=False):
         self.barriers = []
         self.proparg_stereo = proparg_stereo
+        self.proparg_combinatorial = proparg_combinatorial
         if proparg_stereo:
             self.proparg_path = "data/proparg/data_fixarom_smiles_stereo.csv"
+        elif proparg_combinatorial:
+            self.proparg_path = "data/proparg/data_fixarom_smiles.csv"
         else:
             self.proparg_path = "data/proparg/data.csv"
 
@@ -92,7 +95,7 @@ class TWODIM:
         data = pd.read_csv(self.proparg_path, index_col=0)
         self.barriers = data['Eafw'].to_numpy()
         rxn_smiles = data['rxn_smiles']
-        mfps = [get_MFP(x, self.proparg_stereo) for x in rxn_smiles]
+        mfps = [get_MFP(x, self.proparg_stereo or self.proparg_combinatorial) for x in rxn_smiles]
         return np.vstack(mfps)
 
     def get_proparg_DRFP(self):

@@ -8,8 +8,10 @@ def parse_args():
     parser = ap.ArgumentParser()
     parser.add_argument('-c', '--cyclo', action='store_true')
     parser.add_argument('-g', '--gdb', action='store_true')
-    parser.add_argument('-p', '--proparg', action='store_true')
-    parser.add_argument('--proparg_stereo', action='store_true')
+    g = parser.add_mutually_exclusive_group()
+    g.add_argument('-p', '--proparg', action='store_true')
+    g.add_argument('--proparg_stereo', action='store_true')
+    g.add_argument('--proparg_combinatorial', action='store_true')
     parser.add_argument('-CV', '--CV', default=10)
     parser.add_argument('-tr', '--train', default=0.8)
     args = parser.parse_args()
@@ -23,6 +25,7 @@ if __name__ == "__main__":
     gdb = args.gdb
     proparg = args.proparg
     proparg_stereo = args.proparg_stereo
+    proparg_combinatorial = args.proparg_combinatorial
     CV = args.CV
 
     if cyclo:
@@ -172,12 +175,14 @@ if __name__ == "__main__":
             maes_b2r2_l = np.load(b2r2_l_save)
         print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
 
-    if proparg or proparg_stereo:
+    if proparg or proparg_stereo or proparg_combinatorial:
         print("Running for proparg dataset")
         # first 2d fingerprints drfp, mfp
-        twodim = TWODIM(proparg_stereo=proparg_stereo)
+        twodim = TWODIM(proparg_stereo=proparg_stereo, proparg_combinatorial=proparg_combinatorial)
         if proparg_stereo:
             drfp_save = 'data/proparg/drfp_stereo.npy'
+        elif proparg_combinatorial:
+            drfp_save = 'data/proparg/drfp_combinatorial.npy'
         else:
             drfp_save = 'data/proparg/drfp.npy'
         if not os.path.exists(drfp_save):
@@ -187,6 +192,8 @@ if __name__ == "__main__":
             drfp = np.load(drfp_save)
         if proparg_stereo:
             mfp_save = 'data/proparg/mfp_stereo.npy'
+        elif proparg_combinatorial:
+            mfp_save = 'data/proparg/mfp_combinatorial.npy'
         else:
             mfp_save = 'data/proparg/mfp.npy'
         if not os.path.exists(mfp_save):
@@ -219,6 +226,8 @@ if __name__ == "__main__":
         print("reps generated/loaded, predicting")
         if proparg_stereo:
             drfp_save = f'data/proparg/drfp_stereo_{CV}_fold.npy'
+        elif proparg_combinatorial:
+            drfp_save = f'data/proparg/drfp_combinatorial_{CV}_fold.npy'
         else:
             drfp_save = f'data/proparg/drfp_{CV}_fold.npy'
         if not os.path.exists(drfp_save):
@@ -230,6 +239,8 @@ if __name__ == "__main__":
 
         if proparg_stereo:
             mfp_save = f'data/proparg/mfp_stereo_{CV}_fold.npy'
+        elif proparg_combinatorial:
+            mfp_save = f'data/proparg/mfp_combinatorial_{CV}_fold.npy'
         else:
             mfp_save = f'data/proparg/mfp_{CV}_fold.npy'
         if not os.path.exists(mfp_save):

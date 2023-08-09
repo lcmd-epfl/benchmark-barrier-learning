@@ -53,7 +53,7 @@ fig, axes = plt.subplots(nrows=1, ncols=3)
 
 axes[0].set_ylim(0,22.5)
 axes[1].set_ylim(0,10)
-axes[2].set_ylim(0,2.4)
+axes[2].set_ylim(0,2.7)
 for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
 
     if i == 0:

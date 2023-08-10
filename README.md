@@ -39,5 +39,5 @@ pip install rxnfp
 - Atom mapped SMILES from rxnmapper are in the `rxn_smiles_rxnmapper` column of each csv file
 - Random atom maps are generated using `src/random_mapper.py` and 
   are in the `rxn_smiles_random` column of each csv file
-- Python files specifying how each CGR model was run are `src/cgr.py` and `src/cgr_proparg.py`
+- Python file specifying how each CGR model was run is `src/cgr.py`
 - Results of the CGR runs can be found in `results` 

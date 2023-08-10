@@ -40,7 +40,7 @@ stds = [gdb_std, cyclo_std, proparg_std]
 
 cyclo_lang_dir = 'outs/cyclo_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
 gdb_lang_dir = 'outs/gdb_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
-proparg_lang_dir = 'outs/proparg_bert_pretrained/5_epochs_8_batches_0_smiles_rand/results.txt'
+proparg_lang_dir = 'outs/proparg_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
 lang_dirs = [gdb_lang_dir, cyclo_lang_dir, proparg_lang_dir]
 
 cyclo_cgr_dir = 'results/cyclo_true/test_scores.csv'

@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import argparse as ap
 import chemprop
 
 # chemprop==1.5.0
@@ -6,22 +9,27 @@ import chemprop
 # patch ${CONDA_PREFIX}/lib/python3.8/site-packages/chemprop/rdkit.py
 # with cgr_proparg_patch.txt
 
-data = 'stereo mapped'
+parser = ap.ArgumentParser()
+parser.add_argument('--smiles', default=None, type=str, help='xyz2mol/combinat/stereo')
+parser.add_argument('--mapping', default=None, type=str, help='true/rxnmapper/random')
+args = parser.parse_args()
 
-if data=='bad random':
-    data_path = '../../data/proparg/data.csv'; smiles_columns = 'rxn_smiles_random'
-elif data=='bad mapped':
-    data_path = '../../data/proparg/data.csv'; smiles_columns = 'rxn_smiles_mapped'
-elif data=='bad rxnmapper':
-    data_path = '../../data/proparg/data.csv'; smiles_columns = 'rxn_smiles_rxnmapper'
-elif data=='good mapped':
-    data_path = '../../data/proparg/data_fixarom_smiles.csv'; smiles_columns = 'rxn_smiles_mapped'
-elif data=='good random':
-    data_path = '../../data/proparg/data_fixarom_smiles.csv'; smiles_columns = 'rxn_smiles_random'
-elif data=='stereo mapped':
-    data_path = '../../data/proparg/data_fixarom_smiles_stereo.csv'; smiles_columns = 'rxn_smiles_mapped'
+if args.smiles=='xyz2mol':
+    data_path = '../../data/proparg/data.csv'
+elif args.smiles=='combinat':
+    data_path = '../../data/proparg/data_fixarom_smiles.csv'
+elif args.smiles=='stereo':
+    data_path = '../../data/proparg/data_fixarom_smiles_stereo.csv'
 else:
-    raise NotImplementedError
+    exit()
+if args.mapping=='true':
+    smiles_columns = 'rxn_smiles_mapped'
+elif args.mapping=='rxnmapper':
+    smiles_columns = 'rxn_smiles_rxnmapper'
+elif args.mapping=='random':
+    smiles_columns = 'rxn_smiles_random'
+else:
+    exit()
 
 arguments = [
     "--data_path", data_path,

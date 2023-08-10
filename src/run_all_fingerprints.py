@@ -8,7 +8,10 @@ def parse_args():
     parser = ap.ArgumentParser()
     parser.add_argument('-c', '--cyclo', action='store_true')
     parser.add_argument('-g', '--gdb', action='store_true')
-    parser.add_argument('-p', '--proparg', action='store_true')
+    g = parser.add_mutually_exclusive_group()
+    g.add_argument('-p', '--proparg', action='store_true')
+    g.add_argument('--proparg_stereo', action='store_true')
+    g.add_argument('--proparg_combinatorial', action='store_true')
     parser.add_argument('-CV', '--CV', default=10)
     parser.add_argument('-tr', '--train', default=0.8)
     args = parser.parse_args()
@@ -21,13 +24,15 @@ if __name__ == "__main__":
     cyclo = args.cyclo
     gdb = args.gdb
     proparg = args.proparg
+    proparg_stereo = args.proparg_stereo
+    proparg_combinatorial = args.proparg_combinatorial
     CV = args.CV
 
     if cyclo:
         print("Running for cyclo dataset")
         # first 2d fingerprints drfp, mfp
         twodim = TWODIM()
-        drfp_save = 'data/cyclo/drfp_stereo.npy'
+        drfp_save = 'data/cyclo/drfp.npy'
         if not os.path.exists(drfp_save):
             drfp = twodim.get_cyclo_DRFP()
             np.save(drfp_save, drfp)
@@ -102,7 +107,7 @@ if __name__ == "__main__":
         print("Running for gdb dataset")
         # first 2d fingerprints drfp, mfp
         twodim = TWODIM()
-        drfp_save = 'data/gdb7-22-ts/drfp_stereo.npy'
+        drfp_save = 'data/gdb7-22-ts/drfp.npy'
         if not os.path.exists(drfp_save):
             drfp = twodim.get_gdb_DRFP()
             np.save(drfp_save, drfp)
@@ -170,17 +175,27 @@ if __name__ == "__main__":
             maes_b2r2_l = np.load(b2r2_l_save)
         print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
 
-    if proparg:
+    if proparg or proparg_stereo or proparg_combinatorial:
         print("Running for proparg dataset")
         # first 2d fingerprints drfp, mfp
-        twodim = TWODIM()
-        drfp_save = 'data/proparg/drfp_stereo.npy'
+        twodim = TWODIM(proparg_stereo=proparg_stereo, proparg_combinatorial=proparg_combinatorial)
+        if proparg_stereo:
+            drfp_save = 'data/proparg/drfp_stereo.npy'
+        elif proparg_combinatorial:
+            drfp_save = 'data/proparg/drfp_combinatorial.npy'
+        else:
+            drfp_save = 'data/proparg/drfp.npy'
         if not os.path.exists(drfp_save):
             drfp = twodim.get_proparg_DRFP()
             np.save(drfp_save, drfp)
         else:
             drfp = np.load(drfp_save)
-        mfp_save = 'data/proparg/mfp_stereo.npy'
+        if proparg_stereo:
+            mfp_save = 'data/proparg/mfp_stereo.npy'
+        elif proparg_combinatorial:
+            mfp_save = 'data/proparg/mfp_combinatorial.npy'
+        else:
+            mfp_save = 'data/proparg/mfp.npy'
         if not os.path.exists(mfp_save):
             mfp = twodim.get_proparg_MFP()
             np.save(mfp_save, mfp)
@@ -209,7 +224,12 @@ if __name__ == "__main__":
             b2r2_l = np.load(b2r2_l_save)
 
         print("reps generated/loaded, predicting")
-        drfp_save = f'data/proparg/drfp_{CV}_fold.npy'
+        if proparg_stereo:
+            drfp_save = f'data/proparg/drfp_stereo_{CV}_fold.npy'
+        elif proparg_combinatorial:
+            drfp_save = f'data/proparg/drfp_combinatorial_{CV}_fold.npy'
+        else:
+            drfp_save = f'data/proparg/drfp_{CV}_fold.npy'
         if not os.path.exists(drfp_save):
             maes_drfp = predict_CV(drfp, twod_barriers, CV=CV, mode='rf')
             np.save(drfp_save, maes_drfp)
@@ -217,7 +237,12 @@ if __name__ == "__main__":
             maes_drfp = np.load(drfp_save)
         print(f'drfp mae {np.mean(maes_drfp)} +- {np.std(maes_drfp)}')
 
-        mfp_save = f'data/proparg/mfp_{CV}_fold.npy'
+        if proparg_stereo:
+            mfp_save = f'data/proparg/mfp_stereo_{CV}_fold.npy'
+        elif proparg_combinatorial:
+            mfp_save = f'data/proparg/mfp_combinatorial_{CV}_fold.npy'
+        else:
+            mfp_save = f'data/proparg/mfp_{CV}_fold.npy'
         if not os.path.exists(mfp_save):
             maes_mfp = predict_CV(mfp, twod_barriers, CV=CV, mode='rf')
             np.save(mfp_save, maes_mfp)

@@ -89,11 +89,8 @@
     "reaction_mode": "reac_diff",
     "reaction_solvent": false,
     "reproducibility": {
-        "command_line": "python CGR.py",
-        "git_has_uncommitted_changes": true,
-        "git_root": "/home/xe/WORK/puck-benchmark-barrier-learning/benchmark-barrier-learning",
-        "git_url": "https://github.com/lcmd-epfl/benchmark-barrier-learning/tree/5509c1494f8eccd4c4f577850a4dd27a42a164ff",
-        "time": "Tue Jul 25 12:09:36 2023"
+        "command_line": "python ../../src/cgr_proparg.py --smiles xyz2mol --mapping random",
+        "time": "Tue Aug  8 16:08:46 2023"
     },
     "resume_experiment": false,
     "save_dir": "./",

@@ -12,11 +12,13 @@ import chemprop
 
 def argparse():
     parser = ap.ArgumentParser()
-    parser.add_argument('--random', action='store_true')
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('--cyclo', action='store_true')
-    group.add_argument('--gdb_full', action='store_true')
-    group.add_argument('--gdb_mod', action='store_true')
+    g1 = parser.add_mutually_exclusive_group()
+    g1.add_argument('--random', action='store_true')
+    g1.add_argument('--rxnmapper', action='store_true')
+    g2 = parser.add_mutually_exclusive_group()
+    g2.add_argument('--cyclo', action='store_true')
+    g2.add_argument('--gdb_full', action='store_true')
+    g2.add_argument('--gdb_mod', action='store_true')
     args = parser.parse_args()
     return args
 
@@ -24,19 +26,21 @@ def argparse():
 if __name__ == "__main__":
 
     args = argparse()
-    if args.cyclo is True:
+    if args.cyclo:
         data_path = '../../data/cyclo/full_dataset.csv'
         target_columns = 'G_act'
-    elif args.gdb_full is True:
+    elif args.gdb_full:
         data_path = '../../data/gdb7-22-ts/ccsdtf12_dz.csv'
         target_columns = 'dE0'
-    elif args.gdb_mod is True:
+    elif args.gdb_mod:
         data_path = '../../data/gdb7-22-ts/ccsdtf12_dz_mod.csv'
         target_columns = 'dE0'
     else:
         exit(0)
-    if args.random is True:
+    if args.random:
         smiles_columns = 'rxn_smiles_random'
+    elif args.rxnmapper:
+        smiles_columns = 'rxn_smiles_rxnmapper'
     else:
         smiles_columns = 'rxn_smiles'
 

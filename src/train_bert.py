@@ -16,6 +16,8 @@ def argparse():
     parser.add_argument('-t', '--train', action='store_true')
     parser.add_argument('-p', '--predict', action='store_true')
     parser.add_argument('-d', '--dataset', default='gdb')
+    parser.add_argument('-s', '--stereo', action='store_true')
+    parser.add_argument('-x', '--xyz2mol', action='store_true')
     parser.add_argument('-CV', '--CV', default=1)
     parser.add_argument('-train_size', '--train_size', default=0.8)
     parser.add_argument('-n_rand', '--n_randomizations', default=0)
@@ -141,9 +143,18 @@ if __name__ == "__main__":
         save_path = 'outs/cyclo_bert_pretrained'
 
     elif dataset == 'proparg':
-        df = pd.read_csv("data/proparg/data_fixarom_smiles_stereo.csv")
-        target_label = 'Eafw'
-        save_path = 'outs/proparg_bert_pretrained_stereo'
+        if args.stereo:
+            df = pd.read_csv("data/proparg/data_fixarom_smiles_stereo.csv")
+            target_label = 'Eafw'
+            save_path = 'outs/proparg_bert_pretrained_stereo'
+        elif args.xyz2mol:
+            df = pd.read_csv("data/proparg/data.csv")
+            target_label = 'Eafw'
+            save_path = 'outs/proparg_bert_pretrained'
+        else:
+            df = pd.read_csv("data/proparg/data_fixarom_smiles.csv")
+            target_label = 'Eafw'
+            save_path = 'outs/proparg_bert_pretrained_fixarom'
 
     rxn_smiles_list = [remove_atom_mapping_rxn(x) for x in df['rxn_smiles'].to_list()]
     df['clean_rxn_smiles'] = rxn_smiles_list

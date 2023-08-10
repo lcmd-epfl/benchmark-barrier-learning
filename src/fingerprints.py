@@ -4,11 +4,14 @@ import rdkit.Chem as Chem
 import numpy as np
 from drfp import DrfpEncoder
 
-def get_MFP(rxn_smiles):
+def get_MFP(rxn_smiles, proparg_stereo=False):
     params = rdChemReactions.ReactionFingerprintParams()
     params.fpSize = 1024
     params.fpType = rdChemReactions.FingerprintType.MorganFP
-    rxn = rdChemReactions.ReactionFromSmarts(rxn_smiles, useSmiles=True, replacements={'-2':''})
+    if proparg_stereo:
+        rxn = rdChemReactions.ReactionFromSmarts(rxn_smiles, useSmiles=True, replacements={'-2':''})
+    else:
+        rxn = rdChemReactions.ReactionFromSmarts(rxn_smiles, useSmiles=True)
     rxn_fp = rdChemReactions.CreateDifferenceFingerprintForReaction(rxn, params)
     converted_fp = np.zeros((1))
     ConvertToNumpyArray(rxn_fp, converted_fp)

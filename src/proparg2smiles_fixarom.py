@@ -293,11 +293,8 @@ def main(data_dir='data/proparg', stereo=False):
             continue
 
         df.loc[(df['mol']==label) & (df['enan']==enan), 'rxn_smiles_mapped'] = reactant_mapped+'>>'+product_mapped
-        if stereo:
-            df.loc[(df['mol']==label) & (df['enan']==enan), 'rxn_smiles'] = reset_smiles(reactant_mapped+'>>'+product_mapped)
-
-    if stereo:
-        df.drop(axis=1, inplace=True, labels=set(df.columns.values)-{'Unnamed: 0', 'mol', 'enan', 'Eafw', 'rxn_smiles', 'rxn_smiles_mapped'})
+        df.loc[(df['mol']==label) & (df['enan']==enan), 'rxn_smiles'] = reset_smiles(reactant_mapped+'>>'+product_mapped)
+    df.drop(axis=1, inplace=True, labels=set(df.columns.values)-{'Unnamed: 0', 'mol', 'enan', 'Eafw', 'rxn_smiles', 'rxn_smiles_mapped'})
     df.to_csv('proparg-mapped.csv')
 
 if __name__=='__main__':

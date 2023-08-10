@@ -144,14 +144,17 @@ if __name__ == "__main__":
 
     elif dataset == 'proparg':
         if args.stereo:
+            print("Using stereo smiles...")
             df = pd.read_csv("data/proparg/data_fixarom_smiles_stereo.csv")
             target_label = 'Eafw'
             save_path = 'outs/proparg_bert_pretrained_stereo'
         elif args.xyz2mol:
+            print("Using xyz2mol smiles...")
             df = pd.read_csv("data/proparg/data.csv")
             target_label = 'Eafw'
             save_path = 'outs/proparg_bert_pretrained'
         else:
+            print("Using fixarom smiles...")
             df = pd.read_csv("data/proparg/data_fixarom_smiles.csv")
             target_label = 'Eafw'
             save_path = 'outs/proparg_bert_pretrained_fixarom'

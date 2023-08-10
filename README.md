@@ -1,15 +1,22 @@
 # Benchmarking of reaction representations
 
 ## Installation
-#TODO env not working for bert / rxnmapper.
-- Due to the dependencies of the qml python package, numpy needs to be installed first and foremost, therefore a `requirements.txt` file is provided
-- Recommend to first create a conda env: `conda create -n benchmark-rxn`
+- Due to the various dependencies of different packages, it is not possible to have a single environment that satisfies them all. In particular, the `rxnfp` package relies on python 3.6. Therefore it is recommended to have a separate environment to run the BERT models, following the install instructions as detailed on the github page https://github.com/rxn4chemistry/rxnfp:
+```commandline
+conda create -n rxnfp python=3.6 -y
+conda activate rxnfp
+conda install -c rdkit rdkit=2020.03.3 -y
+conda install -c tmap tmap -y
+pip install rxnfp
+```
+- Then another environment can be created that works for the other fingerprints, for example `conda create -n benchmark-rxn`
 - `conda install pip`
+- Due to the dependencies of the qml python package, numpy needs to be installed first and foremost, therefore a `requirements.txt` file is provided
 - Then install requirements like `xargs -L 1 pip install < requirements.txt`
 
 ## 2D and 3D fingerprints
 - 2D reps here are the DRFP and MFP
-- 3D reps are SLATM, SPAHM$_b$, and $B^2R^2_l$, all in the difference variation for reactions
+- 3D reps are SLATM and $B^2R^2_l$, all in the difference variation for reactions
 - To generate/load the reps and perform CV-fold cross-validated predictions with a train fraction of tr, the file `src/run_all_fingerprints.py` should be used
 - Here, the datasets are specified as additional arguments, `-c` for cyclo, `-g` for gdb and `-p` for proparg
 - For example, for a train fraction of 0.8, with corresponding test and validation of 0.1 each, and 10-fold CV, the command `python src/run_all_fingerprints.py -c -g -p --CV=10 --train=0.8` will generate/load representations and run the models or load the results

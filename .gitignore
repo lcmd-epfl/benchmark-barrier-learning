@@ -5,6 +5,7 @@ outputs/*
 runs/*
 cache_dir/*
 wandb/*
+submission-data/*
 
 *.pyc
 *.swp

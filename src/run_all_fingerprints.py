@@ -252,7 +252,7 @@ if __name__ == "__main__":
 
         slatm_save = f'data/proparg/slatm_{CV}_fold.npy'
         if not os.path.exists(slatm_save):
-            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian'],
+            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian', 'rbf'],
                                     save_file='data/proparg/slatm_hypers.csv')
             np.save(slatm_save, maes_slatm)
         else:
@@ -261,7 +261,7 @@ if __name__ == "__main__":
 
         b2r2_l_save = f'data/proparg/b2r2_l_{CV}_fold.npy'
         if not os.path.exists(b2r2_l_save):
-            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian'],
+            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian', 'rbf'],
                                      save_file='data/proparg/b2r2_l_hypers_laplacian.csv')
             np.save(b2r2_l_save, maes_b2r2_l)
         else:

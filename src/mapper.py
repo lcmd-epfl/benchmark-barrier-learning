@@ -18,7 +18,6 @@ def argparse():
     parser.add_argument('-p', '--proparg', action='store_true')
     parser.add_argument('--proparg_arom', action='store_true')
     parser.add_argument('--proparg_stereo', action='store_true')
-    parser.add_argument('--gdb_mod', action='store_true')
     args = parser.parse_args()
     return args
 
@@ -34,7 +33,6 @@ if __name__ == "__main__":
         (args.cyclo,        "data/cyclo/full_dataset.csv",          'rxn_smiles'       ),
         (args.gdb,          "data/gdb7-22-ts/ccsdtf12_dz.csv",      'rxn_smiles'       ),
         (args.proparg,      "data/proparg/data.csv",                'rxn_smiles_mapped'),
-        (args.gdb_mod,      "data/gdb7-22-ts/ccsdtf12_dz_mod.csv",  'rxn_smiles'       ),
     )
 
     for flag, dfile, src_column in datasets:

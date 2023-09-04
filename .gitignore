@@ -6,6 +6,6 @@ runs/*
 cache_dir/*
 wandb/*
 submission-data/*
-
+data.tar.gz
 *.pyc
 *.swp

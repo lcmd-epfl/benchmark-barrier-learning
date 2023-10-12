@@ -15,6 +15,7 @@ def argparse():
     g1.add_argument('--true', action='store_true', help='use true atom mapping')
     g1.add_argument('--random', action='store_true', help='use random atom mapping')
     g1.add_argument('--rxnmapper', action='store_true', help='use atom mapping from rxnmapper')
+    g1.add_argument('--nomapping', action='store_true', help='use without atom mapping')
     g2 = parser.add_mutually_exclusive_group(required=True)
     g2.add_argument('-c', '--cyclo', action='store_true', help='use Cyclo-23-TS dataset')
     g2.add_argument('-g', '--gdb', action='store_true', help='use GDB7-22-TS dataset')
@@ -48,6 +49,11 @@ if __name__ == "__main__":
         smiles_columns = 'rxn_smiles_random'
     elif args.rxnmapper:
         smiles_columns = 'rxn_smiles_rxnmapper'
+    elif args.nomapping:
+        if args.proparg or args.proparg_combinat or args.proparg_stereo:
+            smiles_columns = 'rxn_smiles'
+        else:
+            smiles_columns = 'rxn_smiles_nomapping'
     elif args.true:
         if args.proparg or args.proparg_combinat or args.proparg_stereo:
             smiles_columns = 'rxn_smiles_mapped'

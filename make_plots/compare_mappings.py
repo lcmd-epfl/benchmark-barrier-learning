@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 
 datasets = ['gdb', 'cyclo', 'proparg']
-labels = ['CGR True', 'CGR RXNMapper', 'CGR Random', 'SLATM$_d$']
-keys = ['true_df', 'rxnmapper_df', 'random_df', 'slatm']
+labels = ['CGR True', 'CGR RXNMapper', 'CGR None', 'SLATM$_d$']
+keys = ['true_df', 'rxnmapper_df', 'nomap_df', 'slatm']
 #colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
 colors = ['blue', 'purple', 'magenta', "#00A79F"]
 
@@ -42,5 +42,5 @@ for ax, dataset_name in zip(axes, datasets):
 
 figname = 'figures/atom_mapping_quality.pdf'
 plt.tight_layout()
-#plt.savefig(figname)
+plt.savefig(figname)
 #plt.show()

@@ -159,47 +159,65 @@ if __name__ == "__main__":
             wandb_name = wandb_name_orig + '.cv' + str(i+1)
         else:
             wandb_name = wandb_name_orig
-        # todo proper hyperopt maybe for data aug?
 
         print("CV iter", i+1, '/', CV)
         save_iter_path = save_path + f"/split_{i+1}"
         seed += 1
 
-        train_df, test_df = train_test_split(df, train_size=train_size, random_state=seed)
+        train_df, val_test_df = train_test_split(df, train_size=train_size, random_state=seed)
+        val_df, test_df = train_test_split(df, train_size=0.5, shuffle=False)
+        print(f"train size {len(train_df)}, val size {len(val_df)}, test size {len(test_df)}")
         mean = train_df['labels'].mean()
         std = train_df['labels'].std()
         train_df['labels'] = (train_df['labels'] - mean)/std
         test_df['labels'] = (test_df['labels'] - mean)/std
-
-        print('tr size', len(train_df), 'te size', len(test_df))
+        val_df['labels'] = (val_df['labels'] - mean)/std
 
         if data_aug:
             # now augmentation
             train_df = do_randomizations_on_df(train_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
+            val_df = do_randomizations_on_df(val_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
             test_df = do_randomizations_on_df(test_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
-            print('after augmentation tr size', len(train_df), 'te size', len(test_df))
+            print('after augmentation tr size', len(train_df), 'val size', len(val_df), 'te size', len(test_df))
 
         # need this ?
         MODEL_CLASSES = {
             "bert": (BertConfig, BertForSequenceClassification, SmilesTokenizer),
         }
 
+        model_path = pkg_resources.resource_filename(
+            "rxnfp",
+            f"models/transformers/bert_pretrained"  # change pretrained to ft to start from the other base model
+        )
+
         if train:
-            print('wandb run name', wandb_name)
-            model_args = {'regression':True, 'evaluate_during_training':False, 'num_labels':1, 'manual_seed':2,
-                          'num_train_epochs':num_train_epochs, 'wandb_project':'lang-rxn', 'train_batch_size':batch_size,
-                          'wandb_kwargs':{'name':wandb_name}}
+            print("optimising hypers...")
+            lrs = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3]
+            dropouts = [0.2, 0.4, 0.6, 0.8]
 
-            model_path = pkg_resources.resource_filename(
-                            "rxnfp",
-                            f"models/transformers/bert_pretrained" # change pretrained to ft to start from the other base model
-            )
+            for i, lr in lrs:
+                for j, p in dropouts:
+                    wandb_name_search = wandb_name + f'_lr_{lr}_p_{p}'
+                    save_iter_path_search = save_iter_path + f'_lr_{lr}_p_{p}'
+                    print('wandb run name', wandb_name_search)
+                    model_args = {'regression': True, 'evaluate_during_training': False, 'num_labels': 1,
+                                  'manual_seed': 2,
+                                  'num_train_epochs': num_train_epochs, 'wandb_project': 'lang-rxn',
+                                  'train_batch_size': batch_size,
+                                  'wandb_kwargs': {'name': wandb_name_search},
+                                  'learning_rate':lr,
+                                  "config": {'hidden_dropout_prob': p}
+                                  }
 
-            # inherits from simpletransformers.classification ClassificationModel
-            bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
-                                                   use_cuda=torch.cuda.is_available())
+                    # inherits from simpletransformers.classification ClassificationModel
+                    bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
+                                                     use_cuda=torch.cuda.is_available())
 
-            bert.train_model(train_df, output_dir=save_iter_path, eval_df=test_df)
+                    bert.train_model(train_df, output_dir=save_iter_path_search, eval_df=val_df)
+
+                    # use best model
+                    #TODO check output here and keep best model
+                    exit()
 
         if predict:
             path = glob.glob(save_iter_path+f'/checkpoint*{num_train_epochs}/', recursive=True)

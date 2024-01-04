@@ -1,5 +1,8 @@
 # Benchmarking of reaction representations
 
+## Warning 
+This repo is currently in progress, for the revision of the paper. We will remove this warning when the repo is finalised.
+
 ## Installation
 - Due to the various dependencies of different packages, it is not possible to have a single environment that satisfies them all. In particular, the `rxnfp` package relies on python 3.6. Therefore it is recommended to have a separate environment to run the BERT models, following the install instructions as detailed on the github page https://github.com/rxn4chemistry/rxnfp:
 ```commandline

@@ -22,6 +22,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+    CV = args.CV
 
     datasets = []
     if args.cyclo:

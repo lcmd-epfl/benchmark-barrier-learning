@@ -4,17 +4,11 @@ from sklearn.metrics import pairwise_distances
 from sklearn.model_selection import train_test_split, KFold
 from scipy.spatial import distance_matrix
 import xgboost as xgb
+from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
 from src.hypers import *
-
-def predict_RF(X_train, X_test, y_train, y_test):
-    rf = xgb.XGBRegressor()
-    rf.fit(X_train, y_train)
-
-    y_pred = rf.predict(X_test)
-    mae = np.mean(np.abs(y_test - y_pred))
-    return mae, y_pred
-
+import hyperopt
+from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
 def predict_laplacian_KRR(D_train, D_test,
                 y_train, y_test,
                 gamma=0.001, l2reg=1e-10):
@@ -137,6 +131,7 @@ def opt_hyperparams_gaussian(
     print(f"Best mae={min_mae} for sigma={min_sigma} and l2reg={min_l2reg}")
 
     return min_sigma, min_l2reg, min_mae
+
 def CV_KRR_optional_hyperopt(X, y, seed=1, CV=10, opt=False, kernel='',
            sig_gam=None, l2reg=None, train_size=0.8,):
     maes = np.zeros((CV))
@@ -202,6 +197,47 @@ def predict_CV_KRR(X, y, CV=10, seed=1, train_size=0.8,
 
     return maes
 
+#TODO tune hypers boosted forest
+
+def predict_RF(X_train, X_test, y_train, y_test, seed=1,
+               n_trees=100, max_depth=None, max_features='auto',
+               min_samples_split=2, min_samples_leaf=1,
+               bootstrap=True):
+    rf = RandomForestRegressor(random_state=seed,
+                               n_estimators=n_trees,
+                               max_depth=max_depth,
+                               max_features=max_features,
+                               min_samples_split=min_samples_split,
+                               min_samples_leaf=min_samples_leaf,
+                               bootstrap=bootstrap
+                               )
+    rf.fit(X_train, y_train)
+    y_pred = rf.predict(X_test)
+    mae = np.mean(np.abs(y_test - y_pred))
+    return mae, y_pred
+def predict_boosted_RF(X_train, X_test, y_train, y_test,
+                       max_depth=6,
+                       gamma=0,
+                       reg_alpha=0,
+                       reg_lambda=1,
+                       colsample_bytree=1,
+                       min_child_weight=1,
+                       n_estimators=100,
+                       seed=1):
+    rf = xgb.XGBRegressor(max_depth=max_depth,
+                          gamma=gamma,
+                          reg_alpha=reg_alpha,
+                          reg_lambda=reg_lambda,
+                          colsample_bytree=colsample_bytree,
+                          min_child_weight=min_child_weight,
+                          seed=seed,
+                          n_estimators=n_estimators)
+    rf.fit(X_train, y_train)
+
+    y_pred = rf.predict(X_test)
+    mae = np.mean(np.abs(y_test - y_pred))
+    return mae, y_pred
+
 def predict_CV_RF(X, y, CV=10, seed=1, train_size=0.8, dataset=''):
     maes = np.zeros((CV))
 
@@ -211,9 +247,39 @@ def predict_CV_RF(X, y, CV=10, seed=1, train_size=0.8, dataset=''):
         X_train, X_test_val, y_train, y_test_val = train_test_split(X, y, random_state=seed, train_size=train_size)
         X_test, X_val, y_test, y_val = train_test_split(X_test_val, y_test_val, shuffle=False, train_size=0.5)
 
-        #TODO hyperparam opt
-        #if i == 0:
-        #print("Optimising hypers...")
+        #TODO hyperparam opt optional / read from file
+        if i == 0:
+            print(f"Optimising hypers...")
+            def tune_hypers_RF(space):
+                model = RandomForestRegressor(random_state=space['seed'],
+                                              max_depth=space['max_depth'],
+                                              n_estimators=space['n_estimators'],
+                                              max_features=space["max_features"],
+                                              min_samples_split=space["min_samples_split"],
+                                              min_samples_leaf=space["min_samples_leaf"],
+                                              bootstrap=space["bootstrap"],
+                                              )
+                # ASSUMING X_TRAIN, VAL ARE GLOBAL PARAMS
+                model.fit(X_train, y_train)
+                y_pred = model.predict(X_test)
+                mae = np.mean(np.abs(y_test - y_pred))
+                return {"loss": mae, "status": STATUS_OK, "model": model}
+            space = {'max_depth': hp.choice("max_depth", np.linspace(10,100,10, dtype=int)),
+                     'n_estimators': hp.choice('n_estimators', np.linspace(100, 1000, 100, dtype=int)),
+                     'max_features': hp.choice('max_features', ['log2', 'sqrt']),
+                     'min_samples_split': hp.choice('min_samples_split', [2,5,10]),
+                     'min_samples_leaf': hp.choice('min_samples_leaf', [1,2,4]),
+                     'bootstrap': hp.choice('bootstrap', [True, False]),
+                     'seed' : 1,
+                     }
+            trials = Trials()
+            best = fmin(fn=tune_hypers_RF,
+                        space=space,
+                        algo=tpe.suggest,
+                        max_evals=100,
+                        trials=trials)
+            print(f'{best=}')
+            exit()
 
         mae, _ = predict_RF(X_train, X_test, y_train, y_test)
         maes[i] = mae

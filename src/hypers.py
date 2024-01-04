@@ -18,4 +18,6 @@ HYPERS_B2R2 = {
 
 HYPERS_DRFP = {}
 
-HYPERS_MFP = {}
+HYPERS_MFP = {
+    "cyclo" : {'bootstrap': 1, 'max_depth': 8, 'max_features': 1, 'min_samples_leaf': 0, 'min_samples_split': 0, 'n_estimators': 5}
+}

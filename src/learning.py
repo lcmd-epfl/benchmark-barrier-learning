@@ -3,7 +3,6 @@ from sklearn.metrics.pairwise import rbf_kernel, laplacian_kernel
 from sklearn.metrics import pairwise_distances
 from sklearn.model_selection import train_test_split, KFold
 from scipy.spatial import distance_matrix
-import xgboost as xgb
 from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
 from src.hypers import *
@@ -197,8 +196,6 @@ def predict_CV_KRR(X, y, CV=10, seed=1, train_size=0.8,
 
     return maes
 
-#TODO tune hypers boosted forest
-
 def predict_RF(X_train, X_test, y_train, y_test, seed=1,
                n_trees=100, max_depth=None, max_features='auto',
                min_samples_split=2, min_samples_leaf=1,
@@ -212,28 +209,6 @@ def predict_RF(X_train, X_test, y_train, y_test, seed=1,
                                bootstrap=bootstrap
                                )
     rf.fit(X_train, y_train)
-    y_pred = rf.predict(X_test)
-    mae = np.mean(np.abs(y_test - y_pred))
-    return mae, y_pred
-def predict_boosted_RF(X_train, X_test, y_train, y_test,
-                       max_depth=6,
-                       gamma=0,
-                       reg_alpha=0,
-                       reg_lambda=1,
-                       colsample_bytree=1,
-                       min_child_weight=1,
-                       n_estimators=100,
-                       seed=1):
-    rf = xgb.XGBRegressor(max_depth=max_depth,
-                          gamma=gamma,
-                          reg_alpha=reg_alpha,
-                          reg_lambda=reg_lambda,
-                          colsample_bytree=colsample_bytree,
-                          min_child_weight=min_child_weight,
-                          seed=seed,
-                          n_estimators=n_estimators)
-    rf.fit(X_train, y_train)
-
     y_pred = rf.predict(X_test)
     mae = np.mean(np.abs(y_test - y_pred))
     return mae, y_pred

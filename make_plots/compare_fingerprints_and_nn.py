@@ -92,7 +92,7 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     axes[i].text(5 - 0.26, cgr_mae + add, round_with_std(cgr_mae, cgr_std), rotation=90, fontsize='x-small', fontweight='bold')
 
     axes[i].set_xticks(list(range(6)))
-    axes[i].set_xticklabels(['MFP+RF', 'DRFP+RF', 'BERT+RXNFP', 'SLATM$_d$+KRR', '$B^2R^2_l$+KRR', 'CGR'], rotation=90, fontsize=10)
+    axes[i].set_xticklabels(['MFP+RF', 'DRFP+RF', 'BERT+RXNFP', 'SLATM$_d$+KRR', '$B^2R^2_l$+KRR', 'Chemprop'], rotation=90, fontsize=10)
 
 axes[0].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
 axes[1].set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")

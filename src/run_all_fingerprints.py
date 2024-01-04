@@ -31,10 +31,6 @@ if __name__ == "__main__":
     if args.proparg or args.proparg_stereo or args.proparg_combinatorial:
         datasets.append('proparg')
 
-    proparg_stereo = args.proparg_stereo
-    proparg_combinatorial = args.proparg_combinatorial
-    CV = args.CV
-
     for dataset in datasets:
         print(f"Running for {dataset} dataset")
         # first 2d fingerprints drfp, mfp
@@ -160,11 +156,6 @@ if __name__ == "__main__":
             slatm_save = f'data/{dataset}/slatm_{CV}_fold.npy'
             b2r2_l_save = f'data/{dataset}/b2r2_l_{CV}_fold.npy'
             dataset_label = dataset
-
-        if dataset == 'proparg':
-            kernel = 'rbf'
-        else:
-            kernel = 'laplacian'
 
         if not os.path.exists(slatm_save):
             maes_slatm = predict_CV_KRR(slatm, barriers_qml, CV=CV, model='slatm', dataset=dataset_label)

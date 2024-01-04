@@ -88,7 +88,6 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
 
     axes[i].bar(4, b2r2_mae, yerr=b2r2_std, color=colors[3])
     axes[i].text(4 - 0.26, b2r2_mae + add, round_with_std(b2r2_mae, b2r2_std), rotation=90, fontsize='x-small', fontweight='bold')
-
     axes[i].bar(5, cgr_mae, yerr=cgr_std, color=colors[5])
     axes[i].text(5 - 0.26, cgr_mae + add, round_with_std(cgr_mae, cgr_std), rotation=90, fontsize='x-small', fontweight='bold')
 

@@ -62,17 +62,17 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     axes[i].set_title(titles[i], fontsize='medium')
     #axes[i].axhline(stds[i], color='black', alpha=0.5, linestyle='dashed', label='std')
 
-    axes[i].barh(3, slatm_mae, xerr=slatm_std, color=colors[2])
-    axes[i].text(slatm_mae + add, 2.8, round_with_std(slatm_mae, slatm_std), fontsize='x-small', fontweight='bold')
+    axes[i].barh(0, slatm_mae, xerr=slatm_std, color=colors[2])
+    axes[i].text(slatm_mae + add, -0.2, round_with_std(slatm_mae, slatm_std), fontsize='x-small', fontweight='bold')
 
-    axes[i].barh(2, slatm_mae_xtb, xerr=slatm_std_xtb, color=colors[2], hatch='/')
-    axes[i].text(slatm_mae_xtb + add, 1.8, round_with_std(slatm_mae_xtb, slatm_std_xtb), fontsize='x-small', fontweight='bold')
+    axes[i].barh(1, slatm_mae_xtb, xerr=slatm_std_xtb, color=colors[2], hatch='/')
+    axes[i].text(slatm_mae_xtb + add, 0.8, round_with_std(slatm_mae_xtb, slatm_std_xtb), fontsize='x-small', fontweight='bold')
 
-    axes[i].barh(1, b2r2_mae, xerr=b2r2_std, color=colors[3])
-    axes[i].text(b2r2_mae + add, 0.8, round_with_std(b2r2_mae, b2r2_std), fontsize='x-small', fontweight='bold')
+    axes[i].barh(2, b2r2_mae, xerr=b2r2_std, color=colors[3])
+    axes[i].text(b2r2_mae + add, 1.8, round_with_std(b2r2_mae, b2r2_std), fontsize='x-small', fontweight='bold')
 
-    axes[i].barh(0, b2r2_mae_xtb, xerr=b2r2_std_xtb, color=colors[3], hatch='/')
-    axes[i].text(b2r2_mae_xtb + add, -0.2, round_with_std(b2r2_mae_xtb, b2r2_std_xtb), fontsize='x-small', fontweight='bold')
+    axes[i].barh(3, b2r2_mae_xtb, xerr=b2r2_std_xtb, color=colors[3], hatch='/')
+    axes[i].text(b2r2_mae_xtb + add, 2.8, round_with_std(b2r2_mae_xtb, b2r2_std_xtb), fontsize='x-small', fontweight='bold')
 
     axes[i].set_yticks(list(range(4)))
     axes[i].set_yticklabels(['SLATM$_d$+KRR(dft)', 'SLATM$_d$+KRR(xtb)', '$B^2R^2_l$+KRR(dft)', '$B^2R^2_l$+KRR(xtb)'], fontsize=10)

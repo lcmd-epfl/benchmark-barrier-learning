@@ -40,11 +40,11 @@ data['proparg']['ylabel'] = "MAE $\Delta E^\ddag$ [kcal/mol]"
 matplotlib.rcParams.update({"font.size":12})
 fig, axes = plt.subplots(nrows=1, ncols=3)
 
-add = 0.17
-axes[0].set_ylim(0,12.5)
+axes[0].set_ylim(0,13)
 axes[1].set_ylim(0,4.2)
 axes[2].set_ylim(0,2.5)
-for ax, dataset_name in zip(axes, datasets):
+adds = [0.37, 0.2, 0.12]
+for ax, dataset_name, add in zip(axes, datasets, adds):
 
     dataset = data[dataset_name]
     ax.set_title(dataset['title'], fontsize='medium')
@@ -53,7 +53,7 @@ for ax, dataset_name in zip(axes, datasets):
     for i, key in enumerate(keys):
         df = dataset[key]
         ax.bar(i, df['Mean mae'], yerr=df['Standard deviation mae'], color=colors[i])
-        ax.text(i - 0.2, df['Mean mae'] + add, round_with_std(float(df['Mean mae']), float(df['Standard deviation mae'])), fontsize='x-small', fontweight='bold', rotation=90)
+        ax.text(i - 0.15, df['Mean mae'] + add, round_with_std(float(df['Mean mae']), float(df['Standard deviation mae'])), fontsize='x-small', fontweight='bold', rotation=90)
 
     ax.set_xticks(list(range(len(labels))))
     ax.set_xticklabels(labels, rotation=90, fontsize=10)

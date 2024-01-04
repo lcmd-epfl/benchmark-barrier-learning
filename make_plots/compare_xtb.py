@@ -38,66 +38,48 @@ gdb_std = np.std(pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")['dE0'].to_numpy(
 proparg_std = np.std(pd.read_csv("data/proparg/data.csv")['Eafw'].to_numpy())
 stds = [gdb_std, cyclo_std, proparg_std]
 
-cyclo_lang_dir = 'outs/cyclo_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
-gdb_lang_dir = 'outs/gdb_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
-proparg_lang_dir = 'outs/proparg_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
-lang_dirs = [gdb_lang_dir, cyclo_lang_dir, proparg_lang_dir]
-
-cyclo_cgr_dir = 'results/cyclo_true/test_scores.csv'
-gdb_cgr_dir = 'results/gdb_true/test_scores.csv'
-proparg_cgr_dir = 'results/proparg_true/test_scores.csv'
-cgr_dirs = [gdb_cgr_dir, cyclo_cgr_dir, proparg_cgr_dir]
-
 titles = ['(a) GDB7-22-TS', '(b) Cyclo-23-TS', '(c) Proparg-21-TS']
-fig, axes = plt.subplots(nrows=1, ncols=3)
+fig, axes = plt.subplots(nrows=3, ncols=1)
 
-# axes[0].set_ylim(0,22.5)
-# axes[1].set_ylim(0,10)
-axes[2].set_ylim(0,2.6)
+axes[0].set_xlim(0,13)
+axes[1].set_xlim(0,6)
+axes[2].set_xlim(0,1.4)
 for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
 
     if i == 0:
-        add = 0.5
+        add = 0.23
     elif i == 1:
-        add = 0.25
-    elif i == 2:
         add = 0.15
+    elif i == 2:
+        add = 0.1
 
-    lang_dir = lang_dirs[i]
-    cgr_dir = cgr_dirs[i]
-    mfp_mae, mfp_std = get_maes(db + 'mfp_10_fold.npy')
-    drfp_mae, drfp_std = get_maes(db + 'drfp_10_fold.npy')
-    slatm_mae, slatm_std = get_maes(db + 'slatm_10_fold_xtb.npy')
-    b2r2_mae, b2r2_std = get_maes(db + 'b2r2_l_10_fold_xtb.npy')
+    slatm_mae_xtb, slatm_std_xtb = get_maes(db + 'slatm_10_fold_xtb.npy')
+    slatm_mae, slatm_std = get_maes(db + 'slatm_10_fold.npy')
 
-    rxnfp_mae, rxnfp_std = get_maes(lang_dir, txt=True)
-    cgr_mae, cgr_std = get_maes(cgr_dir, csv=True)
+    b2r2_mae_xtb, b2r2_std_xtb = get_maes(db + 'b2r2_l_10_fold_xtb.npy')
+    b2r2_mae, b2r2_std = get_maes(db + 'b2r2_l_10_fold.npy')
 
     axes[i].set_title(titles[i], fontsize='medium')
-    axes[i].axhline(stds[i], color='black', alpha=0.5, linestyle='dashed', label='std')
-    axes[i].bar(0, mfp_mae, yerr=mfp_std, color=colors[0])
-    axes[i].text(0 - 0.26, mfp_mae + add, round_with_std(mfp_mae, mfp_std), rotation=90, fontsize='x-small', fontweight='bold')
-    axes[i].bar(1, drfp_mae, yerr=drfp_std, color=colors[1])
-    axes[i].text(1 - 0.26, drfp_mae + add, round_with_std(drfp_mae, drfp_std), rotation=90, fontsize='x-small', fontweight='bold')
+    #axes[i].axhline(stds[i], color='black', alpha=0.5, linestyle='dashed', label='std')
 
-    axes[i].bar(2, rxnfp_mae, yerr=rxnfp_std, color=colors[4])
-    axes[i].text(2 - 0.26, rxnfp_mae + add, round_with_std(rxnfp_mae, rxnfp_std), rotation=90, fontsize='x-small', fontweight='bold')
+    axes[i].barh(3, slatm_mae, xerr=slatm_std, color=colors[2])
+    axes[i].text(slatm_mae + add, 2.8, round_with_std(slatm_mae, slatm_std), fontsize='x-small', fontweight='bold')
 
-    axes[i].bar(3, slatm_mae, yerr=slatm_std, color=colors[2])
-    axes[i].text(3 - 0.26, slatm_mae + add, round_with_std(slatm_mae, slatm_std), rotation=90, fontsize='x-small', fontweight='bold')
+    axes[i].barh(2, slatm_mae_xtb, xerr=slatm_std_xtb, color=colors[2], hatch='/')
+    axes[i].text(slatm_mae_xtb + add, 1.8, round_with_std(slatm_mae_xtb, slatm_std_xtb), fontsize='x-small', fontweight='bold')
 
-    axes[i].bar(4, b2r2_mae, yerr=b2r2_std, color=colors[3])
-    axes[i].text(4 - 0.26, b2r2_mae + add, round_with_std(b2r2_mae, b2r2_std), rotation=90, fontsize='x-small', fontweight='bold')
+    axes[i].barh(1, b2r2_mae, xerr=b2r2_std, color=colors[3])
+    axes[i].text(b2r2_mae + add, 0.8, round_with_std(b2r2_mae, b2r2_std), fontsize='x-small', fontweight='bold')
 
-    axes[i].bar(5, cgr_mae, yerr=cgr_std, color=colors[5])
-    axes[i].text(5 - 0.26, cgr_mae + add, round_with_std(cgr_mae, cgr_std), rotation=90, fontsize='x-small', fontweight='bold')
+    axes[i].barh(0, b2r2_mae_xtb, xerr=b2r2_std_xtb, color=colors[3], hatch='/')
+    axes[i].text(b2r2_mae_xtb + add, -0.2, round_with_std(b2r2_mae_xtb, b2r2_std_xtb), fontsize='x-small', fontweight='bold')
 
-    axes[i].set_xticks(list(range(6)))
-    axes[i].set_xticklabels(['MFP', 'DRFP', 'BERT+RXNFP', 'SLATM$_d$', '$B^2R^2_l$', 'CGR'], rotation=90)
+    axes[i].set_yticks(list(range(4)))
+    axes[i].set_yticklabels(['SLATM$_d$+KRR(dft)', 'SLATM$_d$+KRR(xtb)', '$B^2R^2_l$+KRR(dft)', '$B^2R^2_l$+KRR(xtb)'], fontsize=10)
 
-axes[0].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
-axes[1].set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")
-axes[2].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
+axes[0].set_xlabel("MAE $\Delta E^\ddag$ [kcal/mol]", fontsize=12)
+axes[1].set_xlabel("MAE $\Delta G^\ddag$ [kcal/mol]", fontsize=12)
+axes[2].set_xlabel("MAE $\Delta E^\ddag$ [kcal/mol]", fontsize=12)
 
 plt.tight_layout()
 plt.savefig('figures/compare_all_models_xtb.pdf')

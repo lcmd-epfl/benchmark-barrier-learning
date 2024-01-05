@@ -197,11 +197,11 @@ def predict_CV_KRR(X, y, CV=10, seed=1, train_size=0.8,
     return maes
 
 def predict_RF(X_train, X_test, y_train, y_test, seed=1,
-               n_trees=100, max_depth=None, max_features='auto',
+               n_estimators=100, max_depth=None, max_features='auto',
                min_samples_split=2, min_samples_leaf=1,
                bootstrap=True):
     rf = RandomForestRegressor(random_state=seed,
-                               n_estimators=n_trees,
+                               n_estimators=n_estimators,
                                max_depth=max_depth,
                                max_features=max_features,
                                min_samples_split=min_samples_split,
@@ -213,8 +213,12 @@ def predict_RF(X_train, X_test, y_train, y_test, seed=1,
     mae = np.mean(np.abs(y_test - y_pred))
     return mae, y_pred
 
-def predict_CV_RF(X, y, CV=10, seed=1, train_size=0.8, dataset=''):
+def predict_CV_RF(X, y, CV=10, seed=1, train_size=0.8, dataset='', model=''):
     maes = np.zeros((CV))
+    if model == 'mfp':
+        HYPERS = HYPERS_MFP
+    elif model == 'drfp':
+        HYPERS = HYPERS_DRFP
 
     for i in range(CV):
         print("CV iteration", i)
@@ -222,40 +226,50 @@ def predict_CV_RF(X, y, CV=10, seed=1, train_size=0.8, dataset=''):
         X_train, X_test_val, y_train, y_test_val = train_test_split(X, y, random_state=seed, train_size=train_size)
         X_test, X_val, y_test, y_val = train_test_split(X_test_val, y_test_val, shuffle=False, train_size=0.5)
 
-        #TODO hyperparam opt optional / read from file
         if i == 0:
-            print(f"Optimising hypers...")
-            def tune_hypers_RF(space):
-                model = RandomForestRegressor(random_state=space['seed'],
-                                              max_depth=space['max_depth'],
-                                              n_estimators=space['n_estimators'],
-                                              max_features=space["max_features"],
-                                              min_samples_split=space["min_samples_split"],
-                                              min_samples_leaf=space["min_samples_leaf"],
-                                              bootstrap=space["bootstrap"],
-                                              )
-                # ASSUMING X_TRAIN, VAL ARE GLOBAL PARAMS
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-                mae = np.mean(np.abs(y_test - y_pred))
-                return {"loss": mae, "status": STATUS_OK, "model": model}
-            space = {'max_depth': hp.choice("max_depth", np.linspace(10,100,10, dtype=int)),
-                     'n_estimators': hp.choice('n_estimators', np.linspace(100, 1000, 100, dtype=int)),
-                     'max_features': hp.choice('max_features', ['log2', 'sqrt']),
-                     'min_samples_split': hp.choice('min_samples_split', [2,5,10]),
-                     'min_samples_leaf': hp.choice('min_samples_leaf', [1,2,4]),
-                     'bootstrap': hp.choice('bootstrap', [True, False]),
-                     'seed' : 1,
-                     }
-            trials = Trials()
-            best = fmin(fn=tune_hypers_RF,
-                        space=space,
-                        algo=tpe.suggest,
-                        max_evals=100,
-                        trials=trials)
-            print(f'{best=}')
-            exit()
+            if dataset in HYPERS.keys():
+                best = HYPERS[dataset]
+            else:
+                print(f"Optimising hypers...")
+                def tune_hypers_RF(space):
+                    model = RandomForestRegressor(random_state=space['seed'],
+                                                  max_depth=space['max_depth'],
+                                                  n_estimators=space['n_estimators'],
+                                                  max_features=space["max_features"],
+                                                  min_samples_split=space["min_samples_split"],
+                                                  min_samples_leaf=space["min_samples_leaf"],
+                                                  bootstrap=space["bootstrap"],
+                                                  )
+                    model.fit(X_train, y_train)
+                    y_pred = model.predict(X_test)
+                    mae = np.mean(np.abs(y_test - y_pred))
+                    return {"loss": mae, "status": STATUS_OK, "model": model}
+                space = {'max_depth': hp.choice("max_depth", np.linspace(10,100,10, dtype=int)),
+                         'n_estimators': hp.choice('n_estimators', np.linspace(100, 1000, 100, dtype=int)),
+                         'max_features': hp.choice('max_features', ['log2', 'sqrt']),
+                         'min_samples_split': hp.choice('min_samples_split', [2,5,10]),
+                         'min_samples_leaf': hp.choice('min_samples_leaf', [1,2,4]),
+                         'bootstrap': hp.choice('bootstrap', [True, False]),
+                         'seed' : 1,
+                         }
+                trials = Trials()
+                best = fmin(fn=tune_hypers_RF,
+                            space=space,
+                            algo=tpe.suggest,
+                            max_evals=100,
+                            trials=trials)
+                # for hp choice will return index
+                best['max_depth'] = np.linspace(10,100,10, dtype=int)[best['max_depth']]
+                best['n_estimators'] = np.linspace(100, 1000, 100, dtype=int)[best['n_estimators']]
+                best['max_features'] = np.array(['log2', 'sqrt'])[best['max_features']]
+                best['min_samples_split'] = np.array([2,5,10])[best['min_samples_split']]
+                best['min_samples_leaf'] = np.array([1,2,4])[best['min_samples_leaf']]
+                best['bootstrap'] = np.array([True, False])[best['bootstrap']]
+            print(f'using opt hyperparams {best=}') # dictionary of params
 
-        mae, _ = predict_RF(X_train, X_test, y_train, y_test)
+        mae, _ = predict_RF(X_train, X_test, y_train, y_test, max_depth=best['max_depth'],
+                            n_estimators=best['n_estimators'], max_features=best['max_features'],
+                            min_samples_split=best['min_samples_split'], min_samples_leaf=best['min_samples_leaf'],
+                            bootstrap=best['bootstrap'], seed=1)
         maes[i] = mae
     return maes

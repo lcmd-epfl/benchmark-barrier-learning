@@ -136,14 +136,14 @@ if __name__ == "__main__":
             mfp_save = f'data/{dataset}/mfp_{CV}_fold.npy'
 
         if not os.path.exists(drfp_save):
-            maes_drfp = predict_CV_RF(drfp, barriers_twod, CV=CV, train_size=0.8)
+            maes_drfp = predict_CV_RF(drfp, barriers_twod, CV=CV, train_size=0.8, model='drfp', dataset=dataset)
             np.save(drfp_save, maes_drfp)
         else:
             maes_drfp = np.load(drfp_save)
         print(f'drfp mae {np.mean(maes_drfp)} +- {np.std(maes_drfp)}')
 
         if not os.path.exists(mfp_save):
-            maes_mfp = predict_CV_RF(mfp, barriers_twod, CV=CV, train_size=0.8)
+            maes_mfp = predict_CV_RF(mfp, barriers_twod, CV=CV, train_size=0.8, model='mfp', dataset=dataset)
             np.save(mfp_save, maes_mfp)
         else:
             maes_mfp = np.load(mfp_save)

@@ -16,8 +16,10 @@ HYPERS_B2R2 = {
     "proparg_xtb": ['laplacian', 1e-5, 0.0001],
 }
 
-HYPERS_DRFP = {}
+HYPERS_DRFP = {
+    "cyclo" : {'bootstrap': False, 'max_depth': 60, 'max_features': 'sqrt', 'min_samples_leaf': 1, 'min_samples_split': 2, 'n_estimators': 527}
+}
 
 HYPERS_MFP = {
-    "cyclo" : {'bootstrap': 1, 'max_depth': 8, 'max_features': 1, 'min_samples_leaf': 0, 'min_samples_split': 0, 'n_estimators': 5}
+    "cyclo" : {'bootstrap': False, 'max_depth': 100, 'max_features': 'sqrt', 'min_samples_leaf': 1, 'min_samples_split': 2, 'n_estimators': 345}
 }

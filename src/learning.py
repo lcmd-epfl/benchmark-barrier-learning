@@ -245,7 +245,7 @@ def predict_CV_RF(X, y, CV=10, seed=1, train_size=0.8, dataset='', model=''):
                     mae = np.mean(np.abs(y_test - y_pred))
                     return {"loss": mae, "status": STATUS_OK, "model": model}
                 space = {'max_depth': hp.choice("max_depth", np.linspace(10,100,10, dtype=int)),
-                         'n_estimators': hp.choice('n_estimators', np.linspace(100, 1000, 100, dtype=int)),
+                         'n_estimators': hp.choice('n_estimators', np.linspace(100, 800, 10, dtype=int)),
                          'max_features': hp.choice('max_features', ['log2', 'sqrt']),
                          'min_samples_split': hp.choice('min_samples_split', [2,5,10]),
                          'min_samples_leaf': hp.choice('min_samples_leaf', [1,2,4]),
@@ -260,7 +260,7 @@ def predict_CV_RF(X, y, CV=10, seed=1, train_size=0.8, dataset='', model=''):
                             trials=trials)
                 # for hp choice will return index
                 best['max_depth'] = np.linspace(10,100,10, dtype=int)[best['max_depth']]
-                best['n_estimators'] = np.linspace(100, 1000, 100, dtype=int)[best['n_estimators']]
+                best['n_estimators'] = np.linspace(50, 1000, 20, dtype=int)[best['n_estimators']]
                 best['max_features'] = np.array(['log2', 'sqrt'])[best['max_features']]
                 best['min_samples_split'] = np.array([2,5,10])[best['min_samples_split']]
                 best['min_samples_leaf'] = np.array([1,2,4])[best['min_samples_leaf']]

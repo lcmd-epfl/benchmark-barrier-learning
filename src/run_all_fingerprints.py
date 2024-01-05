@@ -9,10 +9,9 @@ def parse_args():
     parser.add_argument('-x', '--xtb', action='store_true', help='use xtb geom instead of dft geoms')
     parser.add_argument('-c', '--cyclo', action='store_true')
     parser.add_argument('-g', '--gdb', action='store_true')
-    g = parser.add_mutually_exclusive_group()
-    g.add_argument('-p', '--proparg', action='store_true')
-    g.add_argument('--proparg_stereo', action='store_true')
-    g.add_argument('--proparg_combinatorial', action='store_true')
+    parser.add_argument('-p', '--proparg', action='store_true')
+    parser.add_argument('--proparg_stereo', action='store_true')
+    parser.add_argument('--proparg_combinatorial', action='store_true')
     parser.add_argument('-CV', '--CV', default=10)
     parser.add_argument('-tr', '--train', default=0.8)
     args = parser.parse_args()
@@ -25,35 +24,41 @@ if __name__ == "__main__":
     CV = args.CV
 
     datasets = []
+    datasets_paths = []
     if args.cyclo:
         datasets.append('cyclo')
+        datasets_paths.append('cyclo')
     if args.gdb:
         datasets.append('gdb')
+        datasets_paths.append('gdb7-22-ts')
     if args.proparg or args.proparg_stereo or args.proparg_combinatorial:
         datasets.append('proparg')
+        datasets_paths.append('proparg')
 
-    for dataset in datasets:
+
+    for i, dataset in enumerate(datasets):
         print(f"Running for {dataset} dataset")
+        dataset_path = datasets_paths[i]
         # first 2d fingerprints drfp, mfp
         if dataset == 'proparg':
-            twodim = TWODIM(proparg_stereo=proparg_stereo, proparg_combinatorial=proparg_combinatorial)
-            if proparg_stereo:
+            twodim = TWODIM(proparg_stereo=args.proparg_stereo, proparg_combinatorial=args.proparg_combinatorial)
+            if args.proparg_stereo:
                 drfp_save = 'data/proparg/drfp_stereo.npy'
-            elif proparg_combinatorial:
+            elif args.proparg_combinatorial:
                 drfp_save = 'data/proparg/drfp_combinatorial.npy'
             else:
                 drfp_save = 'data/proparg/drfp.npy'
-            if proparg_stereo:
+            if args.proparg_stereo:
                 mfp_save = 'data/proparg/mfp_stereo.npy'
-            elif proparg_combinatorial:
+            elif args.proparg_combinatorial:
                 mfp_save = 'data/proparg/mfp_combinatorial.npy'
             else:
                 mfp_save = 'data/proparg/mfp.npy'
         else:
             twodim = TWODIM()
 
-            drfp_save = f'data/{dataset}/drfp.npy'
-            mfp_save = f'data/{dataset}/mfp.npy'
+            drfp_save = f'data/{dataset_path}/drfp.npy'
+            mfp_save = f'data/{dataset_path}/mfp.npy'
 
         if not os.path.exists(drfp_save):
             if dataset == 'cyclo':
@@ -88,8 +93,8 @@ if __name__ == "__main__":
                 qml.get_proparg_data_xtb()
             elif dataset == 'gdb':
                 qml.get_GDB7_xtb_data()
-            slatm_save = f'data/{dataset}/slatm_xtb.npy'
-            b2r2_l_save = f'data/{dataset}/b2r2_l_xtb.npy'
+            slatm_save = f'data/{dataset_path}/slatm_xtb.npy'
+            b2r2_l_save = f'data/{dataset_path}/b2r2_l_xtb.npy'
 
         else:
             if dataset == 'cyclo':
@@ -98,8 +103,8 @@ if __name__ == "__main__":
                 qml.get_proparg_data()
             elif dataset == 'gdb':
                 qml.get_GDB7_ccsd_data()
-            slatm_save = f'data/{dataset}/slatm.npy'
-            b2r2_l_save = f'data/{dataset}/b2r2_l.npy'
+            slatm_save = f'data/{dataset_path}/slatm.npy'
+            b2r2_l_save = f'data/{dataset_path}/b2r2_l.npy'
 
         if not os.path.exists(slatm_save):
             slatm = qml.get_SLATM()
@@ -117,23 +122,23 @@ if __name__ == "__main__":
         print("reps generated/loaded, predicting")
 
         if dataset == 'proparg':
-            if proparg_stereo:
+            if args.proparg_stereo:
                 drfp_save = f'data/proparg/drfp_stereo_{CV}_fold.npy'
-            elif proparg_combinatorial:
+            elif args.proparg_combinatorial:
                 drfp_save = f'data/proparg/drfp_combinatorial_{CV}_fold.npy'
             else:
                 drfp_save = f'data/proparg/drfp_{CV}_fold.npy'
 
-            if proparg_stereo:
+            if args.proparg_stereo:
                 mfp_save = f'data/proparg/mfp_stereo_{CV}_fold.npy'
-            elif proparg_combinatorial:
+            elif args.proparg_combinatorial:
                 mfp_save = f'data/proparg/mfp_combinatorial_{CV}_fold.npy'
             else:
                 mfp_save = f'data/proparg/mfp_{CV}_fold.npy'
 
         else:
-            drfp_save = f'data/{dataset}/drfp_{CV}_fold.npy'
-            mfp_save = f'data/{dataset}/mfp_{CV}_fold.npy'
+            drfp_save = f'data/{dataset_path}/drfp_{CV}_fold.npy'
+            mfp_save = f'data/{dataset_path}/mfp_{CV}_fold.npy'
 
         if not os.path.exists(drfp_save):
             maes_drfp = predict_CV_RF(drfp, barriers_twod, CV=CV, train_size=0.8, model='drfp', dataset=dataset)
@@ -150,12 +155,12 @@ if __name__ == "__main__":
         print(f'mfp mae {np.mean(maes_mfp)} +- {np.std(maes_mfp)}')
 
         if args.xtb:
-            slatm_save = f"data/{dataset}/slatm_{CV}_fold_xtb.npy"
-            b2r2_l_save = f"data/{dataset}/b2r2_l_{CV}_fold_xtb.npy"
-            dataset_label = f'{dataset}_xtb'
+            slatm_save = f"data/{dataset_path}/slatm_{CV}_fold_xtb.npy"
+            b2r2_l_save = f"data/{dataset_path}/b2r2_l_{CV}_fold_xtb.npy"
+            dataset_label = f'{dataset_path}_xtb'
         else:
-            slatm_save = f'data/{dataset}/slatm_{CV}_fold.npy'
-            b2r2_l_save = f'data/{dataset}/b2r2_l_{CV}_fold.npy'
+            slatm_save = f'data/{dataset_path}/slatm_{CV}_fold.npy'
+            b2r2_l_save = f'data/{dataset_path}/b2r2_l_{CV}_fold.npy'
             dataset_label = dataset
 
         if not os.path.exists(slatm_save):

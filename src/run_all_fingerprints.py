@@ -164,6 +164,7 @@ if __name__ == "__main__":
             dataset_label = dataset
 
         if not os.path.exists(slatm_save):
+            print(f"Getting MAES for slatm..")
             maes_slatm = predict_CV_KRR(slatm, barriers_qml, CV=CV, model='slatm', dataset=dataset_label)
             np.save(slatm_save, maes_slatm)
         else:
@@ -171,6 +172,7 @@ if __name__ == "__main__":
         print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
 
         if not os.path.exists(b2r2_l_save):
+            print(f"Getting MAEs for b2r2..")
             maes_b2r2_l = predict_CV_KRR(b2r2_l, barriers_qml, CV=CV, model='b2r2', dataset=dataset_label)
             np.save(b2r2_l_save, maes_b2r2_l)
         else:

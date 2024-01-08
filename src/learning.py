@@ -161,7 +161,6 @@ def CV_KRR_optional_hyperopt(X, y, seed=1, CV=10, opt=False, kernel='',
 
 
     for i in range(CV):
-        print("CV iteration", i)
         seed += i
 
         idx_train, idx_test_val = train_test_split(np.arange(len(y)), random_state=seed, train_size=train_size)
@@ -174,7 +173,6 @@ def CV_KRR_optional_hyperopt(X, y, seed=1, CV=10, opt=False, kernel='',
                 kernel, sig_gam, l2reg, D_full = opt_hyperparams_w_kernel(X, y, idx_train, idx_val)
                 print(f"Using opt hypers kernel: {kernel} sig_gam: {sig_gam} l2reg: {l2reg}")
 
-            print(f'Getting pairwise distances in iter 0...')
             # use params and compute D_full
             if kernel == 'laplacian':
                 D_full = pairwise_distances(X, metric='l1')
@@ -189,7 +187,6 @@ def CV_KRR_optional_hyperopt(X, y, seed=1, CV=10, opt=False, kernel='',
         y_val   = y[idx_val]
         y_test  = y[idx_test]
 
-        print('train size', len(y_train), 'val size', len(y_val), 'test size', len(y_test))
         y_train, y_test, mean, std = normalize_data(y_train, y_test)
 
         if kernel == 'laplacian':
@@ -225,6 +222,7 @@ def predict_CV_KRR(X, y, CV=10, seed=1, train_size=0.8,
         maes = CV_KRR_optional_hyperopt(X, y, seed=seed, CV=CV, train_size=train_size, kernel=kernel,
                                         sig_gam=sig_gam, l2reg=l2reg, opt=False)
     else:
+        print(f"Optimizing hypers...")
         maes = CV_KRR_optional_hyperopt(X,y, seed=seed, CV=CV, train_size=train_size, opt=True)
 
     return maes
@@ -253,7 +251,6 @@ def predict_CV_RF(X, y, CV=10, seed=1, train_size=0.8, dataset='', model=''):
         HYPERS = HYPERS_DRFP
 
     for i in range(CV):
-        print("CV iteration", i)
         seed += i
         X_train, X_test_val, y_train, y_test_val = train_test_split(X, y, random_state=seed, train_size=train_size)
         y_train, y_test_val, mean, std = normalize_data(y_train, y_test_val)

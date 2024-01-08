@@ -8,6 +8,19 @@ import pandas as pd
 from src.hypers import *
 import hyperopt
 from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
+
+def get_mae(y_pred, y_test):
+    return np.mean(np.abs(y_test - y_pred))
+def normalize_data(y_train, y_test):
+    mean = np.mean(y_train)
+    std = np.mean(y_train)
+    y_train = (y_train - mean) / std
+    y_test = (y_test - mean) / std
+    return y_train, y_test, mean, std
+
+def unnormalize_data(data, mean, std):
+    return data * std + mean
+
 def predict_laplacian_KRR(D_train, D_test,
                 y_train, y_test,
                 gamma=0.001, l2reg=1e-10):
@@ -31,8 +44,7 @@ def predict_laplacian_KRR(D_train, D_test,
     alpha = np.dot(np.linalg.inv(K), y_train)
 
     y_pred = np.dot(K_test, alpha)
-    mae = np.mean(np.abs(y_test - y_pred))
-    return mae, y_pred
+    return y_pred
 
 def predict_gaussian_KRR(D_train, D_test,
                         y_train, y_test,
@@ -46,8 +58,7 @@ def predict_gaussian_KRR(D_train, D_test,
     alpha = np.dot(np.linalg.inv(K), y_train)
 
     y_pred = np.dot(K_test, alpha)
-    mae = np.mean(np.abs(y_test - y_pred))
-    return mae, y_pred
+    return y_pred
 
 def opt_hyperparams_w_kernel(
         X, y,
@@ -65,6 +76,7 @@ def opt_hyperparams_w_kernel(
         D_val = D_full[np.ix_(idx_val, idx_train)]
         y_train = y[idx_train]
         y_val = y[idx_val]
+
     sigma, l2reg_g, mae_g = opt_hyperparams_gaussian(D_train, D_val, y_train, y_val, sigmas=sigmas, l2regs=l2regs)
     gamma, l2reg_l, mae_l = opt_hyperparams_laplacian(D_train, D_val, y_train, y_val, gammas=gammas, l2regs=l2regs)
     if mae_g < mae_l:
@@ -76,10 +88,13 @@ def opt_hyperparams_laplacian(
     D_train, D_val,
     y_train, y_val,
     gammas = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1],
-    l2regs = [1e-10, 1e-7, 1e-4]
+    l2regs = [1e-10, 1e-7, 1e-4],
+    mean=0,
+    std=1,
 ):
     """Optimize hyperparameters for KRR with
     laplacian kernel.
+    Assuming input data is normalized, providing mean and std
     """
 
     print("Hyperparam search for laplacian kernel")
@@ -88,9 +103,12 @@ def opt_hyperparams_laplacian(
 
     for i, gamma in enumerate(gammas):
         for j, l2reg in enumerate(l2regs):
-            mae, y_pred = predict_laplacian_KRR(
+            y_pred = predict_laplacian_KRR(
                 D_train, D_val, y_train, y_val, gamma=gamma, l2reg=l2reg
                 )
+            y_pred = unnormalize_data(y_pred, mean, std)
+            y_val = unnormalize_data(y_val, mean, std)
+            mae = get_mae(y_pred, y_val)
             print(f'{mae=} for params {gamma=} {l2reg=}')
             maes_lap[i, j] = mae
     min_i, min_j = np.unravel_index(np.argmin(maes_lap, axis=None), maes_lap.shape)
@@ -106,10 +124,13 @@ def opt_hyperparams_gaussian(
     D_train, D_val,
     y_train, y_val,
     sigmas = [1, 10, 100, 1e3, 1e4],
-    l2regs = [1e-10, 1e-7, 1e-4]
+    l2regs = [1e-10, 1e-7, 1e-4],
+    mean = 0,
+    std = 1,
 ):
     """Optimize hyperparameters for KRR with
     gaussian kernel.
+    Assuming data is normalized, providing mean and std to un-normalize
     """
 
     print("Hyperparam search for gaussian kernel")
@@ -117,9 +138,12 @@ def opt_hyperparams_gaussian(
 
     for i, sigma in enumerate(sigmas):
         for j, l2reg in enumerate(l2regs):
-            mae, y_pred = predict_gaussian_KRR(
+            y_pred = predict_gaussian_KRR(
                 D_train, D_val, y_train, y_val, sigma=sigma, l2reg=l2reg
                 )
+            y_pred = unnormalize_data(y_pred, mean, std)
+            y_val = unnormalize_data(y_val, mean, std)
+            mae = get_mae(y_pred, y_val)
             print(f'{mae=} for params {sigma=} {l2reg=}')
             maes[i, j] = mae
     min_i, min_j = np.unravel_index(np.argmin(maes, axis=None), maes.shape)
@@ -135,6 +159,7 @@ def CV_KRR_optional_hyperopt(X, y, seed=1, CV=10, opt=False, kernel='',
            sig_gam=None, l2reg=None, train_size=0.8,):
     maes = np.zeros((CV))
 
+
     for i in range(CV):
         print("CV iteration", i)
         seed += i
@@ -142,18 +167,21 @@ def CV_KRR_optional_hyperopt(X, y, seed=1, CV=10, opt=False, kernel='',
         idx_train, idx_test_val = train_test_split(np.arange(len(y)), random_state=seed, train_size=train_size)
         idx_test, idx_val = train_test_split(idx_test_val, shuffle=False, test_size=0.5)
 
-        if opt:
-            if i == 0:
+        if i == 0:
+            if opt:
                 # hyperparam opt
                 print("Optimising hypers...")
                 kernel, sig_gam, l2reg, D_full = opt_hyperparams_w_kernel(X, y, idx_train, idx_val)
                 print(f"Using opt hypers kernel: {kernel} sig_gam: {sig_gam} l2reg: {l2reg}")
-        else:
+
+            print(f'Getting pairwise distances in iter 0...')
             # use params and compute D_full
             if kernel == 'laplacian':
                 D_full = pairwise_distances(X, metric='l1')
             elif kernel == 'rbf' or kernel == 'gaussian':
                 D_full = pairwise_distances(X, metric='l2')
+            else:
+                raise NotImplementedError(f"kernel {kernel} is not implemented")
 
         D_train = D_full[np.ix_(idx_train, idx_train)]
         D_test  = D_full[np.ix_(idx_test,  idx_train)]
@@ -162,17 +190,22 @@ def CV_KRR_optional_hyperopt(X, y, seed=1, CV=10, opt=False, kernel='',
         y_test  = y[idx_test]
 
         print('train size', len(y_train), 'val size', len(y_val), 'test size', len(y_test))
+        y_train, y_test, mean, std = normalize_data(y_train, y_test)
 
         if kernel == 'laplacian':
-            print(f"Making prediction with optimal params gamma={sig_gam},l2reg={l2reg}")
-            mae, y_pred = predict_laplacian_KRR(D_train, D_test,
+            y_pred = predict_laplacian_KRR(D_train, D_test,
                                  y_train, y_test,
                                  l2reg=l2reg, gamma=sig_gam)
+            y_pred = unnormalize_data(y_pred, mean, std)
+            y_test = unnormalize_data(y_test, mean, std)
+            mae = get_mae(y_pred, y_test)
         elif kernel == 'rbf' or kernel == 'gaussian':
-            print(f"Making prediction with optimal params sigma={sig_gam},l2reg={l2reg}")
-            mae, y_pred = predict_gaussian_KRR(D_train, D_test,
+            y_pred = predict_gaussian_KRR(D_train, D_test,
                                  y_train, y_test,
                                  l2reg=l2reg, sigma=sig_gam)
+            y_pred = unnormalize_data(y_pred, mean, std)
+            y_test = unnormalize_data(y_test, mean, std)
+            mae = get_mae(y_pred, y_test)
 
         maes[i] = mae
     return maes
@@ -188,7 +221,7 @@ def predict_CV_KRR(X, y, CV=10, seed=1, train_size=0.8,
 
     if dataset in HYPERS.keys():
         kernel, sig_gam, l2reg = HYPERS[dataset]
-        print(f"Hypers read from file. Kernel: {kernel}, sigma/gamma: {sig_gam}, l2reg: {l2reg}")
+        print(f"Hypers for {model} read from file. Kernel: {kernel}, sigma/gamma: {sig_gam}, l2reg: {l2reg}")
         maes = CV_KRR_optional_hyperopt(X, y, seed=seed, CV=CV, train_size=train_size, kernel=kernel,
                                         sig_gam=sig_gam, l2reg=l2reg, opt=False)
     else:
@@ -210,8 +243,7 @@ def predict_RF(X_train, X_test, y_train, y_test, seed=1,
                                )
     rf.fit(X_train, y_train)
     y_pred = rf.predict(X_test)
-    mae = np.mean(np.abs(y_test - y_pred))
-    return mae, y_pred
+    return y_pred
 
 def predict_CV_RF(X, y, CV=10, seed=1, train_size=0.8, dataset='', model=''):
     maes = np.zeros((CV))
@@ -224,10 +256,13 @@ def predict_CV_RF(X, y, CV=10, seed=1, train_size=0.8, dataset='', model=''):
         print("CV iteration", i)
         seed += i
         X_train, X_test_val, y_train, y_test_val = train_test_split(X, y, random_state=seed, train_size=train_size)
+        y_train, y_test_val, mean, std = normalize_data(y_train, y_test_val)
+
         X_test, X_val, y_test, y_val = train_test_split(X_test_val, y_test_val, shuffle=False, train_size=0.5)
 
         if i == 0:
             if dataset in HYPERS.keys():
+                print(f"Using hypers from file...")
                 best = HYPERS[dataset]
             else:
                 print(f"Optimising hypers...")
@@ -242,10 +277,12 @@ def predict_CV_RF(X, y, CV=10, seed=1, train_size=0.8, dataset='', model=''):
                                                   )
                     model.fit(X_train, y_train)
                     y_pred = model.predict(X_test)
-                    mae = np.mean(np.abs(y_test - y_pred))
+                    y_pred = unnormalize_data(y_pred, mean, std)
+                    y_test_ = unnormalize_data(y_test, mean, std)
+                    mae = get_mae(y_pred, y_test_)
                     return {"loss": mae, "status": STATUS_OK, "model": model}
                 space = {'max_depth': hp.choice("max_depth", np.linspace(10,100,10, dtype=int)),
-                         'n_estimators': hp.choice('n_estimators', np.linspace(100, 800, 10, dtype=int)),
+                         'n_estimators': hp.choice('n_estimators', np.linspace(100, 600, 10, dtype=int)),
                          'max_features': hp.choice('max_features', ['log2', 'sqrt']),
                          'min_samples_split': hp.choice('min_samples_split', [2,5,10]),
                          'min_samples_leaf': hp.choice('min_samples_leaf', [1,2,4]),
@@ -260,16 +297,19 @@ def predict_CV_RF(X, y, CV=10, seed=1, train_size=0.8, dataset='', model=''):
                             trials=trials)
                 # for hp choice will return index
                 best['max_depth'] = np.linspace(10,100,10, dtype=int)[best['max_depth']]
-                best['n_estimators'] = np.linspace(50, 1000, 20, dtype=int)[best['n_estimators']]
+                best['n_estimators'] = np.linspace(50, 600, 10, dtype=int)[best['n_estimators']]
                 best['max_features'] = np.array(['log2', 'sqrt'])[best['max_features']]
                 best['min_samples_split'] = np.array([2,5,10])[best['min_samples_split']]
                 best['min_samples_leaf'] = np.array([1,2,4])[best['min_samples_leaf']]
                 best['bootstrap'] = np.array([True, False])[best['bootstrap']]
             print(f'using opt hyperparams {best=}') # dictionary of params
 
-        mae, _ = predict_RF(X_train, X_test, y_train, y_test, max_depth=best['max_depth'],
+        y_pred = predict_RF(X_train, X_test, y_train, y_test, max_depth=best['max_depth'],
                             n_estimators=best['n_estimators'], max_features=best['max_features'],
                             min_samples_split=best['min_samples_split'], min_samples_leaf=best['min_samples_leaf'],
                             bootstrap=best['bootstrap'], seed=1)
+        y_pred = unnormalize_data(y_pred, mean, std)
+        y_test = unnormalize_data(y_test, mean, std)
+        mae = get_mae(y_pred, y_test)
         maes[i] = mae
     return maes

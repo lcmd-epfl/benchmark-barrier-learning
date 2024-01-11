@@ -13,8 +13,6 @@ import random
 
 def argparse():
     parser = ap.ArgumentParser()
-    parser.add_argument('-t', '--train', action='store_true')
-    parser.add_argument('-p', '--predict', action='store_true')
     parser.add_argument('-d', '--dataset', default='gdb')
     parser.add_argument('-CV', '--CV', default=1)
     parser.add_argument('-train_size', '--train_size', default=0.8)
@@ -105,8 +103,6 @@ def do_randomizations_on_df(df, n_randomizations=1, random_type='rotated', seed=
 
 if __name__ == "__main__":
     args = argparse()
-    train = args.train
-    predict = args.predict
     dataset = args.dataset
     CV = args.CV
     train_size = args.train_size
@@ -166,7 +162,6 @@ if __name__ == "__main__":
 
         train_df, val_test_df = train_test_split(df, train_size=train_size, random_state=seed)
         val_df, test_df = train_test_split(df, train_size=0.5, shuffle=False)
-        print(f"train size {len(train_df)}, val size {len(val_df)}, test size {len(test_df)}")
         mean = train_df['labels'].mean()
         std = train_df['labels'].std()
         train_df['labels'] = (train_df['labels'] - mean)/std
@@ -178,7 +173,6 @@ if __name__ == "__main__":
             train_df = do_randomizations_on_df(train_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
             val_df = do_randomizations_on_df(val_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
             test_df = do_randomizations_on_df(test_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
-            print('after augmentation tr size', len(train_df), 'val size', len(val_df), 'te size', len(test_df))
 
         # need this ?
         MODEL_CLASSES = {
@@ -190,53 +184,62 @@ if __name__ == "__main__":
             f"models/transformers/bert_pretrained"  # change pretrained to ft to start from the other base model
         )
 
-        if train:
+        if i == 0:
             print("optimising hypers...")
             lrs = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3]
             dropouts = [0.2, 0.4, 0.6, 0.8]
-
-            for i, lr in lrs:
-                for j, p in dropouts:
+            maes = np.zeros((len(lrs), len(dropouts)))
+            for i, lr in enumerate(lrs):
+                for j, p in enumerate(dropouts):
                     wandb_name_search = wandb_name + f'_lr_{lr}_p_{p}'
                     save_iter_path_search = save_iter_path + f'_lr_{lr}_p_{p}'
-                    print('wandb run name', wandb_name_search)
                     model_args = {'regression': True, 'evaluate_during_training': False, 'num_labels': 1,
-                                  'manual_seed': 2,
-                                  'num_train_epochs': num_train_epochs, 'wandb_project': 'lang-rxn',
-                                  'train_batch_size': batch_size,
-                                  'wandb_kwargs': {'name': wandb_name_search},
-                                  'learning_rate':lr,
-                                  "config": {'hidden_dropout_prob': p}
-                                  }
+                                'manual_seed': 2,
+                                'num_train_epochs': num_train_epochs, 'wandb_project': 'lang-rxn',
+                                'train_batch_size': batch_size,
+                                'wandb_kwargs': {'name': wandb_name_search},
+                                'learning_rate':lr,
+                                "config": {'hidden_dropout_prob': p}
+                                }
 
                     # inherits from simpletransformers.classification ClassificationModel
                     bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
-                                                     use_cuda=torch.cuda.is_available())
+                                                    use_cuda=torch.cuda.is_available())
 
                     bert.train_model(train_df, output_dir=save_iter_path_search, eval_df=val_df)
 
                     # use best model
-                    #TODO check output here and keep best model
-                    exit()
+                    val_preds = bert.predict(val_df.text.values.tolist())[0]
+                    val_preds = val_preds * std + mean 
+                    true_labels = val_df['labels'] * std + mean 
+                    mae = np.mean(np.abs(true_labels - val_preds))
+                    print(f"mae = {mae} for lr {lr} and p {p}")
+                    maes[i,j] = mae
+            best_i, best_j = np.unravel_index(maes.argmin(), maes.shape)
+            best_lr = lrs[best_i]
+            best_dropout = dropouts[best_j]
+            model_args['learning_rate']=lr
+            model_args['config']['hidden_dropout_prob']=best_dropout
+            print(f"opt params {best_lr} and {best_dropout}")
 
-        if predict:
-            path = glob.glob(save_iter_path+f'/checkpoint*{num_train_epochs}/', recursive=True)
-            assert len(path) == 1
-            model_path = path[0]
-            print(f"using model path {model_path}")
-            trained_bert = SmilesClassificationModel('bert', model_path, num_labels=1, args={'regression':True},
-                                                     use_cuda=torch.cuda.is_available())
+        path = glob.glob(save_iter_path+f'/checkpoint*{num_train_epochs}/', recursive=True)
+        assert len(path) == 1
+        model_path = path[0]
+        print(f"using model path {model_path} and args {model_args}")
+        trained_bert = SmilesClassificationModel('bert', model_path, 
+                                                    num_labels=1, args=model_args,
+                                                    use_cuda=torch.cuda.is_available())
 
-            predictions = trained_bert.predict(test_df.text.values.tolist())[0]
+        predictions = trained_bert.predict(test_df.text.values.tolist())[0]
 
-            predictions = predictions * std + mean
+        predictions = predictions * std + mean
 
-            true = test_df['labels'] * std + mean
+        true = test_df['labels'] * std + mean
 
-            mae = np.mean(np.abs(true - predictions))
-            maes.append(mae)
+        mae = np.mean(np.abs(true - predictions))
+        maes.append(mae)
 
-    print(f"MAE={np.mean(maes)} +- {np.std(maes)}")
+    print(f"test MAE={np.mean(maes)} +- {np.std(maes)}")
     savefile = save_path + '/results.txt'
     with open(savefile, 'w') as f:
         for mae in maes:

@@ -27,3 +27,8 @@ HYPERS_MFP = {
     'gdb': {'bootstrap': False, 'max_depth': 90, 'max_features': 'sqrt', 'min_samples_leaf': 1, 'min_samples_split': 5, 'n_estimators': 355},
     "proparg" :{'bootstrap': False, 'max_depth': 10, 'max_features': 'sqrt', 'min_samples_leaf': 1, 'min_samples_split': 5, 'n_estimators': 477}
 }
+
+HYPERS_LANG = {
+    "proparg" : {"lr":1e-3, "p":0.8},
+    "cyclo" : {'lr':1e-4, "p":0.2},
+}

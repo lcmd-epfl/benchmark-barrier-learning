@@ -31,4 +31,5 @@ HYPERS_MFP = {
 HYPERS_LANG = {
     "proparg" : {"lr":1e-3, "p":0.8},
     "cyclo" : {'lr':1e-4, "p":0.2},
+    "gdb" : {'lr':1e-4, "p":0.2}
 }

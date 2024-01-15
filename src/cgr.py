@@ -13,7 +13,6 @@ def argparse():
     parser = ap.ArgumentParser()
     g1 = parser.add_mutually_exclusive_group(required=True)
     g1.add_argument('--true', action='store_true', help='use true atom mapping')
-    g1.add_argument('--random', action='store_true', help='use random atom mapping')
     g1.add_argument('--rxnmapper', action='store_true', help='use atom mapping from rxnmapper')
     g1.add_argument('--nomapping', action='store_true', help='use without atom mapping')
     g2 = parser.add_mutually_exclusive_group(required=True)
@@ -46,9 +45,7 @@ if __name__ == "__main__":
         data_path = '../../data/proparg/data_fixarom_smiles_stereo.csv'
         target_columns = "Eafw"
 
-    if args.random:
-        smiles_columns = 'rxn_smiles_random'
-    elif args.rxnmapper:
+    if args.rxnmapper:
         smiles_columns = 'rxn_smiles_rxnmapper'
     elif args.nomapping:
         if args.proparg or args.proparg_combinat or args.proparg_stereo:

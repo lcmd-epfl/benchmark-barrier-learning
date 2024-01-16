@@ -51,5 +51,5 @@ if __name__ == "__main__":
         '--explicit_h']
 
     args_chemprop = chemprop.args.HyperoptArgs().parse_args(arguments)
-    mean_score, std_score = chemprop.hyperparameter_optimization.hyperopt(args=args_chemprop)
-    print("Mean score", mean_score, "std_score", std_score)
+    chemprop.hyperparameter_optimization.hyperopt(args=args_chemprop)
+    print("File saved")

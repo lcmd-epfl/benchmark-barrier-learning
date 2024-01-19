@@ -10,7 +10,7 @@ import numpy as np
 import argparse as ap
 import glob
 import random
-from src import hypers
+from data import hypers
 
 def argparse():
     parser = ap.ArgumentParser()
@@ -247,14 +247,25 @@ if __name__ == "__main__":
                     'learning_rate':lr,
                     "config": {'hidden_dropout_prob': p}
                     }
-        path_to_search = save_iter_path+f'_lr_{lr}_p_{p}'+f'/checkpoint*{num_train_epochs}/'
+        path_to_save = save_iter_path+f'_lr_{lr}_p_{p}'
+        path_to_search = path_to_save+f'/checkpoint*{num_train_epochs}/'
 
+        path = glob.glob(path_to_search, recursive=True)
+        if i == 0:
+            if len(path) == 0: 
+                print(f"training model...")
+                bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
+                                                use_cuda=torch.cuda.is_available())
+
+                bert.train_model(train_df, output_dir=path_to_save, eval_df=val_df)
+            else:
+                print(f"using trained model at {path}")
         if i > 0 :
             print(f"training model...")
             bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
                                             use_cuda=torch.cuda.is_available())
 
-            bert.train_model(train_df, output_dir=path_to_search, eval_df=val_df)
+            bert.train_model(train_df, output_dir=path_to_save, eval_df=val_df)
 
         path = glob.glob(path_to_search, recursive=True)
         assert len(path) == 1, f"search path {path_to_search} contains {path}"

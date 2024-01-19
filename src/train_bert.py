@@ -10,13 +10,13 @@ import numpy as np
 import argparse as ap
 import glob
 import random
-from data import hypers
+import hypers
 
 def argparse():
     parser = ap.ArgumentParser()
     parser.add_argument('-d', '--dataset', default='gdb')
     parser.add_argument('-s', '--stereo', action='store_true')
-    parser.add_argument('-x', '--xyz2mol', action='store_true')
+    parser.add_argument('-fa', '--fix_arom', action='store_true')
     parser.add_argument('-CV', '--CV', default=1)
     parser.add_argument('-train_size', '--train_size', default=0.8)
     parser.add_argument('-n_rand', '--n_randomizations', default=0)
@@ -115,19 +115,29 @@ def do_randomizations_on_df(df, n_randomizations=1, random_type='rotated', seed=
 
 def get_data(dataset):
     if dataset == 'gdb':
-        df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
+        df = pd.read_csv("../data/gdb7-22-ts/ccsdtf12_dz.csv")
         target_label = 'dE0'
-        save_path = 'outs/gdb_bert_pretrained'
+        save_path = '../outs/gdb_bert_pretrained'
 
     elif dataset == 'cyclo':
-        df = pd.read_csv("data/cyclo/full_dataset.csv")
+        df = pd.read_csv("../data/cyclo/full_dataset.csv")
         target_label = 'G_act'
-        save_path = 'outs/cyclo_bert_pretrained'
+        save_path = '../outs/cyclo_bert_pretrained'
 
     elif dataset == 'proparg':
-        df = pd.read_csv("data/proparg/data.csv")
         target_label = 'Eafw'
-        save_path = 'outs/proparg_bert_pretrained'
+        if args.stereo:
+            print("Using stereo smiles...")
+            df = pd.read_csv("../data/proparg/data_fixarom_smiles_stereo.csv")
+            save_path = "../outs/proparg_bert_pretrained_stereo"
+        elif args.fix_arom:
+            print("Using fixarom smiles...")
+            df = pd.read_csv("../data/proparg/data_fixarom_smiles.csv")
+            save_path = "../outs/proparg_bert_pretrained_fixarom"
+        else:
+            print("Using default smiles...")
+            df = pd.read_csv("../data/proparg/data.csv")
+            save_path = '../outs/proparg_bert_pretrained'
     return df, target_label, save_path
 
 def hyperopt(wandb_name, save_iter_path,

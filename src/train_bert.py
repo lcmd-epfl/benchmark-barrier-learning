@@ -10,11 +10,10 @@ import numpy as np
 import argparse as ap
 import glob
 import random
+from data import hypers
 
 def argparse():
     parser = ap.ArgumentParser()
-    parser.add_argument('-t', '--train', action='store_true')
-    parser.add_argument('-p', '--predict', action='store_true')
     parser.add_argument('-d', '--dataset', default='gdb')
     parser.add_argument('-s', '--stereo', action='store_true')
     parser.add_argument('-x', '--xyz2mol', action='store_true')
@@ -114,10 +113,72 @@ def do_randomizations_on_df(df, n_randomizations=1, random_type='rotated', seed=
         new_labels.extend([row['labels']] * len(randomized_rxns))
     return pd.DataFrame({'text': new_texts, 'labels': new_labels})
 
+def get_data(dataset):
+    if dataset == 'gdb':
+        df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
+        target_label = 'dE0'
+        save_path = 'outs/gdb_bert_pretrained'
+
+    elif dataset == 'cyclo':
+        df = pd.read_csv("data/cyclo/full_dataset.csv")
+        target_label = 'G_act'
+        save_path = 'outs/cyclo_bert_pretrained'
+
+    elif dataset == 'proparg':
+        df = pd.read_csv("data/proparg/data.csv")
+        target_label = 'Eafw'
+        save_path = 'outs/proparg_bert_pretrained'
+    return df, target_label, save_path
+
+def hyperopt(wandb_name, save_iter_path,
+        model_path, train_df, val_df, mean, std,
+        lrs = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3],
+        dropouts = [0.2, 0.4, 0.6, 0.8]):
+        print("optimising hypers...")
+        maes = np.zeros((len(lrs), len(dropouts)))
+        for i, lr in enumerate(lrs):
+            for j, p in enumerate(dropouts):
+                wandb_name_search = wandb_name + f'_lr_{lr}_p_{p}'
+                save_iter_path_search = save_iter_path + f'_lr_{lr}_p_{p}'
+                model_args = {'regression': True, 'evaluate_during_training': False, 'num_labels': 1,
+                            'manual_seed': 2,
+                            'num_train_epochs': num_train_epochs, 'wandb_project': 'lang-rxn',
+                            'train_batch_size': batch_size,
+                            'wandb_kwargs': {'name': wandb_name_search},
+                            'learning_rate':lr,
+                            "config": {'hidden_dropout_prob': p}
+                            }
+
+                # inherits from simpletransformers.classification ClassificationModel
+                bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
+                                                use_cuda=torch.cuda.is_available())
+
+                bert.train_model(train_df, output_dir=save_iter_path_search, eval_df=val_df)
+
+                # use best model
+                val_preds = bert.predict(val_df.text.values.tolist())[0]
+                val_preds = val_preds * std + mean 
+                true_labels = val_df['labels'] * std + mean 
+                mae = np.mean(np.abs(true_labels - val_preds))
+                print(f"mae = {mae} for lr {lr} and p {p}")
+                maes[i,j] = mae
+        best_i, best_j = np.unravel_index(maes.argmin(), maes.shape)
+        best_lr = lrs[best_i]
+        best_dropout = dropouts[best_j]
+        print(f"opt params {best_lr} and {best_dropout}")
+        return best_lr, best_dropout
+
+def hypers_in_file():
+    if hypers.HYPERS_LANG[dataset]:
+        lr = hypers.HYPERS_LANG[dataset]['lr']
+        p = hypers.HYPERS_LANG[dataset]['p']
+        print(f"Using best hypers from file {lr} and {p}")
+        return lr, p
+    else:
+        return False
+
 if __name__ == "__main__":
     args = argparse()
-    train = args.train
-    predict = args.predict
     dataset = args.dataset
     CV = args.CV
     train_size = args.train_size
@@ -131,117 +192,110 @@ if __name__ == "__main__":
         data_aug = False
 
     print("Using dataset", dataset)
-
-    if dataset == 'gdb':
-        df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
-        target_label = 'dE0'
-        save_path = 'outs/gdb_bert_pretrained'
-
-    elif dataset == 'cyclo':
-        df = pd.read_csv("data/cyclo/full_dataset.csv")
-        target_label = 'G_act'
-        save_path = 'outs/cyclo_bert_pretrained'
-
-    elif dataset == 'proparg':
-        if args.stereo:
-            print("Using stereo smiles...")
-            df = pd.read_csv("data/proparg/data_fixarom_smiles_stereo.csv")
-            target_label = 'Eafw'
-            save_path = 'outs/proparg_bert_pretrained_stereo'
-        elif args.xyz2mol:
-            print("Using xyz2mol smiles...")
-            df = pd.read_csv("data/proparg/data.csv")
-            target_label = 'Eafw'
-            save_path = 'outs/proparg_bert_pretrained'
-        else:
-            print("Using fixarom smiles...")
-            df = pd.read_csv("data/proparg/data_fixarom_smiles.csv")
-            target_label = 'Eafw'
-            save_path = 'outs/proparg_bert_pretrained_fixarom'
+    df, target_label, save_path = get_data(dataset)
 
     rxn_smiles_list = [remove_atom_mapping_rxn(x) for x in df['rxn_smiles'].to_list()]
     df['clean_rxn_smiles'] = rxn_smiles_list
     smiles_tokenizer = get_default_tokenizer()
-    # prepare data train/test splits
     df = df[['clean_rxn_smiles', target_label]]
     df.columns = ['text', 'labels']
     seed = 0
+
+    hypers_bool = hypers_in_file()
 
     wandb_name_orig = str(num_train_epochs) + '_epochs_' + str(batch_size) + '_batches_' + str(n_randomizations) + '_smiles_rand'
 
     save_path = save_path + '/' + wandb_name_orig
 
-
     maes = []
+    MODEL_CLASSES = {
+        "bert": (BertConfig, BertForSequenceClassification, SmilesTokenizer),
+    }
 
-    if data_aug:
-        assert len(do_randomizations_on_df(df, n_randomizations=3, random_type='rotated')) == 3 * len(df)
+    model_path = pkg_resources.resource_filename(
+        "rxnfp",
+        f"models/transformers/bert_pretrained"  # change pretrained to ft to start from the other base model
+    )
+
     for i in range(CV):
 
         if CV > 1:
             wandb_name = wandb_name_orig + '.cv' + str(i+1)
         else:
             wandb_name = wandb_name_orig
-        # todo proper hyperopt maybe for data aug?
 
         print("CV iter", i+1, '/', CV)
         save_iter_path = save_path + f"/split_{i+1}"
         seed += 1
 
-        train_df, test_df = train_test_split(df, train_size=train_size, random_state=seed)
+        train_df, val_test_df = train_test_split(df, train_size=train_size, random_state=seed)
+        val_df, test_df = train_test_split(df, train_size=0.5, shuffle=False)
         mean = train_df['labels'].mean()
         std = train_df['labels'].std()
         train_df['labels'] = (train_df['labels'] - mean)/std
         test_df['labels'] = (test_df['labels'] - mean)/std
-
-        print('tr size', len(train_df), 'te size', len(test_df))
+        val_df['labels'] = (val_df['labels'] - mean)/std
 
         if data_aug:
             # now augmentation
             train_df = do_randomizations_on_df(train_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
+            val_df = do_randomizations_on_df(val_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
             test_df = do_randomizations_on_df(test_df, n_randomizations=n_randomizations, random_type='rotated', seed=seed)
-            print('after augmentation tr size', len(train_df), 'te size', len(test_df))
 
-        # need this ?
-        MODEL_CLASSES = {
-            "bert": (BertConfig, BertForSequenceClassification, SmilesTokenizer),
-        }
+        if i == 0:
+            if not hypers_bool:
+                lr, p = hyperopt(wandb_name, save_iter_path, model_path, train_df, val_df, mean, std)
+            else:
+                lr, p = hypers_bool
 
-        if train:
-            print('wandb run name', wandb_name)
-            model_args = {'regression':True, 'evaluate_during_training':False, 'num_labels':1, 'manual_seed':2,
-                          'num_train_epochs':num_train_epochs, 'wandb_project':'lang-rxn', 'train_batch_size':batch_size,
-                          'wandb_kwargs':{'name':wandb_name}}
 
-            model_path = pkg_resources.resource_filename(
-                            "rxnfp",
-                            f"models/transformers/bert_pretrained" # change pretrained to ft to start from the other base model
-            )
+        wandb_name_search = wandb_name + f'_lr_{lr}_p_{p}'
+        model_args = {'regression': True, 'evaluate_during_training': False, 'num_labels': 1,
+                    'manual_seed': 2,
+                    'num_train_epochs': num_train_epochs, 'wandb_project': 'lang-rxn',
+                    'train_batch_size': batch_size,
+                    'wandb_kwargs': {'name': wandb_name_search},
+                    'learning_rate':lr,
+                    "config": {'hidden_dropout_prob': p}
+                    }
+        path_to_save = save_iter_path+f'_lr_{lr}_p_{p}'
+        path_to_search = path_to_save+f'/checkpoint*{num_train_epochs}/'
 
-            # inherits from simpletransformers.classification ClassificationModel
+        path = glob.glob(path_to_search, recursive=True)
+        if i == 0:
+            if len(path) == 0: 
+                print(f"training model...")
+                bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
+                                                use_cuda=torch.cuda.is_available())
+
+                bert.train_model(train_df, output_dir=path_to_save, eval_df=val_df)
+            else:
+                print(f"using trained model at {path}")
+        if i > 0 :
+            print(f"training model...")
             bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
-                                                   use_cuda=torch.cuda.is_available())
+                                            use_cuda=torch.cuda.is_available())
 
-            bert.train_model(train_df, output_dir=save_iter_path, eval_df=test_df)
+            bert.train_model(train_df, output_dir=path_to_save, eval_df=val_df)
 
-        if predict:
-            path = glob.glob(save_iter_path+f'/checkpoint*{num_train_epochs}/', recursive=True)
-            assert len(path) == 1
-            model_path = path[0]
-            print(f"using model path {model_path}")
-            trained_bert = SmilesClassificationModel('bert', model_path, num_labels=1, args={'regression':True},
-                                                     use_cuda=torch.cuda.is_available())
+        path = glob.glob(path_to_search, recursive=True)
+        assert len(path) == 1, f"search path {path_to_search} contains {path}"
+        model_path = path[0]
+        print(f"using model path {model_path} and args {model_args}")
+        trained_bert = SmilesClassificationModel('bert', model_path, 
+                                                    num_labels=1, args=model_args,
+                                                    use_cuda=torch.cuda.is_available())
 
-            predictions = trained_bert.predict(test_df.text.values.tolist())[0]
+        predictions = trained_bert.predict(test_df.text.values.tolist())[0]
 
-            predictions = predictions * std + mean
+        predictions = predictions * std + mean
 
-            true = test_df['labels'] * std + mean
+        true = test_df['labels'] * std + mean
 
-            mae = np.mean(np.abs(true - predictions))
-            maes.append(mae)
+        mae = np.mean(np.abs(true - predictions))
+        maes.append(mae)
 
-    print(f"MAE={np.mean(maes)} +- {np.std(maes)}")
+    print(f"test MAE={np.mean(maes)} +- {np.std(maes)}")
     savefile = save_path + '/results.txt'
     with open(savefile, 'w') as f:
         for mae in maes:

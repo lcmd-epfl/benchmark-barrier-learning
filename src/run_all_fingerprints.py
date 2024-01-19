@@ -1,14 +1,17 @@
 import argparse as ap
-from src.reaction_reps import TWODIM, QML, B2R2
-from src.learning import predict_CV
+from src.reaction_reps import TWODIM, QML
+from src.learning import predict_CV_KRR, predict_CV_RF
 import numpy as np
 import os
 
 def parse_args():
     parser = ap.ArgumentParser()
+    parser.add_argument('-x', '--xtb', action='store_true', help='use xtb geom instead of dft geoms')
     parser.add_argument('-c', '--cyclo', action='store_true')
     parser.add_argument('-g', '--gdb', action='store_true')
     parser.add_argument('-p', '--proparg', action='store_true')
+    parser.add_argument('--proparg_stereo', action='store_true')
+    parser.add_argument('--proparg_combinatorial', action='store_true')
     parser.add_argument('-CV', '--CV', default=10)
     parser.add_argument('-tr', '--train', default=0.8)
     args = parser.parse_args()
@@ -18,226 +21,159 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    cyclo = args.cyclo
-    gdb = args.gdb
-    proparg = args.proparg
     CV = args.CV
 
-    if cyclo:
-        print("Running for cyclo dataset")
+    datasets = []
+    datasets_paths = []
+    if args.cyclo:
+        datasets.append('cyclo')
+        datasets_paths.append('cyclo')
+    if args.gdb:
+        datasets.append('gdb')
+        datasets_paths.append('gdb7-22-ts')
+    if args.proparg or args.proparg_stereo or args.proparg_combinatorial:
+        datasets.append('proparg')
+        datasets_paths.append('proparg')
+
+
+    for i, dataset in enumerate(datasets):
+        print(f"Running for {dataset} dataset")
+        dataset_path = datasets_paths[i]
         # first 2d fingerprints drfp, mfp
-        twodim = TWODIM()
-        drfp_save = 'data/cyclo/drfp.npy'
+        if dataset == 'proparg':
+            twodim = TWODIM(proparg_stereo=args.proparg_stereo, proparg_combinatorial=args.proparg_combinatorial)
+            if args.proparg_stereo:
+                drfp_save = 'data/proparg/drfp_stereo.npy'
+            elif args.proparg_combinatorial:
+                drfp_save = 'data/proparg/drfp_combinatorial.npy'
+            else:
+                drfp_save = 'data/proparg/drfp.npy'
+            if args.proparg_stereo:
+                mfp_save = 'data/proparg/mfp_stereo.npy'
+            elif args.proparg_combinatorial:
+                mfp_save = 'data/proparg/mfp_combinatorial.npy'
+            else:
+                mfp_save = 'data/proparg/mfp.npy'
+        else:
+            twodim = TWODIM()
+
+            drfp_save = f'data/{dataset_path}/drfp.npy'
+            mfp_save = f'data/{dataset_path}/mfp.npy'
+
         if not os.path.exists(drfp_save):
-            drfp = twodim.get_cyclo_DRFP()
+            if dataset == 'cyclo':
+                drfp = twodim.get_cyclo_DRFP()
+            elif dataset == 'gdb':
+                drfp = twodim.get_gdb_DRFP()
+            elif dataset == 'proparg':
+                drfp = twodim.get_proparg_DRFP()
             np.save(drfp_save, drfp)
         else:
             drfp = np.load(drfp_save)
-        mfp_save = 'data/cyclo/mfp.npy'
+
         if not os.path.exists(mfp_save):
-            mfp = twodim.get_cyclo_MFP()
+            if dataset == 'cyclo':
+                mfp = twodim.get_cyclo_MFP()
+            elif dataset == 'gdb':
+                mfp = twodim.get_gdb_MFP()
+            elif dataset == 'proparg':
+                mfp = twodim.get_proparg_MFP()
             np.save(mfp_save, mfp)
         else:
             mfp = np.load(mfp_save)
 
+        barriers_twod = twodim.barriers
+
         # 3d fingerprints SLATM
         qml = QML()
-        qml.get_cyclo_data()
-        barriers = qml.barriers
-        slatm_save = 'data/cyclo/slatm.npy'
+        if args.xtb:
+            if dataset == 'cyclo':
+                qml.get_cyclo_xtb_data()
+            elif dataset == 'proparg':
+                qml.get_proparg_data_xtb()
+            elif dataset == 'gdb':
+                qml.get_GDB7_xtb_data()
+            slatm_save = f'data/{dataset_path}/slatm_xtb.npy'
+            b2r2_l_save = f'data/{dataset_path}/b2r2_l_xtb.npy'
+
+        else:
+            if dataset == 'cyclo':
+                qml.get_cyclo_data()
+            elif dataset == 'proparg':
+                qml.get_proparg_data()
+            elif dataset == 'gdb':
+                qml.get_GDB7_ccsd_data()
+            slatm_save = f'data/{dataset_path}/slatm.npy'
+            b2r2_l_save = f'data/{dataset_path}/b2r2_l.npy'
+
         if not os.path.exists(slatm_save):
             slatm = qml.get_SLATM()
             np.save(slatm_save, slatm)
         else:
             slatm = np.load(slatm_save)
 
-        b2r2 = B2R2()
-        b2r2.get_cyclo_data()
-        b2r2_l_save = 'data/cyclo/b2r2_l.npy'
         if not os.path.exists(b2r2_l_save):
-            b2r2_l = b2r2.get_b2r2_l()
+            b2r2_l = qml.get_b2r2_l()
             np.save(b2r2_l_save, b2r2_l)
         else:
             b2r2_l = np.load(b2r2_l_save)
-
+        barriers_qml = qml.barriers
 
         print("reps generated/loaded, predicting")
 
-        drfp_save = f'data/cyclo/drfp_{CV}_fold.npy'
+        if dataset == 'proparg':
+            if args.proparg_stereo:
+                drfp_save = f'data/proparg/drfp_stereo_{CV}_fold.npy'
+            elif args.proparg_combinatorial:
+                drfp_save = f'data/proparg/drfp_combinatorial_{CV}_fold.npy'
+            else:
+                drfp_save = f'data/proparg/drfp_{CV}_fold.npy'
+
+            if args.proparg_stereo:
+                mfp_save = f'data/proparg/mfp_stereo_{CV}_fold.npy'
+            elif args.proparg_combinatorial:
+                mfp_save = f'data/proparg/mfp_combinatorial_{CV}_fold.npy'
+            else:
+                mfp_save = f'data/proparg/mfp_{CV}_fold.npy'
+
+        else:
+            drfp_save = f'data/{dataset_path}/drfp_{CV}_fold.npy'
+            mfp_save = f'data/{dataset_path}/mfp_{CV}_fold.npy'
+
         if not os.path.exists(drfp_save):
-            maes_drfp = predict_CV(drfp, barriers, CV=CV, mode='rf')
+            maes_drfp = predict_CV_RF(drfp, barriers_twod, CV=CV, train_size=0.8, model='drfp', dataset=dataset)
             np.save(drfp_save, maes_drfp)
         else:
             maes_drfp = np.load(drfp_save)
         print(f'drfp mae {np.mean(maes_drfp)} +- {np.std(maes_drfp)}')
 
-        mfp_save = f'data/cyclo/mfp_{CV}_fold.npy'
         if not os.path.exists(mfp_save):
-            maes_mfp = predict_CV(mfp, barriers, CV=CV, mode='rf')
+            maes_mfp = predict_CV_RF(mfp, barriers_twod, CV=CV, train_size=0.8, model='mfp', dataset=dataset)
             np.save(mfp_save, maes_mfp)
         else:
             maes_mfp = np.load(mfp_save)
         print(f'mfp mae {np.mean(maes_mfp)} +- {np.std(maes_mfp)}')
 
-        slatm_save = f'data/cyclo/slatm_{CV}_fold.npy'
+        if args.xtb:
+            slatm_save = f"data/{dataset_path}/slatm_{CV}_fold_xtb.npy"
+            b2r2_l_save = f"data/{dataset_path}/b2r2_l_{CV}_fold_xtb.npy"
+            dataset_label = f'{dataset_path}_xtb'
+        else:
+            slatm_save = f'data/{dataset_path}/slatm_{CV}_fold.npy'
+            b2r2_l_save = f'data/{dataset_path}/b2r2_l_{CV}_fold.npy'
+            dataset_label = dataset
+
         if not os.path.exists(slatm_save):
-            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian', 'rbf'],
-                                    save_file='data/cyclo/slatm_hypers.csv')
+            print(f"Getting MAES for slatm..")
+            maes_slatm = predict_CV_KRR(slatm, barriers_qml, CV=CV, model='slatm', dataset=dataset_label)
             np.save(slatm_save, maes_slatm)
         else:
             maes_slatm = np.load(slatm_save)
         print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
 
-        b2r2_l_save = f'data/cyclo/b2r2_l_{CV}_fold.npy'
         if not os.path.exists(b2r2_l_save):
-            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian'],
-                                     save_file='data/cyclo/b2r2_l_hypers.csv')
-            np.save(b2r2_l_save, maes_b2r2_l)
-        else:
-            maes_b2r2_l = np.load(b2r2_l_save)
-        print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
-
-
-    if gdb:
-        print("Running for gdb dataset")
-        # first 2d fingerprints drfp, mfp
-        twodim = TWODIM()
-        drfp_save = 'data/gdb7-22-ts/drfp.npy'
-        if not os.path.exists(drfp_save):
-            drfp = twodim.get_gdb_DRFP()
-            np.save(drfp_save, drfp)
-        else:
-            drfp = np.load(drfp_save)
-        mfp_save = 'data/gdb7-22-ts/mfp.npy'
-        if not os.path.exists(mfp_save):
-            mfp = twodim.get_gdb_MFP()
-            np.save(mfp_save, mfp)
-        else:
-            mfp = np.load(mfp_save)
-
-        # 3d fingerprints SLATM
-        qml = QML()
-        qml.get_GDB7_ccsd_data()
-        barriers = qml.barriers
-        slatm_save = 'data/gdb7-22-ts/slatm.npy'
-        if not os.path.exists(slatm_save):
-            slatm = qml.get_SLATM()
-            np.save(slatm_save, slatm)
-        else:
-            slatm = np.load(slatm_save)
-
-        b2r2 = B2R2()
-        b2r2.get_GDB7_ccsd_data()
-        b2r2_l_save = 'data/gdb7-22-ts/b2r2_l.npy'
-        if not os.path.exists(b2r2_l_save):
-            b2r2_l = b2r2.get_b2r2_l()
-            np.save(b2r2_l_save, b2r2_l)
-        else:
-            b2r2_l = np.load(b2r2_l_save)
-
-
-        drfp_save = f'data/gdb7-22-ts/drfp_{CV}_fold.npy'
-        if not os.path.exists(drfp_save):
-            maes_drfp = predict_CV(drfp, barriers, CV=CV, mode='rf')
-            np.save(drfp_save, maes_drfp)
-        else:
-            maes_drfp = np.load(drfp_save)
-        print(f'drfp mae {np.mean(maes_drfp)} +- {np.std(maes_drfp)}')
-
-        mfp_save = f'data/gdb7-22-ts/mfp_{CV}_fold.npy'
-        if not os.path.exists(mfp_save):
-            maes_mfp = predict_CV(mfp, barriers, CV=CV, mode='rf')
-            np.save(mfp_save, maes_mfp)
-        else:
-            maes_mfp = np.load(mfp_save)
-        print(f'mfp mae {np.mean(maes_mfp)} +- {np.std(maes_mfp)}')
-
-        slatm_save = f'data/gdb7-22-ts/slatm_{CV}_fold.npy'
-        if not os.path.exists(slatm_save):
-            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian'],
-                                    save_file='data/gdb7-22-ts/slatm_hypers.csv')
-            np.save(slatm_save, maes_slatm)
-        else:
-            maes_slatm = np.load(slatm_save)
-        print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
-
-        b2r2_l_save = f'data/gdb7-22-ts/b2r2_l_{CV}_fold.npy'
-        if not os.path.exists(b2r2_l_save):
-            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian'],
-                                     save_file='data/gdb7-22-ts/b2r2_l_hypers_laplacian.csv')
-            np.save(b2r2_l_save, maes_b2r2_l)
-        else:
-            maes_b2r2_l = np.load(b2r2_l_save)
-        print(f'b2r2_l mae {np.mean(maes_b2r2_l)} +- {np.std(maes_b2r2_l)}')
-
-    if proparg:
-        print("Running for proparg dataset")
-        # first 2d fingerprints drfp, mfp
-        twodim = TWODIM()
-        drfp_save = 'data/proparg/drfp.npy'
-        if not os.path.exists(drfp_save):
-            drfp = twodim.get_proparg_DRFP()
-            np.save(drfp_save, drfp)
-        else:
-            drfp = np.load(drfp_save)
-        mfp_save = 'data/proparg/mfp.npy'
-        if not os.path.exists(mfp_save):
-            mfp = twodim.get_proparg_MFP()
-            np.save(mfp_save, mfp)
-        else:
-            mfp = np.load(mfp_save)
-
-        # 3d fingerprints SLATM
-        qml = QML()
-        qml.get_proparg_data()
-        slatm_save = 'data/proparg/slatm.npy'
-        if not os.path.exists(slatm_save):
-            slatm = qml.get_SLATM()
-            np.save(slatm_save, slatm)
-        else:
-            slatm = np.load(slatm_save)
-        twod_barriers = twodim.barriers
-        barriers = qml.barriers
-
-        b2r2 = B2R2()
-        b2r2.get_proparg_data()
-        b2r2_l_save = 'data/proparg/b2r2_l.npy'
-        if not os.path.exists(b2r2_l_save):
-            b2r2_l = b2r2.get_b2r2_l()
-            np.save(b2r2_l_save, b2r2_l)
-        else:
-            b2r2_l = np.load(b2r2_l_save)
-
-        print("reps generated/loaded, predicting")
-        drfp_save = f'data/proparg/drfp_{CV}_fold.npy'
-        if not os.path.exists(drfp_save):
-            maes_drfp = predict_CV(drfp, twod_barriers, CV=CV, mode='rf')
-            np.save(drfp_save, maes_drfp)
-        else:
-            maes_drfp = np.load(drfp_save)
-        print(f'drfp mae {np.mean(maes_drfp)} +- {np.std(maes_drfp)}')
-
-        mfp_save = f'data/proparg/mfp_{CV}_fold.npy'
-        if not os.path.exists(mfp_save):
-            maes_mfp = predict_CV(mfp, twod_barriers, CV=CV, mode='rf')
-            np.save(mfp_save, maes_mfp)
-        else:
-            maes_mfp = np.load(mfp_save)
-        print(f'mfp mae {np.mean(maes_mfp)} +- {np.std(maes_mfp)}')
-
-        slatm_save = f'data/proparg/slatm_{CV}_fold.npy'
-        if not os.path.exists(slatm_save):
-            maes_slatm = predict_CV(slatm, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian'],
-                                    save_file='data/proparg/slatm_hypers.csv')
-            np.save(slatm_save, maes_slatm)
-        else:
-            maes_slatm = np.load(slatm_save)
-        print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
-
-        b2r2_l_save = f'data/proparg/b2r2_l_{CV}_fold.npy'
-        if not os.path.exists(b2r2_l_save):
-            maes_b2r2_l = predict_CV(b2r2_l, barriers, CV=CV, mode='krr', save_hypers=True, opt_kernels=['laplacian'],
-                                     save_file='data/proparg/b2r2_l_hypers_laplacian.csv')
+            print(f"Getting MAEs for b2r2..")
+            maes_b2r2_l = predict_CV_KRR(b2r2_l, barriers_qml, CV=CV, model='b2r2', dataset=dataset_label)
             np.save(b2r2_l_save, maes_b2r2_l)
         else:
             maes_b2r2_l = np.load(b2r2_l_save)

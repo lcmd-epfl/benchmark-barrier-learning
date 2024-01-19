@@ -1,10 +1,12 @@
 *slatm.npy
+*slatm_xtb.npy
 *GDB7-corr_SPAHM-b.npy
 *checkpoint*
 outputs/*
 runs/*
 cache_dir/*
 wandb/*
-
+submission-data/*
+data.tar.gz
 *.pyc
 *.swp

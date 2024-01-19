@@ -40,7 +40,7 @@ stds = [gdb_std, cyclo_std, proparg_std]
 
 cyclo_lang_dir = 'outs/cyclo_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
 gdb_lang_dir = 'outs/gdb_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
-proparg_lang_dir = 'outs/proparg_bert_pretrained/5_epochs_8_batches_0_smiles_rand/results.txt'
+proparg_lang_dir = 'outs/proparg_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
 lang_dirs = [gdb_lang_dir, cyclo_lang_dir, proparg_lang_dir]
 
 cyclo_cgr_dir = 'results/cyclo_true/test_scores.csv'
@@ -88,14 +88,11 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
 
     axes[i].bar(4, b2r2_mae, yerr=b2r2_std, color=colors[3])
     axes[i].text(4 - 0.26, b2r2_mae + add, round_with_std(b2r2_mae, b2r2_std), rotation=90, fontsize='x-small', fontweight='bold')
-
-    #axes[i].bar(5, spahm_mae, yerr=spahm_std, color=colors[4])
-
     axes[i].bar(5, cgr_mae, yerr=cgr_std, color=colors[5])
     axes[i].text(5 - 0.26, cgr_mae + add, round_with_std(cgr_mae, cgr_std), rotation=90, fontsize='x-small', fontweight='bold')
 
     axes[i].set_xticks(list(range(6)))
-    axes[i].set_xticklabels(['MFP', 'DRFP', 'BERT+RXNFP', 'SLATM$_d$', '$B^2R^2_l$', 'CGR'], rotation=90)
+    axes[i].set_xticklabels(['MFP+RF', 'DRFP+RF', 'BERT+RXNFP', 'SLATM$_d$+KRR', '$B^2R^2_l$+KRR', 'Chemprop'], rotation=90, fontsize=10)
 
 axes[0].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
 axes[1].set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")
@@ -103,4 +100,4 @@ axes[2].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
 
 plt.tight_layout()
 plt.savefig('figures/compare_all_models.pdf')
-#plt.show()
+plt.show()

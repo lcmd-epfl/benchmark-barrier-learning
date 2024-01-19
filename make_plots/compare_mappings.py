@@ -3,9 +3,21 @@ import matplotlib
 import pandas as pd
 import numpy as np
 
+def round_with_std(mae, std):
+    # works only is std < 1
+    std_1digit = int(std // 10**np.floor(np.log10(std)))
+    std_1digit_pos = f'{std:.10f}'.split('.')[1].index(str(std_1digit))
+    if std_1digit > 2:
+        std_round = f'{std:.{std_1digit_pos+1}f}'
+    else:
+        std_round = f'{std:.{std_1digit_pos+2}f}'
+    n_after_point = len(std_round.split('.')[1])
+    mae_round = f'{mae:.{n_after_point}f}'
+    return mae_round + '$\pm$' + std_round
+
 datasets = ['gdb', 'cyclo', 'proparg']
-labels = ['CGR True', 'CGR RXNMapper', 'CGR Random', 'SLATM$_d$']
-keys = ['true_df', 'rxnmapper_df', 'random_df', 'slatm']
+labels = ['Chemprop True', 'Chemprop RXNMapper', 'Chemprop None', 'SLATM$_d$+KRR']
+keys = ['true_df', 'rxnmapper_df', 'nomap_df', 'slatm']
 #colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
 colors = ['blue', 'purple', 'magenta', "#00A79F"]
 
@@ -25,10 +37,14 @@ data['gdb']['ylabel'] = "MAE $\Delta E^\ddag$ [kcal/mol]"
 data['cyclo']['ylabel'] = "MAE $\Delta G^\ddag$ [kcal/mol]"
 data['proparg']['ylabel'] = "MAE $\Delta E^\ddag$ [kcal/mol]"
 
-matplotlib.rcParams.update({"font.size":13})
+matplotlib.rcParams.update({"font.size":12})
 fig, axes = plt.subplots(nrows=1, ncols=3)
 
-for ax, dataset_name in zip(axes, datasets):
+axes[0].set_ylim(0,13)
+axes[1].set_ylim(0,4.2)
+axes[2].set_ylim(0,2.5)
+adds = [0.37, 0.2, 0.12]
+for ax, dataset_name, add in zip(axes, datasets, adds):
 
     dataset = data[dataset_name]
     ax.set_title(dataset['title'], fontsize='medium')
@@ -37,10 +53,12 @@ for ax, dataset_name in zip(axes, datasets):
     for i, key in enumerate(keys):
         df = dataset[key]
         ax.bar(i, df['Mean mae'], yerr=df['Standard deviation mae'], color=colors[i])
+        ax.text(i - 0.15, df['Mean mae'] + add, round_with_std(float(df['Mean mae']), float(df['Standard deviation mae'])), fontsize='x-small', fontweight='bold', rotation=90)
+
     ax.set_xticks(list(range(len(labels))))
-    ax.set_xticklabels(labels, rotation=90)
+    ax.set_xticklabels(labels, rotation=90, fontsize=10)
 
 figname = 'figures/atom_mapping_quality.pdf'
 plt.tight_layout()
-#plt.savefig(figname)
-#plt.show()
+plt.savefig(figname)
+plt.show()

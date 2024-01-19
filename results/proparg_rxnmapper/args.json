@@ -89,11 +89,8 @@
     "reaction_mode": "reac_diff",
     "reaction_solvent": false,
     "reproducibility": {
-        "command_line": "python ../../src/cgr_proparg.py",
-        "git_has_uncommitted_changes": true,
-        "git_root": "/home/xe/WORK/puck-benchmark-barrier-learning/benchmark-barrier-learning",
-        "git_url": "https://github.com/lcmd-epfl/benchmark-barrier-learning/tree/8f3a6f358149e9b3cd6a1f5b14029d94d79402e1",
-        "time": "Wed Jul 26 19:17:38 2023"
+        "command_line": "python ../../src/cgr_proparg.py --smiles xyz2mol --mapping rxnmapper",
+        "time": "Tue Aug  8 16:08:46 2023"
     },
     "resume_experiment": false,
     "save_dir": "./",

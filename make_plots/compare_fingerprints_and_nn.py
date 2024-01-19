@@ -48,8 +48,8 @@ proparg_lang_dir = 'outs/proparg_bert_pretrained/5_epochs_8_batches_0_smiles_ran
 lang_dirs = [gdb_lang_dir, cyclo_lang_dir, proparg_lang_dir]
 
 cyclo_cgr_dir = 'results/cyclo_true/test_scores.csv'
-gdb_cgr_dir = 'results/gdb_true/test_scores.csv'
-proparg_cgr_dir = 'results/proparg_true/test_scores.csv'
+gdb_cgr_dir = 'results/gdb_true_withH/test_scores.csv'
+proparg_cgr_dir = 'results/proparg_true_withH/test_scores.csv'
 cgr_dirs = [gdb_cgr_dir, cyclo_cgr_dir, proparg_cgr_dir]
 
 equireact_files = ['equireact-results/gdb_dft.csv', 'equireact-results/cyclo_dft.csv', 'equireact-results/proparg_dft.csv']
@@ -67,7 +67,7 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     print(f"dataset {db}")
 
     if i == 0:
-        add = 1.6
+        add = 1.75
     elif i == 1:
         add = 0.4
     elif i == 2:

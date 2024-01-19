@@ -4,7 +4,7 @@
 This repo is currently in progress, for the revision of the paper. We will remove this warning when the repo is finalised.
 
 ## Installation
-- Due to the various dependencies of different packages, it is not possible to have a single environment that satisfies them all. In particular, the `rxnfp` package relies on python 3.6. Therefore it is recommended to have a separate environment to run the BERT+RXNFP models:
+- Due to the various dependencies of different packages, it is not possible to have a single environment that satisfies them all. In particular, the `rxnfp` package relies on python 3.7 (latest python version for which is works). Therefore it is recommended to have a separate environment to run the BERT+RXNFP models:
 ```commandline
 conda create -n rxnfp python=3.7 -y
 conda activate rxnfp

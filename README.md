@@ -4,14 +4,16 @@
 This repo is currently in progress, for the revision of the paper. We will remove this warning when the repo is finalised.
 
 ## Installation
-- Due to the various dependencies of different packages, it is not possible to have a single environment that satisfies them all. In particular, the `rxnfp` package relies on python 3.6. Therefore it is recommended to have a separate environment to run the BERT models, following the install instructions as detailed on the github page https://github.com/rxn4chemistry/rxnfp:
+- Due to the various dependencies of different packages, it is not possible to have a single environment that satisfies them all. In particular, the `rxnfp` package relies on python 3.7 (latest python version for which is works). Therefore it is recommended to have a separate environment to run the BERT+RXNFP models:
 ```commandline
-conda create -n rxnfp python=3.6 -y
+conda create -n rxnfp python=3.7 -y
 conda activate rxnfp
 conda install -c rdkit rdkit=2020.03.3 -y
 conda install -c tmap tmap -y
-pip install rxnfp
+git clone https://github.com/rxn4chemistry/rxnfp
+pip install -e rxnfp
 ```
+- Note that the above does not work on Mac computers with the M1 chip onwards, since they do not support python 3.7. This env has been tried and tested on several Linux platforms.
 - Then another environment can be created that works for the other fingerprints, for example `conda create -n benchmark-rxn`
 - `conda install pip`
 - Due to the dependencies of the qml python package, numpy needs to be installed first and foremost, therefore a `requirements.txt` file is provided

@@ -20,7 +20,8 @@ pip install -e rxnfp
 - This can be installed using `conda create -n <environment-name> --file requirements_chemprop.txt`
 
 ### Fingerprints environment
-- TODO
+- This can be installed using `conda create -n <environment-name> --file requirements_fingerprints.txt`
+- TODO check
 
 ### EquiReact environment
 - Consult the dedicated repo: https://github.com/lcmd-epfl/EquiReact

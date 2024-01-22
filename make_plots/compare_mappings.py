@@ -16,18 +16,25 @@ def round_with_std(mae, std):
     return mae_round + '$\pm$' + std_round
 
 datasets = ['gdb', 'cyclo', 'proparg']
-labels = ['Chemprop True', 'Chemprop RXNMapper', 'Chemprop None', 'SLATM$_d$+KRR']
-keys = ['true_df', 'rxnmapper_df', 'nomap_df', 'slatm']
+labels = ['Chemprop True', 'Chemprop RXNMapper', 'Chemprop None']
+keys = ['true', 'rxnmapper', 'nomap']
 #colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
-colors = ['blue', 'purple', 'magenta', "#00A79F"]
+colors = ['blue', 'purple', 'magenta']
 
 data = {}
 for dataset in datasets:
     data[dataset] = {}
-    for key in keys[:-1]:
-        data[dataset][key] = pd.read_csv(f'results/{dataset}_{key[:-3]}/test_scores.csv')
-    slatm = np.load(f'data/{"gdb7-22-ts" if dataset=="gdb" else dataset}/slatm_10_fold.npy')
-    data[dataset]['slatm'] = {'Mean mae': np.mean(slatm), 'Standard deviation mae': np.std(slatm)}
+
+    for key in keys:
+        data[dataset][key] = {}
+        data[dataset][key]['mae'] = 0
+        data[dataset][key]['std'] = 0
+        if dataset == 'cyclo' or (dataset == 'gdb' and key != 'true') or key == 'rxnmapper' or (dataset == 'proparg' and key == 'nomap'):
+            info = pd.read_csv(f'results/{dataset}_{key}/test_scores.csv')
+        else:
+            info = pd.read_csv(f'results/{dataset}_{key}_withH/test_scores.csv')
+        data[dataset][key]['mae'] = info['Mean mae']
+        data[dataset][key]['std'] = info['Standard deviation mae']
 
 data['gdb']['title'] = '(a) GDB7-22-TS'
 data['cyclo']['title'] = '(b) Cyclo-23-TS'
@@ -43,17 +50,18 @@ fig, axes = plt.subplots(nrows=1, ncols=3)
 axes[0].set_ylim(0,13)
 axes[1].set_ylim(0,4.2)
 axes[2].set_ylim(0,2.5)
-adds = [0.37, 0.2, 0.12]
+adds = [0.39, 0.22, 0.13]
 for ax, dataset_name, add in zip(axes, datasets, adds):
 
     dataset = data[dataset_name]
+
     ax.set_title(dataset['title'], fontsize='medium')
     ax.set_ylabel(dataset['ylabel'])
 
     for i, key in enumerate(keys):
         df = dataset[key]
-        ax.bar(i, df['Mean mae'], yerr=df['Standard deviation mae'], color=colors[i])
-        ax.text(i - 0.15, df['Mean mae'] + add, round_with_std(float(df['Mean mae']), float(df['Standard deviation mae'])), fontsize='x-small', fontweight='bold', rotation=90)
+        ax.bar(i, df['mae'], yerr=df['std'], color=colors[i])
+        ax.text(i - 0.11, df['mae'] + add, round_with_std(float(df['mae']), float(df['std'])), fontsize='x-small', fontweight='bold', rotation=90)
 
     ax.set_xticks(list(range(len(labels))))
     ax.set_xticklabels(labels, rotation=90, fontsize=10)

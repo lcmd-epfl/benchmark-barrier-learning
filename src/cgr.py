@@ -5,7 +5,7 @@ import argparse as ap
 import chemprop
 
 # to make chemprop work with --proparg_combinat/--proparg_stereo,
-# patch ${CONDA_PREFIX}/lib/python3.8/site-packages/chemprop/rdkit.py
+# patch ${CONDA_PREFIX}/lib/python{version}/site-packages/chemprop/rdkit.py
 # with cgr_proparg_patch.txt
 
 
@@ -29,34 +29,55 @@ def argparse():
 if __name__ == "__main__":
 
     parser, args = argparse()
+    dataset = ''
+    dataset_spec = ''
     if args.cyclo:
-        data_path = '../../data/cyclo/full_dataset.csv'
+        data_path = '../data/cyclo/full_dataset.csv'
         target_columns = 'G_act'
+        dataset = 'cyclo'
+        dataset_spec = 'cyclo'
     elif args.gdb:
-        data_path = '../../data/gdb7-22-ts/ccsdtf12_dz.csv'
+        data_path = '../data/gdb7-22-ts/ccsdtf12_dz.csv'
         target_columns = 'dE0'
+        dataset = 'gdb'
+        dataset_spec = 'gdb'
     elif args.proparg:
-        data_path = '../../data/proparg/data.csv'
+        data_path = '../data/proparg/data.csv'
         target_columns = "Eafw"
+        dataset = 'proparg'
+        dataset_spec = 'proparg'
     elif args.proparg_combinat:
-        data_path = '../../data/proparg/data_fixarom_smiles.csv'
+        data_path = '../data/proparg/data_fixarom_smiles.csv'
         target_columns = "Eafw"
+        dataset = 'proparg'
+        dataset_spec = 'proparg_combinat'
     elif args.proparg_stereo:
-        data_path = '../../data/proparg/data_fixarom_smiles_stereo.csv'
+        data_path = '../data/proparg/data_fixarom_smiles_stereo.csv'
         target_columns = "Eafw"
+        dataset = 'proparg'
+        dataset_spec = 'proparg_stereo'
+    config_path = f"../data/hypers_{dataset}_cgr.json"
 
+    results_dir = ''
+    results_base_dir = f"../results/{dataset_spec}_"
     if args.rxnmapper:
         smiles_columns = 'rxn_smiles_rxnmapper'
+        results_dir = results_base_dir + "rxnmapper" 
     elif args.nomapping:
+        results_dir = results_base_dir + "nomap"
         if args.proparg or args.proparg_combinat or args.proparg_stereo:
             smiles_columns = 'rxn_smiles'
         else:
             smiles_columns = 'rxn_smiles_nomapping'
     elif args.true:
+        results_dir = results_base_dir + "true"
         if args.proparg or args.proparg_combinat or args.proparg_stereo:
             smiles_columns = 'rxn_smiles_mapped'
         else:
             smiles_columns = 'rxn_smiles'
+
+    if args.withH:
+        results_dir += '_withH'
 
     arguments = [
         "--data_path", data_path,
@@ -64,12 +85,12 @@ if __name__ == "__main__":
         "--target_columns", target_columns,
         "--smiles_columns", smiles_columns,
         "--metric", "mae",
-        "--dropout", "0.05",
         "--epochs", "300",
         "--reaction",
+        "--config_path", config_path,
         "--num_folds",  "10",
         "--batch_size", "50",
-        "--save_dir", "./"]
+        "--save_dir", results_dir]
     if args.withH:
         arguments.append('--explicit_h')
 

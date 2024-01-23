@@ -96,45 +96,75 @@ class TWODIM:
         else:
             self.proparg_path = "data/proparg/data.csv"
 
-    def get_proparg_MFP(self):
+    def get_proparg_MFP(self, subset=None):
         data = pd.read_csv(self.proparg_path, index_col=0)
         self.barriers = data['Eafw'].to_numpy()
         rxn_smiles = data['rxn_smiles']
+        if subset:
+            rxn_smiles = np.array(rxn_smiles)[:subset]
+            self.barriers = self.barriers[:subset]
+            assert len(self.barriers) == len(rxn_smiles)
+            assert len(self.barriers) == subset
         mfps = [get_MFP(x, self.proparg_stereo or self.proparg_combinatorial) for x in rxn_smiles]
         return np.vstack(mfps)
 
-    def get_proparg_DRFP(self):
+    def get_proparg_DRFP(self, subset=None):
         data = pd.read_csv(self.proparg_path, index_col=0)
         self.barriers = data['Eafw'].to_numpy()
         rxn_smiles = data['rxn_smiles']
+        if subset:
+            rxn_smiles = np.array(rxn_smiles)[:subset]
+            self.barriers = self.barriers[:subset]
+            assert len(self.barriers) == len(rxn_smiles)
+            assert len(self.barriers) == subset
         drfps = [get_DRFP(x) for x in rxn_smiles]
         return np.vstack(drfps)
 
-    def get_cyclo_MFP(self):
+    def get_cyclo_MFP(self, subset=None):
         data = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
         self.barriers = data['G_act'].to_numpy()
         rxn_smiles = data['rxn_smiles']
+        if subset:
+            rxn_smiles = np.array(rxn_smiles)[:subset]
+            self.barriers = self.barriers[:subset]
+            assert len(self.barriers) == len(rxn_smiles)
+            assert len(self.barriers) == subset
         mfps = [get_MFP(x) for x in rxn_smiles]
         return np.vstack(mfps)
 
-    def get_cyclo_DRFP(self):
+    def get_cyclo_DRFP(self, subset=None):
         data = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
         self.barriers = data['G_act'].to_numpy()
         rxn_smiles = data['rxn_smiles']
+        if subset:
+            rxn_smiles = np.array(rxn_smiles)[:subset]
+            self.barriers = self.barriers[:subset]
+            assert len(self.barriers) == len(rxn_smiles)
+            assert len(self.barriers) == subset
         drfps = [get_DRFP(x) for x in rxn_smiles]
         return np.vstack(drfps)
 
-    def get_gdb_MFP(self):
+    def get_gdb_MFP(self, subset=None):
         data = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv", index_col=0)
         self.barriers = data['dE0'].to_numpy()
         rxn_smiles = data['rxn_smiles']
+        if subset:
+            rxn_smiles = np.array(rxn_smiles)[:subset]
+            self.barriers = self.barriers[:subset]
+            assert len(self.barriers) == len(rxn_smiles)
+            assert len(self.barriers) == subset
         mfps = [get_MFP(x) for x in rxn_smiles]
         return np.vstack(mfps)
 
-    def get_gdb_DRFP(self):
+    def get_gdb_DRFP(self, subset=None):
         data = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv", index_col=0)
         self.barriers = data['dE0'].to_numpy()
         rxn_smiles = data['rxn_smiles']
+        if subset:
+            rxn_smiles = np.array(rxn_smiles)[:subset]
+            self.barriers = self.barriers[:subset]
+            assert len(self.barriers) == len(rxn_smiles)
+            assert len(self.barriers) == subset
         drfps = [get_DRFP(x) for x in rxn_smiles]
         return np.vstack(drfps)
 
@@ -150,13 +180,15 @@ class QML:
         self.mols_reactants = [[]]
         return
 
-    def get_proparg_data(self, xtb=False):
+    def get_proparg_data(self, xtb=False, subset=None):
         df = pd.read_csv("data/proparg/data.csv", index_col=0)
         if xtb:
             data_dir = 'data/proparg/xyz-xtb/'
         else:
             data_dir = 'data/proparg/xyz/'
         indices = [''.join(x) for x in zip(df['mol'].to_list(), df['enan'].to_list())]
+        if subset:
+            indices = np.array(indices)[:subset]
 
         reactants_files = []
         products_files = []
@@ -167,6 +199,10 @@ class QML:
 
         all_mols = [qml.Compound(x) for x in reactants_files + products_files]
         self.barriers = df.Eafw.to_numpy()
+        if subset:
+            self.barriers = self.barriers[:subset]
+            assert len(self.barriers) == len(reactants_files)
+            assert len(self.barriers) == subset
         self.ncharges = [mol.nuclear_charges for mol in all_mols]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
 
@@ -179,10 +215,15 @@ class QML:
         self.get_proparg_data(xtb=True)
         return
 
-    def get_GDB7_ccsd_data(self):
+    def get_GDB7_ccsd_data(self, subset=None):
         df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
         self.barriers = df['dE0'].to_numpy()
         indices = df['idx'].apply(pad_indices).to_list()
+        if subset:
+            self.barriers = self.barriers[:subset]
+            indices = indices[:subset]
+            assert len(self.barriers) == subset
+            assert len(self.barriers) == len(indices)
 
         r_mols = []
         p_mols = []
@@ -209,10 +250,15 @@ class QML:
         self.ncharges = [x.nuclear_charges for x in all_r_mols]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
         return
-    def get_GDB7_xtb_data(self):
+    def get_GDB7_xtb_data(self, subset=None):
         df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
         self.barriers = df['dE0'].to_numpy()
         indices = df['idx']
+        if subset:
+            self.barriers = self.barriers[:subset]
+            indices = np.array(indices)[:subset]
+            assert len(self.barries) == len(indices)
+            assert len(self.barriers) == subset
 
         r_mols = []
         p_mols = []
@@ -249,12 +295,17 @@ class QML:
         return
 
 
-    def get_cyclo_data(self):
+    def get_cyclo_data(self, subset=None):
         df = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
         self.barriers = df['G_act'].to_numpy()
         indices = df['rxn_id'].to_list()
         self.indices = indices
         rxns = ["data/cyclo/xyz/"+str(i) for i in indices]
+        if subset:
+            rxns = np.array(rxns)[:subset]
+            self.barriers = self.barriers[:subset]
+            assert len(rxns) == subset
+            assert len(rxns) == len(self.barriers)
         
         reactants_files = []
         products_files = []
@@ -290,11 +341,16 @@ class QML:
         self.mols_products = mols_products
         return
 
-    def get_cyclo_xtb_data(self):
+    def get_cyclo_xtb_data(self, subset=None):
         df = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
         self.barriers = df['G_act'].to_numpy()
         indices = df['rxn_id'].to_list()
         self.indices = indices
+        if subset:
+            self.indices = np.array(self.indices)[:subset]
+            self.barriers = self.barriers[:subset]
+            assert len(self.indices) == subset
+            assert len(self.barriers) == len(self.indices)
         keep_indices = []
         reactants_files = []
         products_files = []

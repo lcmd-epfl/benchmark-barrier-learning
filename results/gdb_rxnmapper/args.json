@@ -43,7 +43,7 @@
         "_type": "python_object (type = device)",
         "_value": "gASVHwAAAAAAAACMBXRvcmNolIwGZGV2aWNllJOUjARjdWRhlIWUUpQu"
     },
-    "dropout": 0.15000000000000002,
+    "dropout": 0.15,
     "empty_cache": false,
     "ensemble_size": 1,
     "epochs": 300,
@@ -104,8 +104,8 @@
         "command_line": "python cgr.py --gdb --rxnmapper",
         "git_has_uncommitted_changes": true,
         "git_root": "/home/vangerwe/benchmark-barrier-learning",
-        "git_url": "https://github.com/lcmd-epfl/benchmark-barrier-lear/tree/458c9eb9173e89f30f7253698587cfaa6212009d",
-        "time": "Mon Jan 22 10:24:18 2024"
+        "git_url": "https://github.com/lcmd-epfl/benchmark-barrier-lear/tree/337e5aef3b6c638a89f75363e59223790ea6697d",
+        "time": "Mon Jan 22 10:54:57 2024"
     },
     "resume_experiment": false,
     "save_dir": "../results/gdb_rxnmapper",

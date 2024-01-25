@@ -16,6 +16,8 @@ def get_maes(npy, txt=False, csv=False):
 def round_with_std(mae, std):
     if std > 1:
         std_round = str(round(std, 2))
+    elif std < 0.01:
+        std_round = str(round(std, 3))
     else:
         # works only is std < 1
         std_1digit = int(std // 10**np.floor(np.log10(std)))
@@ -41,10 +43,9 @@ gdb_std = np.std(pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")['dE0'].to_numpy(
 proparg_std = np.std(pd.read_csv("data/proparg/data.csv")['Eafw'].to_numpy())
 stds = [gdb_std, cyclo_std, proparg_std]
 
-#TODO change to 10 rand
-cyclo_lang_dir = 'outs/cyclo_bert_pretrained/5_epochs_8_batches_0_smiles_rand/results.txt'
-gdb_lang_dir = 'outs/gdb_bert_pretrained/5_epochs_8_batches_0_smiles_rand/results.txt'
-proparg_lang_dir = 'outs/proparg_bert_pretrained/5_epochs_8_batches_0_smiles_rand/results.txt'
+cyclo_lang_dir = 'outs/cyclo_bert_pretrained/5_epochs_32_batches_10_smiles_rand/results.txt'
+gdb_lang_dir = 'outs/gdb_bert_pretrained/5_epochs_32_batches_10_smiles_rand/results.txt'
+proparg_lang_dir = 'outs/proparg_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
 lang_dirs = [gdb_lang_dir, cyclo_lang_dir, proparg_lang_dir]
 
 cyclo_cgr_dir = 'results/cyclo_true/test_scores.csv'
@@ -67,7 +68,7 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     print(f"dataset {db}")
 
     if i == 0:
-        add = 1.75
+        add = 0.6
     elif i == 1:
         add = 0.4
     elif i == 2:
@@ -91,22 +92,26 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     axes[i].bar(1, drfp_mae, yerr=drfp_std, color=colors[1])
     axes[i].text(1 - 0.26, drfp_mae + add, round_with_std(drfp_mae, drfp_std), rotation=90, fontsize='x-small', fontweight='bold')
 
+    if i == 0:
+        add_rxnfp = 1.8
+    else:
+        add_rxnfp = add
     axes[i].bar(2, rxnfp_mae, yerr=rxnfp_std, color=colors[4])
-    axes[i].text(2 - 0.26, rxnfp_mae + add, round_with_std(rxnfp_mae, rxnfp_std), rotation=90, fontsize='x-small', fontweight='bold')
+    axes[i].text(2 - 0.26, rxnfp_mae + add_rxnfp, round_with_std(rxnfp_mae, rxnfp_std), rotation=90, fontsize='x-small', fontweight='bold')
 
     axes[i].bar(3, slatm_mae, yerr=slatm_std, color=colors[2])
     axes[i].text(3 - 0.26, slatm_mae + add, round_with_std(slatm_mae, slatm_std), rotation=90, fontsize='x-small', fontweight='bold')
 
     axes[i].bar(4, b2r2_mae, yerr=b2r2_std, color=colors[3])
     axes[i].text(4 - 0.26, b2r2_mae + add, round_with_std(b2r2_mae, b2r2_std), rotation=90, fontsize='x-small', fontweight='bold')
-    axes[i].bar(5, cgr_mae, yerr=cgr_std, color=colors[5])
-    axes[i].text(5 - 0.26, cgr_mae + add, round_with_std(cgr_mae, cgr_std), rotation=90, fontsize='x-small', fontweight='bold')
+    axes[i].bar(6, cgr_mae, yerr=cgr_std, color=colors[5])
+    axes[i].text(6 - 0.26, cgr_mae + add, round_with_std(cgr_mae, cgr_std), rotation=90, fontsize='x-small', fontweight='bold')
 
-    axes[i].bar(6, equireact_maes[i], yerr=equireact_stds[i], color=colors[6])
-    axes[i].text(6 - 0.26, equireact_maes[i]+add, round_with_std(equireact_maes[i], equireact_stds[i]), rotation=90, fontsize='x-small', fontweight='bold')
+    axes[i].bar(5, equireact_maes[i], yerr=equireact_stds[i], color=colors[6])
+    axes[i].text(5 - 0.26, equireact_maes[i]+add, round_with_std(equireact_maes[i], equireact_stds[i]), rotation=90, fontsize='x-small', fontweight='bold')
 
     axes[i].set_xticks(list(range(7)))
-    axes[i].set_xticklabels(['MFP+RF', 'DRFP+RF', 'BERT+RXNFP', 'SLATM$_d$+KRR', '$B^2R^2_l$+KRR', 'Chemprop', 'EquiReact'], rotation=90, fontsize=10)
+    axes[i].set_xticklabels(['MFP+RF', 'DRFP+RF', 'BERT+RXNFP', 'SLATM$_d$+KRR', '$B^2R^2_l$+KRR', 'EquiReact', 'Chemprop'], rotation=90, fontsize=10)
 
 axes[0].set_ylabel("MAE $\Delta E^\ddag$ [kcal/mol]")
 axes[1].set_ylabel("MAE $\Delta G^\ddag$ [kcal/mol]")

@@ -11,7 +11,6 @@ import argparse as ap
 import glob
 import random
 import hypers
-
 def argparse():
     parser = ap.ArgumentParser()
     parser.add_argument('-d', '--dataset', default='gdb')

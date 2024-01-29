@@ -52,4 +52,5 @@ pip install -e rxnfp
 - Results of the CGR runs can be found in `results`
 
 ### EquiReact
-- The results of running EquiReact can be found in the `equireact-results` directory, where jobs have been run using the code in https://github.com/lcmd-epfl/EquiReact (10-fold CV)
+- The submission files for each of the EquiReact jobs can be found in the `equireact-subfiles` directory. Note this will need to be changed somewhat depending on your cluster structure (there are hard-coded paths for scratch for example).
+- The results of running EquiReact can be found in the `equireact-results` directory

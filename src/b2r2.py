@@ -1,7 +1,8 @@
 import itertools
 
 import numpy as np
-from scipy.stats import skewnorm
+from scipy.stats import skewnorm, norm
+from scipy.special import erf
 
 
 def get_bags(unique_ncharges):
@@ -23,6 +24,20 @@ def get_gaussian(x, R):
     mu, sigma = get_mu_sigma(R)
     norm = 1 / (np.sqrt(2 * np.pi) * sigma)
     return norm * np.exp(-((x - mu) ** 2) / (2 * sigma**2))
+
+def get_skew_gaussian_l(x, R, Z_J):
+    mu = 0.5*R
+    sigma = 0.125*R
+    # 3.2 s for 100 mol
+    return Z_J * skewnorm.pdf(x, Z_J, mu, sigma)
+    # 2.4 s for 100 mol
+    #return Z_J * (1 + erf(Z_J * (x-mu)/sigma/np.sqrt(2))) * norm.pdf(x, mu, sigma)
+    # 1 s for 100 mol
+    X = (x-mu) / (sigma*np.sqrt(2))
+    g = np.exp(-X**2) / (np.sqrt(2*np.pi) * sigma)
+    e = 1.0 + erf(Z_J * X)
+    return Z_J * g * e
+
 
 
 def get_skew_gaussian(x, R, Z_I, Z_J, variation="l"):
@@ -139,21 +154,18 @@ def get_b2r2_l_molecular(
     size = len(grid)
     twobodyrep = np.zeros((len(bags), size))
 
-    for k, bag in enumerate(bags):
-        for i, ncharge_a in enumerate(ncharges):
+    bag_idx = {q: i for i,q in enumerate(bags)}
+
+    for i, ncharge_a in enumerate(ncharges):
+        for j, ncharge_b in enumerate(ncharges):
             coords_a = coords[i]
-            for j in range(len(ncharges)):
-                if i != j:
-                    ncharge_b = ncharges[j]
-                    coords_b = coords[j]
-
-                    R = np.linalg.norm(coords_b - coords_a)
-
-                    if R < Rcut:
-                        if ncharge_a == bag:
-                            twobodyrep[k] += get_skew_gaussian(
-                                grid, R, ncharge_a, ncharge_b
-                            )
+            coords_b = coords[j]
+            R = np.linalg.norm(coords_b - coords_a)
+            if R < Rcut:
+                if i > j:
+                        twobodyrep[bag_idx[ncharge_a]] += get_skew_gaussian_l(grid, R, ncharge_b)
+                if j < i:
+                        twobodyrep[bag_idx[ncharge_b]] += get_skew_gaussian_l(grid, R, ncharge_a)
 
     twobodyrep = np.concatenate(twobodyrep)
     return twobodyrep

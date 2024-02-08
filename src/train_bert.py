@@ -19,7 +19,7 @@ def argparse():
     parser.add_argument('-CV', '--CV', default=1)
     parser.add_argument('-train_size', '--train_size', default=0.8)
     parser.add_argument('-n_rand', '--n_randomizations', default=0)
-    parser.add_argument('-n_epochs', '--num_train_epochs', default=5)
+    parser.add_argument('-n_epochs', '--num_train_epochs', default=10)
     parser.add_argument('-n_batch', '--train_batch_size', default=8)
     args = parser.parse_args()
 
@@ -287,15 +287,8 @@ if __name__ == "__main__":
 
             bert.train_model(train_df, output_dir=path_to_save, eval_df=val_df)
 
-        path = glob.glob(path_to_search, recursive=True)
-        assert len(path) == 1, f"search path {path_to_search} contains {path}"
-        model_path = path[0]
-        print(f"using model path {model_path} and args {model_args}")
-        trained_bert = SmilesClassificationModel('bert', model_path, 
-                                                    num_labels=1, args=model_args,
-                                                    use_cuda=torch.cuda.is_available())
-
-        predictions = trained_bert.predict(test_df.text.values.tolist())[0]
+        print(f"making predictions...")
+        predictions = bert.predict(test_df.text.values.tolist())[0]
 
         predictions = predictions * std + mean
 

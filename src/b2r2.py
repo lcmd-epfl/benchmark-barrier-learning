@@ -71,25 +71,20 @@ def get_b2r2_a_molecular(
     ncharges = [x for x in ncharges if x in elements]
     bags = get_bags(elements)
     grid = np.arange(0, Rcut, gridspace)
-    size = len(grid)
-    twobodyrep = np.zeros((len(bags), size))
+    twobodyrep = np.zeros((len(bags), len(grid)))
 
-    for k, bag in enumerate(bags):
-        for i, ncharge_a in enumerate(ncharges):
+    bag_idx      = {tuple(q1q2): i for i, q1q2 in enumerate(bags)}
+    bag_idx.update({tuple(q1q2[::-1]): i for i, q1q2 in enumerate(bags)})
+
+    for i, ncharge_a in enumerate(ncharges):
+        for j, ncharge_b in enumerate(ncharges[:i]):
             coords_a = coords[i]
-            for j, ncharge_b in enumerate(ncharges):
-                if i != j:
-                    ncharge_b = ncharges[j]
-                    coords_b = coords[j]
-                    # check whether to use it
-                    bag_candidate = [ncharge_a, ncharge_b]
-                    inv_bag_candidate = [ncharge_b, ncharge_a]
-                    if bag == bag_candidate or bag == inv_bag_candidate:
-                        R = np.linalg.norm(coords_b - coords_a)
-                        if R < Rcut:
-                            twobodyrep[k] += get_gaussian(grid, R)
+            coords_b = coords[j]
+            R = np.linalg.norm(coords_b - coords_a)
+            if R < Rcut:
+                twobodyrep[bag_idx[(ncharge_a, ncharge_b)]] += get_gaussian(grid, R)
 
-    twobodyrep = np.concatenate(twobodyrep)
+    twobodyrep = 2.0*np.concatenate(twobodyrep)
     return twobodyrep
 
 
@@ -167,8 +162,7 @@ def get_b2r2_l_molecular(
 
     bags = np.array(elements)
     grid = np.arange(0, Rcut, gridspace)
-    size = len(grid)
-    twobodyrep = np.zeros((len(bags), size))
+    twobodyrep = np.zeros((len(bags), len(grid)))
 
     bag_idx = {q: i for i,q in enumerate(bags)}
 
@@ -259,8 +253,7 @@ def get_b2r2_n_molecular(
     ncharges = [x for x in ncharges if x in elements]
 
     grid = np.arange(0, Rcut, gridspace)
-    size = len(grid)
-    twobodyrep = np.zeros(size)
+    twobodyrep = np.zeros_like(grid)
 
     for i, ncharge_a in enumerate(ncharges):
         for j, ncharge_b in enumerate(ncharges[:i]):

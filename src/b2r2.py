@@ -50,6 +50,21 @@ def get_skew_gaussian_l_both(x, R, Z_I, Z_J):
     return a, b
 
 
+def get_skew_gaussian_n_both(x, R, Z_I, Z_J):
+    mu, sigma = get_mu_sigma(R)
+    # a = Z_I * scipy.stats.skewnorm.pdf(x, Z_J, mu, sigma)
+    # b = Z_J * scipy.stats.skewnorm.pdf(x, Z_I, mu, sigma)
+    X = (x-mu) / (sigma*np.sqrt(2))
+    g = np.exp(-X**2) / (np.sqrt(2*np.pi) * sigma)
+    e = 1.0 + erf(Z_J * X)
+    a = Z_I * g * e
+    if Z_I==Z_J:
+        return 2.0*a
+    e = 1.0 + erf(Z_I * X)
+    b = Z_J * g * e
+    return a + b
+
+
 def get_b2r2_a_molecular(
     ncharges, coords, elements=[1, 6, 7, 8, 9, 17], Rcut=3.5, gridspace=0.03
 ):
@@ -163,8 +178,6 @@ def get_b2r2_l_molecular(
             coords_b = coords[j]
             R = np.linalg.norm(coords_b - coords_a)
             if R < Rcut:
-                #twobodyrep[bag_idx[ncharge_a]] += get_skew_gaussian(grid, R, ncharge_b, ncharge_b)
-                #twobodyrep[bag_idx[ncharge_b]] += get_skew_gaussian(grid, R, ncharge_a, ncharge_a)
                 a, b = get_skew_gaussian_l_both(grid, R, ncharge_a, ncharge_b)
                 twobodyrep[bag_idx[ncharge_a]] += a
                 twobodyrep[bag_idx[ncharge_b]] += b
@@ -250,17 +263,12 @@ def get_b2r2_n_molecular(
     twobodyrep = np.zeros(size)
 
     for i, ncharge_a in enumerate(ncharges):
-        coords_a = coords[i]
-        for j in range(len(ncharges)):
-            ncharge_b = ncharges[j]
+        for j, ncharge_b in enumerate(ncharges[:i]):
+            coords_a = coords[i]
             coords_b = coords[j]
-
-            if i != j:
-                R = np.linalg.norm(coords_b - coords_a)
-                if R < Rcut:
-                    twobodyrep += get_skew_gaussian(
-                        grid, R, ncharge_a, ncharge_b
-                    )
+            R = np.linalg.norm(coords_b - coords_a)
+            if R < Rcut:
+                twobodyrep += get_skew_gaussian_n_both(grid, R, ncharge_b, ncharge_a)
 
     return twobodyrep
 

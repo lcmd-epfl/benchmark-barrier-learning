@@ -29,7 +29,7 @@ def get_skew_gaussian_l(x, R, Z_J):
     mu = 0.5*R
     sigma = 0.125*R
     # 3.2 s for 100 mol
-    return Z_J * skewnorm.pdf(x, Z_J, mu, sigma)
+    #return Z_J * skewnorm.pdf(x, Z_J, mu, sigma)
     # 2.4 s for 100 mol
     #return Z_J * (1 + erf(Z_J * (x-mu)/sigma/np.sqrt(2))) * norm.pdf(x, mu, sigma)
     # 1 s for 100 mol

@@ -7,16 +7,14 @@ import os
 from src.fingerprints import get_MFP, get_DRFP
 from src.b2r2 import get_b2r2_a_molecular, get_b2r2_l_molecular, get_b2r2_n_molecular
 
-pt = {}
-for el in elements:
-    pt[el.symbol] = el.number
+pt = {el.symbol: el.number for el in elements}
 
 def convert_symbol_to_ncharge(symbol):
     return pt[symbol]
 
 def pad_indices(idx):
     idx = str(idx)
-    if len(idx) < 6: 
+    if len(idx) < 6:
         pad_len = 6 - len(idx)
         pad = '0'*pad_len
         idx = pad + idx
@@ -240,7 +238,7 @@ class QML:
             sub_pmols = []
             for pfile in pfiles:
                 p_atomtypes, p_ncharges, p_coords = reader(pfile)
-                p_coords = p_coords * 0.529177 
+                p_coords = p_coords * 0.529177
                 p_mol = create_mol_obj(p_atomtypes, p_ncharges, p_coords)
                 sub_pmols.append(p_mol)
             p_mols.append(sub_pmols)
@@ -250,6 +248,7 @@ class QML:
         self.ncharges = [x.nuclear_charges for x in all_r_mols]
         self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
         return
+
     def get_GDB7_xtb_data(self, subset=None):
         df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
         self.barriers = df['dE0'].to_numpy()
@@ -306,7 +305,7 @@ class QML:
             self.barriers = self.barriers[:subset]
             assert len(rxns) == subset
             assert len(rxns) == len(self.barriers)
-        
+
         reactants_files = []
         products_files = []
         for rxn_dir in rxns:
@@ -435,107 +434,46 @@ class QML:
 
         return slatm_diff
 
+
     def get_b2r2_l(self, Rcut=3.5, gridspace=0.03):
-        b2r2_reactants = [
-            [
-                get_b2r2_l_molecular(
-                    x.nuclear_charges,
-                    x.coordinates,
-                    Rcut=Rcut,
-                    gridspace=gridspace,
-                    elements=self.unique_ncharges,
-                )
-                for x in reactants
-            ]
-            for reactants in self.mols_reactants
-        ]
-        # first index is reactants
-        b2r2_reactants_sum = np.array([sum(x) for x in b2r2_reactants])
+        return self.get_b2r2_inner(Rcut=Rcut,
+                                   gridspace=gridspace,
+                                   get_b2r2_molecular=get_b2r2_l_molecular,
+                                   combine=lambda r,p: p-r)
 
-        b2r2_products = [
-            [
-                get_b2r2_l_molecular(
-                    x.nuclear_charges,
-                    x.coordinates,
-                    Rcut=Rcut,
-                    gridspace=gridspace,
-                    elements=self.unique_ncharges,
-                )
-                for x in products
-            ]
-            for products in self.mols_products
-        ]
-        b2r2_products_sum = np.array([sum(x) for x in b2r2_products])
-
-        b2r2_diff = b2r2_products_sum - b2r2_reactants_sum
-
-        return b2r2_diff
 
     def get_b2r2_a(self, Rcut=3.5, gridspace=0.03):
-        elements = self.unique_ncharges
-        b2r2_reactants = [
-            [
-                get_b2r2_a_molecular(
+        return self.get_b2r2_inner(Rcut=Rcut,
+                                   gridspace=gridspace,
+                                   get_b2r2_molecular=get_b2r2_a_molecular,
+                                   combine=lambda r,p: p-r)
+
+
+    def get_b2r2_n(self, Rcut=3.5, gridspace=0.03):
+        return self.get_b2r2_inner(Rcut=Rcut,
+                                   gridspace=gridspace,
+                                   get_b2r2_molecular=get_b2r2_n_molecular,
+                                   combine=lambda r,p: np.concatenate((r, p), axis=1))
+
+
+    def get_b2r2_inner(self, Rcut=3.5, gridspace=0.03, get_b2r2_molecular=None, combine=None):
+
+        b2r2_reactants = np.array([ sum(
+                get_b2r2_molecular(
                     x.nuclear_charges,
                     x.coordinates,
                     Rcut=Rcut,
                     gridspace=gridspace,
-                    elements=elements,
-                )
-                for x in reactants
-            ]
-            for reactants in self.mols_reactants
-        ]
-        # first index is reactants
-        b2r2_reactants_sum = np.array([sum(x) for x in b2r2_reactants])
+                    elements=self.unique_ncharges,
+                ) for x in reactants) for reactants in self.mols_reactants ])
 
-        b2r2_products = [
-            [
-                get_b2r2_a_molecular(
+        b2r2_products = np.array([ sum(
+                get_b2r2_molecular(
                     x.nuclear_charges,
                     x.coordinates,
                     Rcut=Rcut,
                     gridspace=gridspace,
-                    elements=elements,
-                )
-                for x in products
-            ]
-            for products in self.mols_products
-        ]
-        b2r2_products_sum = np.array([sum(x) for x in b2r2_products])
-
-        b2r2_diff = b2r2_products_sum - b2r2_reactants_sum
-
-        return b2r2_diff
-
-    def get_b2r2_n(self, Rcut=3.5):
-        b2r2_reactants = [
-            [
-                get_b2r2_n_molecular(
-                    x.nuclear_charges,
-                    x.coordinates,
-                    Rcut=Rcut,
                     elements=self.unique_ncharges,
-                )
-                for x in reactants
-            ]
-            for reactants in self.mols_reactants
-        ]
-        # first index is reactants
-        b2r2_reactants_sum = np.array([sum(x) for x in b2r2_reactants])
+                ) for x in products ) for products in self.mols_products ])
 
-        b2r2_products = [
-            [
-                get_b2r2_n_molecular(
-                    x.nuclear_charges,
-                    x.coordinates,
-                    Rcut=Rcut,
-                    elements=self.unique_ncharges,
-                )
-                for x in products
-            ]
-            for products in self.mols_products
-        ]
-        b2r2_products_sum = np.array([sum(x) for x in b2r2_products])
-
-        return np.concatenate((b2r2_reactants_sum, b2r2_products_sum), axis=1)
+        return combine(b2r2_reactants, b2r2_products)

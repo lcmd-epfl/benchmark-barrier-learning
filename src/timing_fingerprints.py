@@ -8,12 +8,10 @@ from timeit import default_timer as timer
 if __name__ == "__main__":
 
     datasets = ['proparg', 'cyclo', 'gdb']
-    datasets_paths = ['cyclo', 'gdb7-22-ts', 'proparg']
     subset = 750
 
     for i, dataset in enumerate(datasets):
         print(f"Running for {dataset} dataset")
-        dataset_path = datasets_paths[i]
         twodim = TWODIM()
 
         # DRFP

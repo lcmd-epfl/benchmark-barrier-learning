@@ -1,7 +1,6 @@
 import itertools
-
 import numpy as np
-from scipy.stats import skewnorm, norm
+from scipy.stats import skewnorm
 from scipy.special import erf
 
 
@@ -15,8 +14,8 @@ def get_bags(unique_ncharges):
 
 
 def get_mu_sigma(R):
-    mu = R / 2
-    sigma = R / 8
+    mu = R * 0.5
+    sigma = R * 0.125
     return mu, sigma
 
 
@@ -25,22 +24,17 @@ def get_gaussian(x, R):
     norm = 1 / (np.sqrt(2 * np.pi) * sigma)
     return norm * np.exp(-((x - mu) ** 2) / (2 * sigma**2))
 
+
 def get_skew_gaussian_l(x, R, Z_J):
-    mu = 0.5*R
-    sigma = 0.125*R
-    # 3.2 s for 100 mol
-    #return Z_J * skewnorm.pdf(x, Z_J, mu, sigma)
-    # 2.4 s for 100 mol
-    #return Z_J * (1 + erf(Z_J * (x-mu)/sigma/np.sqrt(2))) * norm.pdf(x, mu, sigma)
-    # 1 s for 100 mol
+    mu, sigma = get_mu_sigma(R)
+    # the same as `Z_J * scipy.stats.skewnorm.pdf(x, Z_J, mu, sigma)` but faster
     X = (x-mu) / (sigma*np.sqrt(2))
     g = np.exp(-X**2) / (np.sqrt(2*np.pi) * sigma)
     e = 1.0 + erf(Z_J * X)
     return Z_J * g * e
 
 
-
-def get_skew_gaussian(x, R, Z_I, Z_J, variation="l"):
+def get_skew_gaussian_n(x, R, Z_I, Z_J, variation="l"):  # TODO fix
     mu, sigma = get_mu_sigma(R)
     if variation == "l":
         func = Z_J * skewnorm.pdf(x, Z_J, mu, sigma)
@@ -256,7 +250,7 @@ def get_b2r2_n_molecular(
             if i != j:
                 R = np.linalg.norm(coords_b - coords_a)
                 if R < Rcut:
-                    twobodyrep += get_skew_gaussian(
+                    twobodyrep += get_skew_gaussian_n(
                         grid, R, ncharge_a, ncharge_b, variation="n"
                     )
 

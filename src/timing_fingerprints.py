@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
         # B2R2
         start_data = timer()
-        b2r2_l = qml.get_b2r2_l()
+        b2r2_l = qml.get_b2r2(variant='l')
         end_data = timer()
         rep_gen_time_b2r2 = end_data - start_data
         print(f"{rep_gen_time_b2r2=}")

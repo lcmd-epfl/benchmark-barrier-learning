@@ -113,7 +113,7 @@ if __name__ == "__main__":
             slatm = np.load(slatm_save)
 
         if not os.path.exists(b2r2_l_save):
-            b2r2_l = qml.get_b2r2_l()
+            b2r2_l = qml.get_b2r2(variant='l')
             np.save(b2r2_l_save, b2r2_l)
         else:
             b2r2_l = np.load(b2r2_l_save)

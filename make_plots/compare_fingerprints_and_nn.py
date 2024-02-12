@@ -43,9 +43,9 @@ gdb_std = np.std(pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")['dE0'].to_numpy(
 proparg_std = np.std(pd.read_csv("data/proparg/data.csv")['Eafw'].to_numpy())
 stds = [gdb_std, cyclo_std, proparg_std]
 
-cyclo_lang_dir = 'outs/cyclo_bert_pretrained/5_epochs_32_batches_10_smiles_rand/results.txt'
-gdb_lang_dir = 'outs/gdb_bert_pretrained/5_epochs_32_batches_10_smiles_rand/results.txt'
-proparg_lang_dir = 'outs/proparg_bert_pretrained/5_epochs_8_batches_10_smiles_rand/results.txt'
+cyclo_lang_dir = 'outs/cyclo_bert_pretrained/10_epochs_32_batches_10_smiles_rand/results.txt'
+gdb_lang_dir = 'outs/gdb_bert_pretrained/10_epochs_32_batches_10_smiles_rand/results.txt'
+proparg_lang_dir = 'outs/proparg_bert_pretrained/10_epochs_32_batches_10_smiles_rand/results.txt'
 lang_dirs = [gdb_lang_dir, cyclo_lang_dir, proparg_lang_dir]
 
 cyclo_cgr_dir = 'results/cyclo_true/test_scores.csv'
@@ -68,9 +68,9 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     print(f"dataset {db}")
 
     if i == 0:
-        add = 0.6
+        add = 0.5
     elif i == 1:
-        add = 0.4
+        add = 0.25
     elif i == 2:
         add = 0.15
 
@@ -92,12 +92,8 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     axes[i].bar(1, drfp_mae, yerr=drfp_std, color=colors[1])
     axes[i].text(1 - 0.26, drfp_mae + add, round_with_std(drfp_mae, drfp_std), rotation=90, fontsize='x-small', fontweight='bold')
 
-    if i == 0:
-        add_rxnfp = 1.8
-    else:
-        add_rxnfp = add
     axes[i].bar(2, rxnfp_mae, yerr=rxnfp_std, color=colors[4])
-    axes[i].text(2 - 0.26, rxnfp_mae + add_rxnfp, round_with_std(rxnfp_mae, rxnfp_std), rotation=90, fontsize='x-small', fontweight='bold')
+    axes[i].text(2 - 0.26, rxnfp_mae + add, round_with_std(rxnfp_mae, rxnfp_std), rotation=90, fontsize='x-small', fontweight='bold')
 
     axes[i].bar(3, slatm_mae, yerr=slatm_std, color=colors[2])
     axes[i].text(3 - 0.26, slatm_mae + add, round_with_std(slatm_mae, slatm_std), rotation=90, fontsize='x-small', fontweight='bold')

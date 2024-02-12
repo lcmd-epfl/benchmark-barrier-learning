@@ -44,7 +44,7 @@ def create_mol_obj(atomtypes, ncharges, coords):
     mol.coordinates = coords
     return mol
 
-def reader(xyz):
+def reader(xyz, input_bohr=False):
     if not os.path.exists(xyz):
         return [], [], []
     with open(xyz, 'r') as f:
@@ -79,7 +79,10 @@ def reader(xyz):
     if len(atomtypes) == 0:
         raise ValueError('file', xyz, 'has no atoms')
 
-    return np.array(atomtypes), np.array(ncharges), np.array(coords)
+    coords = np.array(coords)
+    if input_bohr:
+        coords = coords * 0.529177
+    return np.array(atomtypes), np.array(ncharges), coords
 
 class TWODIM:
     """Simple 2D reps based on SMILES"""
@@ -171,11 +174,49 @@ class QML:
     def __init__(self):
         self.ncharges = []
         self.unique_ncharges = []
-        self.max_natoms = 0
-        self.atomtype_dict = {"H": 0, "C": 0, "N": 0, "O": 0, "S": 0, "Cl":0,
-                                "F":0}
         self.mols_products = []
         self.mols_reactants = [[]]
+
+        def get_gdb_xyz_files(idx):
+            r = [f'data/gdb7-22-ts/xyz/{idx}/r{idx}.xyz']
+            p = sorted(glob(f'data/gdb7-22-ts/xyz/{idx}/p{idx}*.xyz'))
+            return r, p
+
+        def get_gdb_xtb_xyz_files(idx):
+            r = [f'data/gdb7-22-ts/xyz-xtb/{idx}/Reactant_{idx}_0_opt.xyz']
+            p = sorted(glob(f'data/gdb7-22-ts/xyz-xtb/{idx}/Product_{idx}_?_opt.xyz'))
+            return r, p
+
+        self.get_GDB7_xtb_data = self.get_GDB7_data(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
+                                                    csv_column_target='dE0',
+                                                    input_bohr=False,
+                                                    bad_idx_path='data/gdb7-22-ts/xtb_bad_idx.dat',
+                                                    get_xyz_files=get_gdb_xtb_xyz_files,
+                                                    get_idx = lambda df: df['idx'])
+
+        self.get_GDB7_ccsd_data = self.get_GDB7_data(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
+                                                    csv_column_target='dE0',
+                                                    input_bohr=True,
+                                                    get_xyz_files=get_gdb_xyz_files,
+                                                    get_idx = lambda df: df['idx'].apply(pad_indices).to_list())
+
+        self.get_GDB7_ccsd_subset_data = self.get_GDB7_data(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
+                                                    csv_column_target='dE0',
+                                                    input_bohr=True,
+                                                    bad_idx_path='data/gdb7-22-ts/xtb_bad_idx.dat',
+                                                    get_xyz_files=get_gdb_xyz_files,
+                                                    get_idx = lambda df: df['idx'].apply(pad_indices).to_list())
+
+
+
+
+
+
+
+
+
+
+
         return
 
     def get_proparg_data(self, xtb=False, subset=None):
@@ -213,85 +254,60 @@ class QML:
         self.get_proparg_data(xtb=True)
         return
 
-    def get_GDB7_ccsd_data(self, subset=None):
-        df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
-        self.barriers = df['dE0'].to_numpy()
-        indices = df['idx'].apply(pad_indices).to_list()
-        if subset:
-            self.barriers = self.barriers[:subset]
-            indices = indices[:subset]
-            assert len(self.barriers) == subset
-            assert len(self.barriers) == len(indices)
 
-        r_mols = []
-        p_mols = []
-        for idx in indices:
-            filedir = 'data/gdb7-22-ts/xyz/'+idx
-            rfile = filedir + '/r' + idx + '.xyz'
-            r_atomtypes, r_ncharges, r_coords = reader(rfile)
-            r_coords = r_coords * 0.529177 # bohr to angstrom
-            r_mol = create_mol_obj(r_atomtypes, r_ncharges, r_coords)
-            r_mols.append([r_mol])
 
-            # multiple p files
-            pfiles = glob(filedir+'/p*.xyz')
-            sub_pmols = []
-            for pfile in pfiles:
-                p_atomtypes, p_ncharges, p_coords = reader(pfile)
-                p_coords = p_coords * 0.529177
-                p_mol = create_mol_obj(p_atomtypes, p_ncharges, p_coords)
-                sub_pmols.append(p_mol)
-            p_mols.append(sub_pmols)
-        self.mols_reactants = r_mols
-        self.mols_products = p_mols
-        all_r_mols = np.concatenate(r_mols)
-        self.ncharges = [x.nuclear_charges for x in all_r_mols]
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
-        return
+    def get_GDB7_data(self,
+                      csv_path,
+                      csv_column_target,
+                      bad_idx_path=None,
+                      input_bohr=False,
+                      get_xyz_files=None,
+                      get_idx=None):
 
-    def get_GDB7_xtb_data(self, subset=None):
-        df = pd.read_csv("data/gdb7-22-ts/ccsdtf12_dz.csv")
-        self.barriers = df['dE0'].to_numpy()
-        indices = df['idx']
-        if subset:
-            self.barriers = self.barriers[:subset]
-            indices = np.array(indices)[:subset]
-            assert len(self.barries) == len(indices)
-            assert len(self.barriers) == subset
+        def get_data(subset):
+            df = pd.read_csv(csv_path)
+            self.barriers = df[csv_column_target].to_numpy()
+            indices = get_idx(df)
 
-        r_mols = []
-        p_mols = []
-        good_indices = []
-        for i, idx in enumerate(indices):
-            filedir = 'data/gdb7-22-ts/xyz-xtb/' + str(idx)
-            rfile = filedir + '/Reactant_' + str(idx) + '_0_opt.xyz'
-            r_atomtypes, r_ncharges, r_coords = reader(rfile)
-            r_mol = create_mol_obj(r_atomtypes, r_ncharges, r_coords)
+            bad_idx = np.loadtxt(bad_idx_path, dtype=int) if bad_idx_path else None
 
-            # multiple p files
-            pfiles = glob(filedir + '/Product_*.xyz')
-            sub_pmols = []
-            for pfile in pfiles:
-                p_atomtypes, p_ncharges, p_coords = reader(pfile)
-                p_mol = create_mol_obj(p_atomtypes, p_ncharges, p_coords)
-                sub_pmols.append(p_mol)
-            if len(sub_pmols) == 0:
-                continue
-            r_mols.append([r_mol])
-            p_mols.append(sub_pmols)
-            good_indices.append(i)
-        self.mols_reactants = r_mols
-        self.mols_products = p_mols
+            r_mols = []
+            p_mols = []
+            good_indices = []
+            for i, idx in enumerate(indices):
 
-        assert len(self.mols_reactants) == len(self.mols_products)
-        all_r_mols = np.concatenate(r_mols)
-        self.ncharges = [x.nuclear_charges for x in all_r_mols]
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
-        self.barriers = self.barriers[good_indices]
+                if (bad_idx is not None) and (idx in bad_idx):
+                    continue
 
-        assert len(self.barriers) == len(self.mols_reactants)
-        assert len(self.mols_reactants) == len(self.mols_products)
-        return
+                def read_mols(rfiles):
+                    sub_rmols = []
+                    for f in rfiles:
+                        atomtypes, ncharges, coords = reader(f, input_bohr=input_bohr)
+                        mol = create_mol_obj(atomtypes, ncharges, coords)
+                        sub_rmols.append(mol)
+                    return sub_rmols
+
+                rfiles, pfiles = get_xyz_files(idx)
+                r_mols.append(read_mols(rfiles))
+                p_mols.append(read_mols(pfiles))
+
+                good_indices.append(i)
+                if subset and len(good_indices)==subset:
+                    break
+
+            self.mols_reactants = r_mols
+            self.mols_products  = p_mols
+            self.ncharges = [x.nuclear_charges for x in np.concatenate(r_mols)]
+            self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
+            return
+
+        return get_data
+
+
+
+
+
+
 
 
     def get_cyclo_data(self, subset=None):

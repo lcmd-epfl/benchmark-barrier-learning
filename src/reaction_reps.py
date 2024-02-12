@@ -265,34 +265,21 @@ class QML:
 
     def get_SLATM(self):
         mbtypes = qml.representations.get_slatm_mbtypes(self.ncharges)
-
-        slatm_reactants = [
-            np.array(
-                [
-                    qml.representations.generate_slatm(
-                        x.coordinates, x.nuclear_charges, mbtypes, local=False
-                    )
-                    for x in reactants
-                ]
-            )
-            for reactants in self.mols_reactants
-        ]
-        slatm_reactants_sum = np.array([sum(x) for x in slatm_reactants])
-
-        slatm_products = [
-            np.array(
-                [
-                    qml.representations.generate_slatm(
-                        x.coordinates, x.nuclear_charges, mbtypes, local=False
-                    )
-                    for x in products
-                ]
-            )
-            for products in self.mols_products
-        ]
-        slatm_products = np.array([sum(x) for x in slatm_products])
-        slatm_diff = slatm_products - slatm_reactants_sum
-
+        slatm_reactants = np.array([sum(
+                            qml.representations.generate_slatm(
+                                x.coordinates,
+                                x.nuclear_charges,
+                                mbtypes,
+                                local=False
+                                ) for x in reactants) for reactants in self.mols_reactants])
+        slatm_products = np.array([sum(
+                            qml.representations.generate_slatm(
+                                x.coordinates,
+                                x.nuclear_charges,
+                                mbtypes,
+                                local=False
+                                ) for x in products) for products in self.mols_products])
+        slatm_diff = slatm_products - slatm_reactants
         return slatm_diff
 
 

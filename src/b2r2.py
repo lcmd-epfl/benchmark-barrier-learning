@@ -61,7 +61,9 @@ def get_b2r2_n_molecular(
     ncharges, coords, elements=[1, 6, 7, 8, 9, 17], Rcut=3.5, gridspace=0.03
 ):
 
-    ncharges = [x for x in ncharges if x in elements]
+    idx_relevant_atoms = np.where(np.sum(np.array(ncharges)==np.array(elements)[:,None], axis=0))
+    ncharges = np.array(ncharges)[idx_relevant_atoms]
+    coords = np.array(coords)[idx_relevant_atoms]
 
     grid = np.arange(0, Rcut, gridspace)
     twobodyrep = np.zeros_like(grid)
@@ -81,7 +83,10 @@ def get_b2r2_a_molecular(ncharges, coords,
                          elements=[1, 6, 7, 8, 9, 17],
                          Rcut=3.5, gridspace=0.03):
 
-    ncharges = [x for x in ncharges if x in elements]
+    idx_relevant_atoms = np.where(np.sum(np.array(ncharges)==np.array(elements)[:,None], axis=0))
+    ncharges = np.array(ncharges)[idx_relevant_atoms]
+    coords = np.array(coords)[idx_relevant_atoms]
+
     bags = get_bags(elements)
     grid = np.arange(0, Rcut, gridspace)
     twobodyrep = np.zeros((len(bags), len(grid)))
@@ -106,7 +111,9 @@ def get_b2r2_l_molecular(ncharges, coords,
                          elements=[1, 6, 7, 8, 9, 17],
                          Rcut=3.5, gridspace=0.03):
 
-    ncharges = [x for x in ncharges if x in elements]
+    idx_relevant_atoms = np.where(np.sum(np.array(ncharges)==np.array(elements)[:,None], axis=0))
+    ncharges = np.array(ncharges)[idx_relevant_atoms]
+    coords = np.array(coords)[idx_relevant_atoms]
 
     bags = np.array(elements)
     grid = np.arange(0, Rcut, gridspace)

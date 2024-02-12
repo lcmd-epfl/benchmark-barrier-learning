@@ -45,6 +45,10 @@ def create_mol_obj(atomtypes, ncharges, coords):
     return mol
 
 def reader(xyz, input_bohr=False):
+
+#            for product in products_files[i]:
+#                mol = qml.Compound(product)
+
     if not os.path.exists(xyz):
         return [], [], []
     with open(xyz, 'r') as f:
@@ -187,25 +191,58 @@ class QML:
             p = sorted(glob(f'data/gdb7-22-ts/xyz-xtb/{idx}/Product_{idx}_?_opt.xyz'))
             return r, p
 
-        self.get_GDB7_xtb_data = self.get_GDB7_data(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
-                                                    csv_column_target='dE0',
-                                                    input_bohr=False,
-                                                    bad_idx_path='data/gdb7-22-ts/xtb_bad_idx.dat',
-                                                    get_xyz_files=get_gdb_xtb_xyz_files,
-                                                    get_idx = lambda df: df['idx'])
+        self.get_GDB7_xtb_data = self.get_data_template(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
+                                                        csv_column_target='dE0',
+                                                        input_bohr=False,
+                                                        bad_idx_path='data/gdb7-22-ts/xtb_bad_idx.dat',
+                                                        get_xyz_files=get_gdb_xtb_xyz_files,
+                                                        get_idx = lambda df: df['idx'])
 
-        self.get_GDB7_ccsd_data = self.get_GDB7_data(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
-                                                    csv_column_target='dE0',
-                                                    input_bohr=True,
-                                                    get_xyz_files=get_gdb_xyz_files,
-                                                    get_idx = lambda df: df['idx'].apply(pad_indices).to_list())
+        self.get_GDB7_ccsd_data = self.get_data_template(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
+                                                         csv_column_target='dE0',
+                                                         input_bohr=True,
+                                                         get_xyz_files=get_gdb_xyz_files,
+                                                         get_idx = lambda df: df['idx'].apply(pad_indices).to_list())
 
-        self.get_GDB7_ccsd_subset_data = self.get_GDB7_data(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
-                                                    csv_column_target='dE0',
-                                                    input_bohr=True,
-                                                    bad_idx_path='data/gdb7-22-ts/xtb_bad_idx.dat',
-                                                    get_xyz_files=get_gdb_xyz_files,
-                                                    get_idx = lambda df: df['idx'].apply(pad_indices).to_list())
+        self.get_GDB7_ccsd_subset_data = self.get_data_template(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
+                                                                csv_column_target='dE0',
+                                                                input_bohr=True,
+                                                                bad_idx_path='data/gdb7-22-ts/xtb_bad_idx.dat',
+                                                                get_xyz_files=get_gdb_xyz_files,
+                                                                get_idx = lambda df: df['idx'].apply(pad_indices).to_list())
+
+        def get_cyclo_xyz_files(idx):
+            r = sorted(glob(f'data/cyclo/xyz/{idx}/r*.xyz'))
+            r = check_alt_files(r)
+            assert len(r)==2, f"Inconsistent length of {len(r)} for {idx}"
+            p = sorted(glob(f'data/cyclo/xyz/{idx}/p*.xyz'))
+            return r, p
+
+        def get_cyclo_xtb_xyz_files(idx):
+            r = sorted(glob(f"data/cyclo/xyz-xtb/Reactant_{idx}_*.xyz"))
+            p = [f"data/cyclo/xyz-xtb/Product_{idx}.xyz"]
+            return r, p
+
+
+        self.get_cyclo_data = self.get_data_template(csv_path='data/cyclo/full_dataset.csv',
+                                                     csv_column_target='G_act',
+                                                     input_bohr=False,
+                                                     get_xyz_files=get_cyclo_xyz_files,
+                                                     get_idx = lambda df: df['rxn_id'].to_list())
+
+        self.get_cyclo_xtb_data = self.get_data_template(csv_path='data/cyclo/full_dataset.csv',
+                                                         csv_column_target='G_act',
+                                                         input_bohr=False,
+                                                         bad_idx_path='data/cyclo/xtb_bad_idx.dat',
+                                                         get_xyz_files=get_cyclo_xtb_xyz_files,
+                                                         get_idx = lambda df: df['rxn_id'].to_list())
+
+        self.get_cyclo_subset_data = self.get_data_template(csv_path='data/cyclo/full_dataset.csv',
+                                                            csv_column_target='G_act',
+                                                            input_bohr=False,
+                                                            bad_idx_path='data/cyclo/xtb_bad_idx.dat',
+                                                            get_xyz_files=get_cyclo_xyz_files,
+                                                            get_idx = lambda df: df['rxn_id'].to_list())
 
 
 
@@ -256,16 +293,16 @@ class QML:
 
 
 
-    def get_GDB7_data(self,
-                      csv_path,
-                      csv_column_target,
-                      bad_idx_path=None,
-                      input_bohr=False,
-                      get_xyz_files=None,
-                      get_idx=None):
+    def get_data_template(self,
+                          csv_path,
+                          csv_column_target,
+                          bad_idx_path=None,
+                          input_bohr=False,
+                          get_xyz_files=None,
+                          get_idx=None):
 
-        def get_data(subset):
-            df = pd.read_csv(csv_path)
+        def get_data(subset=None):
+            df = pd.read_csv(csv_path, index_col=0)
             self.barriers = df[csv_column_target].to_numpy()
             indices = get_idx(df)
 
@@ -310,104 +347,7 @@ class QML:
 
 
 
-    def get_cyclo_data(self, subset=None):
-        df = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
-        self.barriers = df['G_act'].to_numpy()
-        indices = df['rxn_id'].to_list()
-        self.indices = indices
-        rxns = ["data/cyclo/xyz/"+str(i) for i in indices]
-        if subset:
-            rxns = np.array(rxns)[:subset]
-            self.barriers = self.barriers[:subset]
-            assert len(rxns) == subset
-            assert len(rxns) == len(self.barriers)
 
-        reactants_files = []
-        products_files = []
-        for rxn_dir in rxns:
-            reactants = glob(rxn_dir+"/r*.xyz")
-            reactants = check_alt_files(reactants)
-            assert len(reactants) == 2, f"Inconsistent length of {len(reactants)}"
-            reactants_files.append(reactants)
-            products = glob(rxn_dir+"/p*.xyz")
-            products_files.append(products)
-
-        mols_reactants = []
-        mols_products = []
-        ncharges_products = []
-        for i in range(len(rxns)):
-            mols_r = []
-            mols_p = []
-            ncharges_p = []
-            for reactant in reactants_files[i]:
-                mol = qml.Compound(reactant)
-                mols_r.append(mol)
-            for product in products_files[i]:
-                mol = qml.Compound(product)
-                mols_p.append(mol)
-                ncharges_p.append(mol.nuclear_charges)
-            ncharges_p = np.concatenate(ncharges_p)
-            ncharges_products.append(ncharges_p)
-            mols_reactants.append(mols_r)
-            mols_products.append(mols_p)
-        self.ncharges = ncharges_products
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges, axis=0))
-        self.mols_reactants = mols_reactants
-        self.mols_products = mols_products
-        return
-
-    def get_cyclo_xtb_data(self, subset=None):
-        df = pd.read_csv("data/cyclo/full_dataset.csv", index_col=0)
-        self.barriers = df['G_act'].to_numpy()
-        indices = df['rxn_id'].to_list()
-        self.indices = indices
-        if subset:
-            self.indices = np.array(self.indices)[:subset]
-            self.barriers = self.barriers[:subset]
-            assert len(self.indices) == subset
-            assert len(self.barriers) == len(self.indices)
-        keep_indices = []
-        reactants_files = []
-        products_files = []
-        for i, idx in enumerate(indices):
-            rxn_dir = "data/cyclo/xyz-xtb/"
-            reactants = glob(rxn_dir + f"Reactant_{idx}_*.xyz")
-            if len(reactants) == 0:
-                continue
-            assert len(reactants) == 2, f"Inconsistent length of {len(reactants)}"
-            reactants_files.append(reactants)
-            products = [rxn_dir + f"Product_{idx}.xyz"]
-            products_files.append(products)
-            keep_indices.append(i) # keep those that are not skipped bc zero
-
-        self.barriers = self.barriers[keep_indices]
-
-        mols_reactants = []
-        mols_products = []
-        ncharges_products = []
-        for i in range(len(keep_indices)):
-            mols_r = []
-            mols_p = []
-            ncharges_p = []
-            for reactant in reactants_files[i]:
-                mol = qml.Compound(reactant)
-                mols_r.append(mol)
-            for product in products_files[i]:
-                mol = qml.Compound(product)
-                mols_p.append(mol)
-                ncharges_p.append(mol.nuclear_charges)
-            ncharges_p = np.concatenate(ncharges_p)
-            ncharges_products.append(ncharges_p)
-            mols_reactants.append(mols_r)
-            mols_products.append(mols_p)
-        self.ncharges = ncharges_products
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges, axis=0))
-        self.mols_reactants = mols_reactants
-        self.mols_products = mols_products
-
-        assert len(self.mols_reactants) == len(self.mols_products)
-        assert len(self.mols_reactants) == len(self.barriers), f"size mismatch between n mols {len(self.mols_reactants)} and n barriers {len(self.barriers)}"
-        return
 
     def get_SLATM(self):
         mbtypes = qml.representations.get_slatm_mbtypes(self.ncharges)
@@ -436,15 +376,6 @@ class QML:
             )
             for products in self.mols_products
         ]
-
-        ys = []
-        for i, prod in enumerate(slatm_products):
-            if prod.shape[0] == 0:
-                print(i)
-            y = sum(prod)
-            ys.append(y)
-        pys = np.array(ys)
-
         slatm_products = np.array([sum(x) for x in slatm_products])
         slatm_diff = slatm_products - slatm_reactants_sum
 

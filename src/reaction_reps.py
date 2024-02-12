@@ -1,92 +1,19 @@
+from glob import glob
 import numpy as np
 import pandas as pd
+import ase.io
 import qml
-from glob import glob
-from periodictable import elements
-import os
 from src.fingerprints import get_MFP, get_DRFP
 from src.b2r2 import get_b2r2_a, get_b2r2_l, get_b2r2_n
 
-pt = {el.symbol: el.number for el in elements}
 
-def convert_symbol_to_ncharge(symbol):
-    return pt[symbol]
-
-def pad_indices(idx):
-    idx = str(idx)
-    if len(idx) < 6:
-        pad_len = 6 - len(idx)
-        pad = '0'*pad_len
-        idx = pad + idx
-    return idx
-
-def check_alt_files(list_files):
-    files = []
-    if len(list_files) < 3:
-        return list_files
-    for file in list_files:
-        if "_alt" in file:
-            dup_file_label = file.split("_alt.xyz")[0]
-    for file in list_files:
-        if dup_file_label in file:
-            if "_alt" in file:
-                files.append(file)
-        else:
-            files.append(file)
-    return files
-
-def create_mol_obj(atomtypes, ncharges, coords):
-    if len(atomtypes) == 0:
-        raise ValueError("mol has no atoms")
+def read_mol(xyz, input_bohr=False):
+    asemol = ase.io.read(xyz)
     mol = qml.Compound()
-    mol.atomtypes = atomtypes
-    mol.nuclear_charges = ncharges
-    mol.coordinates = coords
+    mol.atomtypes = asemol.get_chemical_symbols()
+    mol.nuclear_charges = asemol.numbers
+    mol.coordinates = asemol.positions * 0.529177 if input_bohr else asemol.positions
     return mol
-
-def reader(xyz, input_bohr=False):
-
-#            for product in products_files[i]:
-#                mol = qml.Compound(product)
-
-    if not os.path.exists(xyz):
-        return [], [], []
-    with open(xyz, 'r') as f:
-        lines = f.readlines()
-    lines = [line.strip() for line in lines]
-
-    try:
-        nat = int(lines[0])
-    except:
-        raise ValueError('file', xyz, 'is empty')
-
-    if nat == 0:
-        raise ValueError('file', xyz, 'has zero atoms')
-    start_idx = 2
-    end_idx = start_idx + nat
-
-    atomtypes = []
-    coords = []
-
-    for line_idx in range(start_idx, end_idx):
-        line = lines[line_idx]
-        atomtype, x, y, z = line.split()
-        atomtypes.append(str(atomtype))
-        coords.append([float(x), float(y), float(z)])
-
-    ncharges = [convert_symbol_to_ncharge(x) for x in atomtypes]
-
-    assert len(atomtypes) == nat
-    assert len(coords) == nat
-    assert len(ncharges) == nat
-
-    if len(atomtypes) == 0:
-        raise ValueError('file', xyz, 'has no atoms')
-
-    coords = np.array(coords)
-    if input_bohr:
-        coords = coords * 0.529177
-    return np.array(atomtypes), np.array(ncharges), coords
 
 
 class TWODIM:
@@ -200,6 +127,8 @@ class QML:
             p = sorted(glob(f'data/gdb7-22-ts/xyz-xtb/{idx}/Product_{idx}_?_opt.xyz'))
             return r, p
 
+        pad_indices = lambda idx: f'{idx:06}'
+
         self.get_GDB7_xtb_data = self.get_data_template(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
                                                         csv_column_target='dE0',
                                                         input_bohr=False,
@@ -223,6 +152,22 @@ class QML:
     def init_cyclo_loaders(self):
 
         def get_cyclo_xyz_files(idx):
+
+            def check_alt_files(list_files):
+                files = []
+                if len(list_files) < 3:
+                    return list_files
+                for file in list_files:
+                    if "_alt" in file:
+                        dup_file_label = file.split("_alt.xyz")[0]
+                for file in list_files:
+                    if dup_file_label in file:
+                        if "_alt" in file:
+                            files.append(file)
+                    else:
+                        files.append(file)
+                return files
+
             r = sorted(glob(f'data/cyclo/xyz/{idx}/r*.xyz'))
             r = check_alt_files(r)
             assert len(r)==2, f"Inconsistent length of {len(r)} for {idx}"
@@ -297,8 +242,7 @@ class QML:
                 def read_mols(rfiles):
                     sub_rmols = []
                     for f in rfiles:
-                        atomtypes, ncharges, coords = reader(f, input_bohr=input_bohr)
-                        mol = create_mol_obj(atomtypes, ncharges, coords)
+                        mol = read_mol(f, input_bohr=input_bohr)
                         sub_rmols.append(mol)
                     return sub_rmols
 

@@ -5,7 +5,7 @@ from glob import glob
 from periodictable import elements
 import os
 from src.fingerprints import get_MFP, get_DRFP
-from src.b2r2 import get_b2r2_a_molecular, get_b2r2_l_molecular, get_b2r2_n_molecular
+from src.b2r2 import get_b2r2_a, get_b2r2_l, get_b2r2_n
 
 pt = {el.symbol: el.number for el in elements}
 
@@ -435,45 +435,10 @@ class QML:
         return slatm_diff
 
 
-    def get_b2r2_l(self, Rcut=3.5, gridspace=0.03):
-        return self.get_b2r2_inner(Rcut=Rcut,
-                                   gridspace=gridspace,
-                                   get_b2r2_molecular=get_b2r2_l_molecular,
-                                   combine=lambda r,p: p-r)
-
-
-    def get_b2r2_a(self, Rcut=3.5, gridspace=0.03):
-        return self.get_b2r2_inner(Rcut=Rcut,
-                                   gridspace=gridspace,
-                                   get_b2r2_molecular=get_b2r2_a_molecular,
-                                   combine=lambda r,p: p-r)
-
-
-    def get_b2r2_n(self, Rcut=3.5, gridspace=0.03):
-        return self.get_b2r2_inner(Rcut=Rcut,
-                                   gridspace=gridspace,
-                                   get_b2r2_molecular=get_b2r2_n_molecular,
-                                   combine=lambda r,p: np.concatenate((r, p), axis=1))
-
-
-    def get_b2r2_inner(self, Rcut=3.5, gridspace=0.03, get_b2r2_molecular=None, combine=None):
-
-        b2r2_reactants = np.array([ sum(
-                get_b2r2_molecular(
-                    x.nuclear_charges,
-                    x.coordinates,
-                    Rcut=Rcut,
-                    gridspace=gridspace,
-                    elements=self.unique_ncharges,
-                ) for x in reactants) for reactants in self.mols_reactants ])
-
-        b2r2_products = np.array([ sum(
-                get_b2r2_molecular(
-                    x.nuclear_charges,
-                    x.coordinates,
-                    Rcut=Rcut,
-                    gridspace=gridspace,
-                    elements=self.unique_ncharges,
-                ) for x in products ) for products in self.mols_products ])
-
-        return combine(b2r2_reactants, b2r2_products)
+    def get_b2r2(self, Rcut=3.5, gridspace=0.03, variant='l'):
+        if variant=='l':
+            return get_b2r2_l(self.mols_reactants, self.mols_products, self.unique_ncharges, Rcut=Rcut, gridspace=gridspace)
+        if variant=='a':
+            return get_b2r2_a(self.mols_reactants, self.mols_products, self.unique_ncharges, Rcut=Rcut, gridspace=gridspace)
+        if variant=='n':
+            return get_b2r2_n(self.mols_reactants, self.mols_products, self.unique_ncharges, Rcut=Rcut, gridspace=gridspace)

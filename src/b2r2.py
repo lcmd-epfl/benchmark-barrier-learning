@@ -1,7 +1,8 @@
+import warnings
 import itertools
 import numpy as np
-from scipy.stats import skewnorm
 from scipy.special import erf
+import tqdm
 
 
 def get_bags(unique_ncharges):
@@ -24,15 +25,6 @@ def get_gaussian(x, R):
     X = (x-mu) / (sigma*np.sqrt(2))
     g = np.exp(-X**2) / (np.sqrt(2*np.pi) * sigma)
     return g
-
-
-def get_skew_gaussian(x, R, Z_I, Z_J):
-    mu, sigma = get_mu_sigma(R)
-    # the same as `Z_I * scipy.stats.skewnorm.pdf(x, Z_J, mu, sigma)` but faster
-    X = (x-mu) / (sigma*np.sqrt(2))
-    g = np.exp(-X**2) / (np.sqrt(2*np.pi) * sigma)
-    e = 1.0 + erf(Z_J * X)
-    return Z_I * g * e
 
 
 def get_skew_gaussian_l_both(x, R, Z_I, Z_J):
@@ -65,9 +57,30 @@ def get_skew_gaussian_n_both(x, R, Z_I, Z_J):
     return a + b
 
 
-def get_b2r2_a_molecular(
+def get_b2r2_n_molecular(
     ncharges, coords, elements=[1, 6, 7, 8, 9, 17], Rcut=3.5, gridspace=0.03
 ):
+
+    ncharges = [x for x in ncharges if x in elements]
+
+    grid = np.arange(0, Rcut, gridspace)
+    twobodyrep = np.zeros_like(grid)
+
+    for i, ncharge_a in enumerate(ncharges):
+        for j, ncharge_b in enumerate(ncharges[:i]):
+            coords_a = coords[i]
+            coords_b = coords[j]
+            R = np.linalg.norm(coords_b - coords_a)
+            if R < Rcut:
+                twobodyrep += get_skew_gaussian_n_both(grid, R, ncharge_b, ncharge_a)
+
+    return twobodyrep
+
+
+def get_b2r2_a_molecular(ncharges, coords,
+                         elements=[1, 6, 7, 8, 9, 17],
+                         Rcut=3.5, gridspace=0.03):
+
     ncharges = [x for x in ncharges if x in elements]
     bags = get_bags(elements)
     grid = np.arange(0, Rcut, gridspace)
@@ -88,75 +101,10 @@ def get_b2r2_a_molecular(
     return twobodyrep
 
 
-def get_b2r2_a(
-    reactants_ncharges,
-    products_ncharges,
-    reactants_coords,
-    products_coords,
-    elements=[1, 6, 7, 8, 9, 17],
-    Rcut=3.5,
-    gridspace=0.03,
-):
-    """
-    Reactants_ncharges is a list of lists where the outer list is the total number
-    of reactions and the inner list is the number of reactants in each reaction
-    Same for coords, and for products
-    """
-#    all_ncharges_reactants = [np.concatenate(x) for x in reactants_ncharges]
- #   u_ncharges_reactants = np.unique(np.concatenate(all_ncharges_reactants))
- #   all_ncharges_products = [np.concatenate(x) for x in products_ncharges]
- #   u_ncharges_products = np.unique(np.concatenate(all_ncharges_products))
- #   u_ncharges = np.unique(np.concatenate((u_ncharges_reactants, u_ncharges_products)))
 
-#    for ncharge in u_ncharges:
-  #      if ncharge not in elements:
- #           print("warning!", ncharge, "not included in rep")
-
-    b2r2_a_reactants = np.sum(
-        [
-            [
-                get_b2r2_a_molecular(
-                    reactants_ncharges[i][j],
-                    reactants_coords[i][j],
-                    Rcut=Rcut,
-                    gridspace=gridspace,
-                    elements=elements,
-                )
-                for j in range(len(reactants_ncharges[i]))
-            ]
-            for i in range(len(reactants_ncharges))
-        ],
-        axis=1,
-    )
-
-    b2r2_a_products = np.sum(
-        [
-            [
-                get_b2r2_a_molecular(
-                    products_ncharges[i][j],
-                    products_coords[i][j],
-                    Rcut=Rcut,
-                    gridspace=gridspace,
-                    elements=elements,
-                )
-                for j in range(len(products_ncharges[i]))
-            ]
-            for i in range(len(products_ncharges))
-        ],
-        axis=1,
-    )
-
-    b2r2_a = b2r2_a_products - b2r2_a_reactants
-    return b2r2_a
-
-
-def get_b2r2_l_molecular(
-    ncharges, coords, elements=[1, 6, 7, 8, 9, 17], Rcut=3.5, gridspace=0.03,
-):
-
-    for ncharge in ncharges:
-        if ncharge not in elements:
-            print("warning!", ncharge, "not included in rep")
+def get_b2r2_l_molecular(ncharges, coords,
+                         elements=[1, 6, 7, 8, 9, 17],
+                         Rcut=3.5, gridspace=0.03):
 
     ncharges = [x for x in ncharges if x in elements]
 
@@ -180,149 +128,86 @@ def get_b2r2_l_molecular(
     return twobodyrep
 
 
-def get_b2r2_l(
-    reactants_ncharges,
-    products_ncharges,
-    reactants_coords,
-    products_coords,
-    elements=[1, 6, 7, 8, 9, 17],
-    Rcut=3.5,
-    gridspace=0.03,
-):
+def get_b2r2_l(mols_reactants, mols_products, elements=None, Rcut=3.5, gridspace=0.03):
+    return get_b2r2_inner(mols_reactants, mols_products,
+                          elements=elements,
+                          Rcut=Rcut,
+                          gridspace=gridspace,
+                          get_b2r2_molecular=get_b2r2_l_molecular,
+                          combine=lambda r,p: p-r)
+
+def get_b2r2_a(mols_reactants, mols_products, elements=None, Rcut=3.5, gridspace=0.03):
+    return get_b2r2_inner(mols_reactants, mols_products,
+                          elements=elements,
+                          Rcut=Rcut,
+                          gridspace=gridspace,
+                          get_b2r2_molecular=get_b2r2_a_molecular,
+                          combine=lambda r,p: p-r)
+
+def get_b2r2_n(mols_reactants, mols_products, elements=None, Rcut=3.5, gridspace=0.03):
+    return get_b2r2_inner(mols_reactants, mols_products,
+                          elements=elements,
+                          Rcut=Rcut,
+                          gridspace=gridspace,
+                          get_b2r2_molecular=get_b2r2_n_molecular,
+                          combine=lambda r,p: np.concatenate((r, p), axis=1))
+
+def get_b2r2_inner(
+                   mols_reactants, mols_products, elements=None,
+                   Rcut=3.5, gridspace=0.03,
+                   get_b2r2_molecular=None, combine=None):
+
     """
-    Reactants_ncharges is a list of lists where the outer list is the total number
-    of reactions and the inner list is the number of reactants in each reaction
-    Same for coords, and for products
+    Compute the B2R2 reaction representation for a set of reactions.
+
+    Args:
+        mols_reactants : List(List(mol))
+        mols_products : List(List(mol))
+            List of lists where the outer list is the total number of reactions
+            and the inner list is the number of reactants/products in each reaction.
+            `mol` is any object that provides fields .nuclear_charges and .coordinates (Å)
+        elements : List(int) or 1D int ndarray
+            Elements to identify bags. If None, use all the elements in mols_reactants and mols_products.
+        Rcut : float
+            Cutoff radius (Å)
+        gridspace : float
+            Grid spacing (Å)
+        get_b2r2_molecular : func
+            Function to compute the molecular representations, one of `get_b2r2_{l,n,a}_molecular`
+        combine : func(r: ndarray, p: ndarray)
+            Function to combine the reactants and products representations
+    Returns:
+        b2r2 : 2D float ndarray (number of reactions × number of features)
+            B2R2 reaction representation
     """
-    all_ncharges_reactants = [np.concatenate(x) for x in reactants_ncharges]
-    u_ncharges_reactants = np.unique(np.concatenate(all_ncharges_reactants))
-    all_ncharges_products = [np.concatenate(x) for x in products_ncharges]
-    u_ncharges_products = np.unique(np.concatenate(all_ncharges_products))
+
+    u_ncharges_reactants = np.unique(np.hstack([y.nuclear_charges for x in mols_reactants for y in x]))
+    u_ncharges_products  = np.unique(np.hstack([y.nuclear_charges for x in mols_products  for y in x]))
     u_ncharges = np.unique(np.concatenate((u_ncharges_reactants, u_ncharges_products)))
 
-    for ncharge in u_ncharges:
-        if ncharge not in elements:
-            print("warning!", ncharge, "not included in rep")
+    if elements is None:
+        elements=u_ncharges
+    else:
+        setdiff = set(u_ncharges) - set(elements)
+        if setdiff:
+            warnings.warn(f"Elements {setdiff} are not included in the representation")
 
-    b2r2_l_reactants = np.sum(
-        [
-            [
-                get_b2r2_l_molecular(
-                    reactants_ncharges[i][j],
-                    reactants_coords[i][j],
-                    Rcut=Rcut,
-                    gridspace=gridspace,
-                    elements=elements,
-                )
-                for j in range(len(reactants_ncharges[i]))
-            ]
-            for i in range(len(reactants_ncharges))
-        ],
-        axis=1,
-    )
+    b2r2_reactants = np.array([ sum(
+            get_b2r2_molecular(
+                x.nuclear_charges,
+                x.coordinates,
+                Rcut=Rcut,
+                gridspace=gridspace,
+                elements=elements,
+            ) for x in reactants) for reactants in tqdm.tqdm(mols_reactants) ])
 
-    b2r2_l_products = np.sum(
-        [
-            [
-                get_b2r2_l_molecular(
-                    products_ncharges[i][j],
-                    products_coords[i][j],
-                    Rcut=Rcut,
-                    gridspace=gridspace,
-                    elements=elements,
-                )
-                for j in range(len(products_ncharges[i]))
-            ]
-            for i in range(len(products_ncharges))
-        ],
-        axis=1,
-    )
+    b2r2_products = np.array([ sum(
+            get_b2r2_molecular(
+                x.nuclear_charges,
+                x.coordinates,
+                Rcut=Rcut,
+                gridspace=gridspace,
+                elements=elements,
+            ) for x in products ) for products in tqdm.tqdm(mols_products) ])
 
-    b2r2_l = b2r2_l_products - b2r2_l_reactants
-    return b2r2_l
-
-
-def get_b2r2_n_molecular(
-    ncharges, coords, elements=[1, 6, 7, 8, 9, 17], Rcut=3.5, gridspace=0.03
-):
-
-    for ncharge in ncharges:
-        if ncharge not in elements:
-            print("warning!", ncharge, "not included in rep")
-
-    ncharges = [x for x in ncharges if x in elements]
-
-    grid = np.arange(0, Rcut, gridspace)
-    twobodyrep = np.zeros_like(grid)
-
-    for i, ncharge_a in enumerate(ncharges):
-        for j, ncharge_b in enumerate(ncharges[:i]):
-            coords_a = coords[i]
-            coords_b = coords[j]
-            R = np.linalg.norm(coords_b - coords_a)
-            if R < Rcut:
-                twobodyrep += get_skew_gaussian_n_both(grid, R, ncharge_b, ncharge_a)
-
-    return twobodyrep
-
-
-def get_b2r2_n(
-    reactants_ncharges,
-    products_ncharges,
-    reactants_coords,
-    products_coords,
-    elements=[1, 6, 7, 8, 9, 17],
-    Rcut=3.5,
-    gridspace=0.03,
-):
-    """
-    Reactants_ncharges is a list of lists where the outer list is the total number
-    of reactions and the inner list is the number of reactants in each reaction
-    Same for coords, and for products
-    """
-    all_ncharges_reactants = [np.concatenate(x) for x in reactants_ncharges]
-    u_ncharges_reactants = np.unique(np.concatenate(all_ncharges_reactants))
-    all_ncharges_products = [np.concatenate(x) for x in products_ncharges]
-    u_ncharges_products = np.unique(np.concatenate(all_ncharges_products))
-    u_ncharges = np.unique(np.concatenate((u_ncharges_reactants, u_ncharges_products)))
-
-    for ncharge in u_ncharges:
-        if ncharge not in elements:
-            print("warning!", ncharge, "not included in rep")
-
-    b2r2_n_reactants = np.sum(
-        [
-            [
-                get_b2r2_n_molecular(
-                    reactants_ncharges[i][j],
-                    reactants_coords[i][j],
-                    Rcut=Rcut,
-                    gridspace=gridspace,
-                    elements=elements,
-                )
-                for j in range(len(reactants_ncharges[i]))
-            ]
-            for i in range(len(reactants_ncharges))
-        ],
-        axis=1,
-    )
-
-    b2r2_n_products = np.sum(
-        [
-            [
-                get_b2r2_n_molecular(
-                    products_ncharges[i][j],
-                    products_coords[i][j],
-                    Rcut=Rcut,
-                    gridspace=gridspace,
-                    elements=elements,
-                )
-                for j in range(len(products_ncharges[i]))
-            ]
-            for i in range(len(products_ncharges))
-        ],
-        axis=1,
-    )
-
-    b2r2_n = b2r2_n_products - b2r2_n_reactants
-    return b2r2_n
+    return combine(b2r2_reactants, b2r2_products)

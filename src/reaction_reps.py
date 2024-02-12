@@ -88,6 +88,7 @@ def reader(xyz, input_bohr=False):
         coords = coords * 0.529177
     return np.array(atomtypes), np.array(ncharges), coords
 
+
 class TWODIM:
     """Simple 2D reps based on SMILES"""
     def __init__(self, proparg_stereo=False, proparg_combinatorial=False):
@@ -173,6 +174,7 @@ class TWODIM:
         drfps = [get_DRFP(x) for x in rxn_smiles]
         return np.vstack(drfps)
 
+
 class QML:
     """class for 3d reps: slatm and b2r2"""
     def __init__(self):
@@ -180,6 +182,13 @@ class QML:
         self.unique_ncharges = []
         self.mols_products = []
         self.mols_reactants = [[]]
+
+        self.init_gdb_loaders()
+        self.init_cyclo_loaders()
+        self.init_proparg_loaders()
+
+
+    def init_gdb_loaders(self):
 
         def get_gdb_xyz_files(idx):
             r = [f'data/gdb7-22-ts/xyz/{idx}/r{idx}.xyz']
@@ -211,6 +220,8 @@ class QML:
                                                                 get_xyz_files=get_gdb_xyz_files,
                                                                 get_idx = lambda df: df['idx'].apply(pad_indices).to_list())
 
+    def init_cyclo_loaders(self):
+
         def get_cyclo_xyz_files(idx):
             r = sorted(glob(f'data/cyclo/xyz/{idx}/r*.xyz'))
             r = check_alt_files(r)
@@ -222,7 +233,6 @@ class QML:
             r = sorted(glob(f"data/cyclo/xyz-xtb/Reactant_{idx}_*.xyz"))
             p = [f"data/cyclo/xyz-xtb/Product_{idx}.xyz"]
             return r, p
-
 
         self.get_cyclo_data = self.get_data_template(csv_path='data/cyclo/full_dataset.csv',
                                                      csv_column_target='G_act',
@@ -244,53 +254,21 @@ class QML:
                                                             get_xyz_files=get_cyclo_xyz_files,
                                                             get_idx = lambda df: df['rxn_id'].to_list())
 
+    def init_proparg_loaders(self):
 
+        get_proparg_xyz_files     = lambda idx: ([f'data/proparg/xyz/{idx}.r.xyz'],     [f'data/proparg/xyz/{idx}.p.xyz'])
+        get_proparg_xtb_xyz_files = lambda idx: ([f'data/proparg/xyz-xtb/{idx}.r.xyz'], [f'data/proparg/xyz-xtb/{idx}.p.xyz'])
+        get_proparg_idx = lambda df: [''.join(x) for x in zip(df['mol'].to_list(), df['enan'].to_list())]
 
+        self.get_proparg_data = self.get_data_template(csv_path='data/proparg/data.csv',
+                                                       csv_column_target='Eafw',
+                                                       get_xyz_files=get_proparg_xyz_files,
+                                                       get_idx = get_proparg_idx)
 
-
-
-
-
-
-
-
-        return
-
-    def get_proparg_data(self, xtb=False, subset=None):
-        df = pd.read_csv("data/proparg/data.csv", index_col=0)
-        if xtb:
-            data_dir = 'data/proparg/xyz-xtb/'
-        else:
-            data_dir = 'data/proparg/xyz/'
-        indices = [''.join(x) for x in zip(df['mol'].to_list(), df['enan'].to_list())]
-        if subset:
-            indices = np.array(indices)[:subset]
-
-        reactants_files = []
-        products_files = []
-        for idx in indices:
-            r_xyz, p_xyz = [f'{data_dir}{idx}.{x}.xyz' for x in ('r', 'p')]
-            reactants_files.append(r_xyz)
-            products_files.append(p_xyz)
-
-        all_mols = [qml.Compound(x) for x in reactants_files + products_files]
-        self.barriers = df.Eafw.to_numpy()
-        if subset:
-            self.barriers = self.barriers[:subset]
-            assert len(self.barriers) == len(reactants_files)
-            assert len(self.barriers) == subset
-        self.ncharges = [mol.nuclear_charges for mol in all_mols]
-        self.unique_ncharges = np.unique(np.concatenate(self.ncharges))
-
-        self.mols_reactants = [[qml.Compound(x)] for x in reactants_files]
-        self.mols_products = [[qml.Compound(x)] for x in products_files]
-
-        return
-
-    def get_proparg_data_xtb(self):
-        self.get_proparg_data(xtb=True)
-        return
-
+        self.get_proparg_data_xtb = self.get_data_template(csv_path='data/proparg/data.csv',
+                                                           csv_column_target='Eafw',
+                                                           get_xyz_files=get_proparg_xtb_xyz_files,
+                                                           get_idx = get_proparg_idx)
 
 
     def get_data_template(self,
@@ -339,14 +317,6 @@ class QML:
             return
 
         return get_data
-
-
-
-
-
-
-
-
 
 
     def get_SLATM(self):

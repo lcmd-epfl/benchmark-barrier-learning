@@ -6,6 +6,7 @@ HYPERS_SLATM = {
                             "proparg_xtb" : ['laplacian', 1e-5, 1e-10],
                                 "proparg" : ['laplacian', 0.01, 1e-10]
                                 }
+HYPERS_SLATM['gdb7-22-ts_xtb'] = HYPERS_SLATM['gdb_xtb']
 
 HYPERS_B2R2 = {
             "cyclo" : ['laplacian', 0.0001, 1e-10],
@@ -15,6 +16,7 @@ HYPERS_B2R2 = {
                             "proparg_xtb": ["laplacian", 1e-5, 0.0001],
                                 "proparg" : ['laplacian', 1e-5, 1e-10]
                                 }
+HYPERS_B2R2['gdb7-22-ts_xtb'] = HYPERS_B2R2['gdb_xtb']
 
 HYPERS_DRFP = {
             "cyclo": {'bootstrap': False, 'max_depth': 80, 'max_features': 'sqrt', 'min_samples_leaf': 1, 'min_samples_split': 2, 'n_estimators': 294},
@@ -33,3 +35,4 @@ HYPERS_LANG = {
                 "cyclo" : {'lr':1e-4, "p":0.2},
                     "gdb" : {'lr':1e-4, "p":0.2}
                     }
+

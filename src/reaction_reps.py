@@ -5,6 +5,7 @@ import ase.io
 import qml
 from src.fingerprints import get_MFP, get_DRFP
 from src.b2r2 import get_b2r2_a, get_b2r2_l, get_b2r2_n
+import tqdm
 
 
 def read_mol(xyz, input_bohr=False):
@@ -234,7 +235,7 @@ class QML:
             r_mols = []
             p_mols = []
             good_indices = []
-            for i, idx in enumerate(indices):
+            for i, idx in tqdm.tqdm(enumerate(indices)):
 
                 if (bad_idx is not None) and (idx in bad_idx):
                     continue
@@ -254,6 +255,7 @@ class QML:
                 if subset and len(good_indices)==subset:
                     break
 
+            self.barriers = self.barriers[good_indices]
             self.mols_reactants = r_mols
             self.mols_products  = p_mols
             self.ncharges = [x.nuclear_charges for x in np.concatenate(r_mols)]
@@ -271,14 +273,14 @@ class QML:
                                 x.nuclear_charges,
                                 mbtypes,
                                 local=False
-                                ) for x in reactants) for reactants in self.mols_reactants])
+                                ) for x in reactants) for reactants in tqdm.tqdm(self.mols_reactants)])
         slatm_products = np.array([sum(
                             qml.representations.generate_slatm(
                                 x.coordinates,
                                 x.nuclear_charges,
                                 mbtypes,
                                 local=False
-                                ) for x in products) for products in self.mols_products])
+                                ) for x in products) for products in tqdm.tqdm(self.mols_products)])
         slatm_diff = slatm_products - slatm_reactants
         return slatm_diff
 

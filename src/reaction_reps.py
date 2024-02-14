@@ -119,8 +119,8 @@ class QML:
     def init_gdb_loaders(self):
 
         def get_gdb_xyz_files(idx):
-            r = [f'data/gdb7-22-ts/xyz/{idx}/r{idx}.xyz']
-            p = sorted(glob(f'data/gdb7-22-ts/xyz/{idx}/p{idx}*.xyz'))
+            r = [f'data/gdb7-22-ts/xyz/{idx:06}/r{idx:06}.xyz']
+            p = sorted(glob(f'data/gdb7-22-ts/xyz/{idx:06}/p{idx:06}*.xyz'))
             return r, p
 
         def get_gdb_xtb_xyz_files(idx):
@@ -128,27 +128,25 @@ class QML:
             p = sorted(glob(f'data/gdb7-22-ts/xyz-xtb/{idx}/Product_{idx}_?_opt.xyz'))
             return r, p
 
-        pad_indices = lambda idx: f'{idx:06}'
-
         self.get_GDB7_xtb_data = self.get_data_template(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
                                                         csv_column_target='dE0',
                                                         input_bohr=False,
                                                         bad_idx_path='data/gdb7-22-ts/xtb_bad_idx.dat',
                                                         get_xyz_files=get_gdb_xtb_xyz_files,
-                                                        get_idx = lambda df: df['idx'])
+                                                        get_idx = lambda df: df['idx'].to_list())
 
         self.get_GDB7_ccsd_data = self.get_data_template(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
                                                          csv_column_target='dE0',
                                                          input_bohr=True,
                                                          get_xyz_files=get_gdb_xyz_files,
-                                                         get_idx = lambda df: df['idx'].apply(pad_indices).to_list())
+                                                         get_idx = lambda df: df['idx'].to_list())
 
         self.get_GDB7_ccsd_subset_data = self.get_data_template(csv_path='data/gdb7-22-ts/ccsdtf12_dz.csv',
                                                                 csv_column_target='dE0',
                                                                 input_bohr=True,
                                                                 bad_idx_path='data/gdb7-22-ts/xtb_bad_idx.dat',
                                                                 get_xyz_files=get_gdb_xyz_files,
-                                                                get_idx = lambda df: df['idx'].apply(pad_indices).to_list())
+                                                                get_idx = lambda df: df['idx'].to_list())
 
     def init_cyclo_loaders(self):
 

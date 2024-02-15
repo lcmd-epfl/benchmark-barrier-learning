@@ -6,7 +6,9 @@ import os
 
 def parse_args():
     parser = ap.ArgumentParser()
-    parser.add_argument('-x', '--xtb', action='store_true', help='use xtb geom instead of dft geoms')
+    g1 = parser.add_mutually_exclusive_group(required=False)
+    g1.add_argument('-x', '--xtb', action='store_true', help='use xtb geom instead of dft geoms')
+    g1.add_argument('-s', '--xtb_subset', action='store_true', help='use dft geoms for the xtb subsets (gdb and cyclo only)')
     parser.add_argument('-c', '--cyclo', action='store_true')
     parser.add_argument('-g', '--gdb', action='store_true')
     parser.add_argument('-p', '--proparg', action='store_true')
@@ -17,6 +19,8 @@ def parse_args():
     args = parser.parse_args()
     args.CV = int(args.CV)
     args.train = float(args.train)
+    if args.xtb_subset and (args.proparg or args.proparg_stereo or args.proparg_combinatorial):
+        raise RuntimeError("No xtb subset for the proparg dataset")
     return args
 
 if __name__ == "__main__":
@@ -96,6 +100,14 @@ if __name__ == "__main__":
             slatm_save = f'data/{dataset_path}/slatm_xtb.npy'
             b2r2_l_save = f'data/{dataset_path}/b2r2_l_xtb.npy'
 
+        elif args.xtb_subset:
+            if dataset == 'cyclo':
+                qml.get_cyclo_subset_data()
+            elif dataset == 'gdb':
+                qml.get_GDB7_ccsd_subset_data()
+            slatm_save = f'data/{dataset_path}/slatm_subset4xtb.npy'
+            b2r2_l_save = f'data/{dataset_path}/b2r2_l_subset4xtb.npy'
+
         else:
             if dataset == 'cyclo':
                 qml.get_cyclo_data()
@@ -113,7 +125,7 @@ if __name__ == "__main__":
             slatm = np.load(slatm_save)
 
         if not os.path.exists(b2r2_l_save):
-            b2r2_l = qml.get_b2r2_l()
+            b2r2_l = qml.get_b2r2(variant='l')
             np.save(b2r2_l_save, b2r2_l)
         else:
             b2r2_l = np.load(b2r2_l_save)
@@ -158,6 +170,10 @@ if __name__ == "__main__":
             slatm_save = f"data/{dataset_path}/slatm_{CV}_fold_xtb.npy"
             b2r2_l_save = f"data/{dataset_path}/b2r2_l_{CV}_fold_xtb.npy"
             dataset_label = f'{dataset_path}_xtb'
+        elif args.xtb_subset:
+            slatm_save = f"data/{dataset_path}/slatm_{CV}_fold_subset4xtb.npy"
+            b2r2_l_save = f"data/{dataset_path}/b2r2_l_{CV}_fold_subset4xtb.npy"
+            dataset_label = f'{dataset_path}_subset4xtb'
         else:
             slatm_save = f'data/{dataset_path}/slatm_{CV}_fold.npy'
             b2r2_l_save = f'data/{dataset_path}/b2r2_l_{CV}_fold.npy'

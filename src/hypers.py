@@ -1,20 +1,20 @@
 HYPERS_SLATM = {
-            "cyclo" : ['laplacian', 0.001, 1e-10],
-                "cyclo_xtb" : ['laplacian', 0.01, 1e-10],
-                    "gdb" : ['laplacian', 0.01, 1e-10],
-                        "gdb_xtb": ['laplacian', 0.01, 0.0001],
-                            "proparg_xtb" : ['laplacian', 1e-5, 1e-10],
-                                "proparg" : ['laplacian', 0.01, 1e-10]
+             "cyclo" : ['laplacian', 0.001, 1e-10],
+                 "cyclo_xtb" : ['rbf', 10, 1e-10],
+                     "gdb" : ['laplacian', 0.01, 1e-10],
+                         "gdb_xtb": ['laplacian', 0.01, 0.0001],
+                             "proparg_xtb" : ['rbf', 1000, 1e-4],
+                                 "proparg" : ['rbf', 10000, 1e-10]
                                 }
 HYPERS_SLATM['gdb7-22-ts_xtb'] = HYPERS_SLATM['gdb_xtb']
 
 HYPERS_B2R2 = {
-            "cyclo" : ['laplacian', 0.0001, 1e-10],
-                "cyclo_xtb" : ['laplacian', 0.0001, 0.0001],
-                    "gdb" : ['laplacian', 0.0001, 0.0001],
-                        "gdb_xtb": ['laplacian', 0.0001, 0.0001],
-                            "proparg_xtb": ["laplacian", 1e-5, 0.0001],
-                                "proparg" : ['laplacian', 1e-5, 1e-10]
+             "cyclo" : ['laplacian', 0.0001, 1e-10],
+                 "cyclo_xtb" : ['rbf', 100, 0.0001],
+                     "gdb" : ['laplacian', 0.0001, 0.0001],
+                         "gdb_xtb": ['laplacian', 0.0001, 0.0001],
+                            "proparg_xtb": ["rbf", 1000, 0.0001],
+                                 "proparg" : ['laplacian', 1e-5, 1e-10]
                                 }
 HYPERS_B2R2['gdb7-22-ts_xtb'] = HYPERS_B2R2['gdb_xtb']
 

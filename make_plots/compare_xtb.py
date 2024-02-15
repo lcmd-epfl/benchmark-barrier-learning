@@ -3,6 +3,9 @@ import matplotlib
 import numpy as np
 import pandas as pd
 plt.rcParams['figure.figsize'] = [6.4, 5.8]
+
+#Here we compare geometries at xtb level with those at dft level that were successfully optimized with xtb
+
 def get_maes(npy, txt=False, csv=False):
     if txt:
         maes = np.loadtxt(npy)
@@ -51,19 +54,24 @@ axes[1].set_xlim(0,6)
 axes[2].set_xlim(0,1.4)
 for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
 
+    slatm_dftfile = db + "slatm_10_fold_subset4xtb.npy"
+    b2r2_dftfile = db + "b2r2_l_10_fold_subset4xtb.npy"
     if i == 0:
-        add = 0.23
+        add = 0.24
     elif i == 1:
-        add = 0.15
+        add = 0.14
     elif i == 2:
-        add = 0.1
+        add = 0.07
+        slatm_dftfile = db + "slatm_10_fold.npy"
+        b2r2_dftfile = db + "b2r2_l_10_fold.npy"
 
     slatm_mae_xtb, slatm_std_xtb = get_maes(db + 'slatm_10_fold_xtb.npy')
-    slatm_mae, slatm_std = get_maes(db + 'slatm_10_fold.npy')
+    slatm_mae, slatm_std = get_maes(slatm_dftfile)
 
     b2r2_mae_xtb, b2r2_std_xtb = get_maes(db + 'b2r2_l_10_fold_xtb.npy')
-    b2r2_mae, b2r2_std = get_maes(db + 'b2r2_l_10_fold.npy')
+    b2r2_mae, b2r2_std = get_maes(b2r2_dftfile)
 
+    #TODO redo equireact with dft subset
     equireact_dft = pd.read_csv(f'equireact-results/{labels[i]}_dft.csv')['mae'].to_list()
     equireact_dft_mae = np.mean(equireact_dft)
     equireact_dft_std = np.std(equireact_dft)

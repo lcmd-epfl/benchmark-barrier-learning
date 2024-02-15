@@ -173,7 +173,7 @@ if __name__ == "__main__":
         elif args.xtb_subset:
             slatm_save = f"data/{dataset_path}/slatm_{CV}_fold_subset4xtb.npy"
             b2r2_l_save = f"data/{dataset_path}/b2r2_l_{CV}_fold_subset4xtb.npy"
-            dataset_label = f'{dataset_path}_subset4xtb'
+            dataset_label = f'{dataset_path}_xtb'
         else:
             slatm_save = f'data/{dataset_path}/slatm_{CV}_fold.npy'
             b2r2_l_save = f'data/{dataset_path}/b2r2_l_{CV}_fold.npy'

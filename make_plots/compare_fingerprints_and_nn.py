@@ -3,6 +3,8 @@ import matplotlib
 import numpy as np
 import pandas as pd
 
+#Here we use geometries at dft level.
+
 def get_maes(npy, txt=False, csv=False):
     if txt:
         maes = np.loadtxt(npy)

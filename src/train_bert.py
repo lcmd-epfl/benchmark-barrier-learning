@@ -238,7 +238,7 @@ if __name__ == "__main__":
         seed += 1
 
         train_df, val_test_df = train_test_split(df, train_size=train_size, random_state=seed)
-        val_df, test_df = train_test_split(df, train_size=0.5, shuffle=False)
+        val_df, test_df = train_test_split(val_test_df, train_size=0.5, shuffle=False)
         mean = train_df['labels'].mean()
         std = train_df['labels'].std()
         train_df['labels'] = (train_df['labels'] - mean)/std

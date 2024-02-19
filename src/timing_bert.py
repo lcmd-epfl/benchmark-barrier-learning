@@ -122,15 +122,11 @@ def hypers_in_file():
         return False
 
 if __name__ == "__main__":
-    args = argparse()
     for dataset in ['cyclo', 'gdb', 'proparg']:
         CV = 1
         train_size = 0.8
-        num_train_epochs = 5
-        if dataset == 'proparg':
-            batch_size = 8
-        else:
-            batch_size = 32
+        num_train_epochs = 10
+        batch_size = 32
         n_randomizations = 10
 
         if n_randomizations > 0:
@@ -176,7 +172,7 @@ if __name__ == "__main__":
             seed += 1
 
             train_df, val_test_df = train_test_split(df, train_size=train_size, random_state=seed)
-            val_df, test_df = train_test_split(df, train_size=0.5, shuffle=False)
+            val_df, test_df = train_test_split(val_test_df, train_size=0.5, shuffle=False)
             mean = train_df['labels'].mean()
             std = train_df['labels'].std()
             train_df['labels'] = (train_df['labels'] - mean)/std
@@ -196,7 +192,7 @@ if __name__ == "__main__":
 
             if i == 0:
                 if not hypers_bool:
-                    lr, p = hyperopt(wandb_name, save_iter_path, model_path, train_df, val_df, mean, std)
+                    raise ValueError('hyperopt not included in timing. please run and save to file')
                 else:
                     lr, p = hypers_bool
 
@@ -211,30 +207,14 @@ if __name__ == "__main__":
                         "config": {'hidden_dropout_prob': p}
                         }
             path_to_save = save_iter_path+f'_lr_{lr}_p_{p}'
-            path_to_search = path_to_save+f'/checkpoint*{num_train_epochs}/'
+            print(f"training model...")
+            start_time = timer()
+            bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
+                                            use_cuda=torch.cuda.is_available())
 
-            path = glob.glob(path_to_search, recursive=True)
-            if i == 0:
-                if len(path) == 0:
-                    print(f"training model...")
-                    start_time = timer()
-                    bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
-                                                    use_cuda=torch.cuda.is_available())
-
-                    bert.train_model(train_df, output_dir=path_to_save, eval_df=val_df)
-                    end_time = timer()
-                    print(f"Train time elapsed {end_time - start_time}")
-                else:
-                    print(f"using trained model at {path}")
-            if i > 0 :
-                print(f"training model...")
-                start_time = timer()
-                bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
-                                                use_cuda=torch.cuda.is_available())
-
-                bert.train_model(train_df, output_dir=path_to_save, eval_df=val_df)
-                end_time = timer()
-                print(f"Train time elapsed {end_time - start_time}")
+            bert.train_model(train_df, output_dir=path_to_save, eval_df=val_df)
+            end_time = timer()
+            print(f"Train time elapsed {end_time - start_time}")
 
             path = glob.glob(path_to_search, recursive=True)
             assert len(path) == 1, f"search path {path_to_search} contains {path}"
@@ -257,9 +237,3 @@ if __name__ == "__main__":
             maes.append(mae)
 
         print(f"test MAE={np.mean(maes)} +- {np.std(maes)}")
-        savefile = save_path + '/results.txt'
-        with open(savefile, 'w') as f:
-            for mae in maes:
-                f.write(str(mae))
-                f.write('\n')
-        print("Results file saved to", savefile)

@@ -216,16 +216,8 @@ if __name__ == "__main__":
             end_time = timer()
             print(f"Train time elapsed {end_time - start_time}")
 
-            path = glob.glob(path_to_search, recursive=True)
-            assert len(path) == 1, f"search path {path_to_search} contains {path}"
-            model_path = path[0]
-            print(f"using model path {model_path} and args {model_args}")
             start_time = timer()
-            trained_bert = SmilesClassificationModel('bert', model_path,
-                                                        num_labels=1, args=model_args,
-                                                        use_cuda=torch.cuda.is_available())
-
-            predictions = trained_bert.predict(test_df.text.values.tolist())[0]
+            predictions = bert.predict(test_df.text.values.tolist())[0]
             end_time = timer()
             print(f"End time elapsed {end_time - start_time}")
 

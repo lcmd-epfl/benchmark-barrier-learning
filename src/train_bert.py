@@ -114,29 +114,29 @@ def do_randomizations_on_df(df, n_randomizations=1, random_type='rotated', seed=
 
 def get_data(dataset):
     if dataset == 'gdb':
-        df = pd.read_csv("../data/gdb7-22-ts/ccsdtf12_dz.csv")
+        df = pd.read_csv("../../data/gdb7-22-ts/ccsdtf12_dz.csv")
         target_label = 'dE0'
-        save_path = '../outs/gdb_bert_pretrained'
+        save_path = '../../outs/gdb_bert_pretrained'
 
     elif dataset == 'cyclo':
-        df = pd.read_csv("../data/cyclo/full_dataset.csv")
+        df = pd.read_csv("../../data/cyclo/full_dataset.csv")
         target_label = 'G_act'
-        save_path = '../outs/cyclo_bert_pretrained'
+        save_path = '../../outs/cyclo_bert_pretrained'
 
     elif dataset == 'proparg':
         target_label = 'Eafw'
         if args.stereo:
             print("Using stereo smiles...")
-            df = pd.read_csv("../data/proparg/data_fixarom_smiles_stereo.csv")
-            save_path = "../outs/proparg_bert_pretrained_stereo"
+            df = pd.read_csv("../../data/proparg/data_fixarom_smiles_stereo.csv")
+            save_path = "../../outs/proparg_bert_pretrained_stereo"
         elif args.fix_arom:
             print("Using fixarom smiles...")
-            df = pd.read_csv("../data/proparg/data_fixarom_smiles.csv")
-            save_path = "../outs/proparg_bert_pretrained_fixarom"
+            df = pd.read_csv("../../data/proparg/data_fixarom_smiles.csv")
+            save_path = "../../outs/proparg_bert_pretrained_fixarom"
         else:
             print("Using default smiles...")
-            df = pd.read_csv("../data/proparg/data.csv")
-            save_path = '../outs/proparg_bert_pretrained'
+            df = pd.read_csv("../../data/proparg/data.csv")
+            save_path = '../../outs/proparg_bert_pretrained'
     return df, target_label, save_path
 
 def hyperopt(wandb_name, save_iter_path,
@@ -178,7 +178,7 @@ def hyperopt(wandb_name, save_iter_path,
         return best_lr, best_dropout
 
 def hypers_in_file():
-    if hypers.HYPERS_LANG[dataset]:
+    if dataset in hypers.HYPERS_LANG:
         lr = hypers.HYPERS_LANG[dataset]['lr']
         p = hypers.HYPERS_LANG[dataset]['p']
         print(f"Using best hypers from file {lr} and {p}")
@@ -268,24 +268,11 @@ if __name__ == "__main__":
                     "config": {'hidden_dropout_prob': p}
                     }
         path_to_save = save_iter_path+f'_lr_{lr}_p_{p}'
-        path_to_search = path_to_save+f'/checkpoint*{num_train_epochs}/'
 
-        path = glob.glob(path_to_search, recursive=True)
-        if i == 0:
-            if len(path) == 0: 
-                print(f"training model...")
-                bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
-                                                use_cuda=torch.cuda.is_available())
+        bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
+                                        use_cuda=torch.cuda.is_available())
 
-                bert.train_model(train_df, output_dir=path_to_save, eval_df=val_df)
-            else:
-                print(f"using trained model at {path}")
-        if i > 0 :
-            print(f"training model...")
-            bert = SmilesClassificationModel("bert", model_path, num_labels=1, args=model_args,
-                                            use_cuda=torch.cuda.is_available())
-
-            bert.train_model(train_df, output_dir=path_to_save, eval_df=val_df)
+        bert.train_model(train_df, output_dir=path_to_save, eval_df=val_df)
 
         print(f"making predictions...")
         predictions = bert.predict(test_df.text.values.tolist())[0]

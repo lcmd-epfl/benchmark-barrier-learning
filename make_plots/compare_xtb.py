@@ -57,11 +57,11 @@ for i, db in enumerate([gdb_dir, cyclo_dir, proparg_dir]):
     slatm_dftfile = db + "slatm_10_fold_subset4xtb.npy"
     b2r2_dftfile = db + "b2r2_l_10_fold_subset4xtb.npy"
     if i == 0:
-        add = 0.24
+        add = 0.3
     elif i == 1:
         add = 0.14
     elif i == 2:
-        add = 0.07
+        add = 0.08
         slatm_dftfile = db + "slatm_10_fold.npy"
         b2r2_dftfile = db + "b2r2_l_10_fold.npy"
 

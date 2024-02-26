@@ -16,7 +16,7 @@ def round_with_std(mae, std):
     return mae_round + '$\pm$' + std_round
 
 datasets = ['gdb', 'cyclo', 'proparg']
-labels = ['Chemprop True', 'Chemprop RXNMapper', 'Chemprop None']
+labels = ['True', 'RXNMapper', 'None']
 keys = ['true', 'rxnmapper', 'nomap']
 #colors = ["#FF0000", "#B51F1F", "#00A79F", "#007480", "#413D3A", "#CAC7C7"]
 colors = ['blue', 'purple', 'magenta']
@@ -46,6 +46,7 @@ data['proparg']['ylabel'] = "MAE $\Delta E^\ddag$ [kcal/mol]"
 
 matplotlib.rcParams.update({"font.size":12})
 fig, axes = plt.subplots(nrows=1, ncols=3)
+plt.suptitle('Chemprop mapping modes', fontweight='bold')
 
 axes[0].set_ylim(0,13)
 axes[1].set_ylim(0,4.2)

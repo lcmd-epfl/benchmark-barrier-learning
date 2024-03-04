@@ -8,10 +8,12 @@ from timeit import default_timer as timer
 if __name__ == "__main__":
 
     datasets = ['proparg', 'cyclo', 'gdb']
+    datasets_paths = ['cyclo', 'gdb7-22-ts', 'proparg']
     subset = 750
 
     for i, dataset in enumerate(datasets):
         print(f"Running for {dataset} dataset")
+        dataset_path = datasets_paths[i]
         twodim = TWODIM()
 
         # DRFP
@@ -58,7 +60,7 @@ if __name__ == "__main__":
 
         # B2R2
         start_data = timer()
-        b2r2_l = qml.get_b2r2(variant='l')
+        b2r2_l = qml.get_b2r2_l()
         end_data = timer()
         rep_gen_time_b2r2 = end_data - start_data
         print(f"{rep_gen_time_b2r2=}")

@@ -11,16 +11,21 @@ git clone https://github.com/rxn4chemistry/rxnfp
 pip install -e rxnfp
 ```
 - Note that the above does not work on Mac computers with the M1 chip onwards, since they do not support python 3.7. This env has been tried and tested on several Linux platforms.
+- It is recommended to run BERT+DRFP in a GPU-enabled environment.
 
 ### Chemprop environment 
 - This can be installed using `conda create -n <environment-name> --file requirements_chemprop.txt`
-- Note a modified version of chemprop is used, which allows for hyperparameter optimisation only on the first CV fold and reports timings for training and inference separately.
+- Note a modified version of chemprop is used (forked from 1.6.1), which allows for hyperparameter optimisation only on the first CV fold and reports timings for training and inference separately.
+- It is recommended to run Chemprop in a GPU-enabled environment.
 
 ### Fingerprints environment
-- This can be installed using `conda create -n <environment-name> --file requirements_fingerprints.txt`
+- This can be installed using `conda create -n <environment-name> --file environment_fingerprints.yml`
+- The key packages are `qml` (for SLATM and B2R2 dependencies), `drfp` (for DRFP), `rdkit` (for MFP, careful with the version) for the fingerprints and `scikit-learn` and `numpy` for the models
+- These fingerprints will not benefit from a GPU environment, run on CPU only.
 
 ### EquiReact environment
-- Consult the dedicated repo: https://github.com/lcmd-epfl/EquiReact
+- Consult the dedicated repo for installation instructions: https://github.com/lcmd-epfl/EquiReact
+- It is recommended to run EquiReact in a GPU-enabled environment.
 
 ## Using the repo / reproducing the results 
 ### 2D/3D fingerprints

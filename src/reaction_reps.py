@@ -238,8 +238,12 @@ class QML:
                 if (bad_idx is not None) and (idx in bad_idx):
                     continue
 
-                def read_mols(files):
-                    return [read_mol(f, input_bohr=input_bohr) for f in files]
+                def read_mols(rfiles):
+                    sub_rmols = []
+                    for f in rfiles:
+                        mol = read_mol(f, input_bohr=input_bohr)
+                        sub_rmols.append(mol)
+                    return sub_rmols
 
                 rfiles, pfiles = get_xyz_files(idx)
                 r_mols.append(read_mols(rfiles))

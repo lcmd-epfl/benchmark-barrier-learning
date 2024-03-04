@@ -22,6 +22,7 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     CV = args.CV
+    train = args.train
 
     datasets = []
     datasets_paths = []
@@ -141,14 +142,14 @@ if __name__ == "__main__":
             mfp_save = f'data/{dataset_path}/mfp_{CV}_fold.npy'
 
         if not os.path.exists(drfp_save):
-            maes_drfp = predict_CV_RF(drfp, barriers_twod, CV=CV, train_size=0.8, model='drfp', dataset=dataset)
+            maes_drfp = predict_CV_RF(drfp, barriers_twod, CV=CV, train_size=train, model='drfp', dataset=dataset)
             np.save(drfp_save, maes_drfp)
         else:
             maes_drfp = np.load(drfp_save)
         print(f'drfp mae {np.mean(maes_drfp)} +- {np.std(maes_drfp)}')
 
         if not os.path.exists(mfp_save):
-            maes_mfp = predict_CV_RF(mfp, barriers_twod, CV=CV, train_size=0.8, model='mfp', dataset=dataset)
+            maes_mfp = predict_CV_RF(mfp, barriers_twod, CV=CV, train_size=train, model='mfp', dataset=dataset)
             np.save(mfp_save, maes_mfp)
         else:
             maes_mfp = np.load(mfp_save)
@@ -165,7 +166,7 @@ if __name__ == "__main__":
 
         if not os.path.exists(slatm_save):
             print(f"Getting MAES for slatm..")
-            maes_slatm = predict_CV_KRR(slatm, barriers_qml, CV=CV, model='slatm', dataset=dataset_label)
+            maes_slatm = predict_CV_KRR(slatm, barriers_qml, CV=CV, model='slatm', dataset=dataset_label, train_size=train)
             np.save(slatm_save, maes_slatm)
         else:
             maes_slatm = np.load(slatm_save)
@@ -173,7 +174,7 @@ if __name__ == "__main__":
 
         if not os.path.exists(b2r2_l_save):
             print(f"Getting MAEs for b2r2..")
-            maes_b2r2_l = predict_CV_KRR(b2r2_l, barriers_qml, CV=CV, model='b2r2', dataset=dataset_label)
+            maes_b2r2_l = predict_CV_KRR(b2r2_l, barriers_qml, CV=CV, model='b2r2', dataset=dataset_label, train_size=train)
             np.save(b2r2_l_save, maes_b2r2_l)
         else:
             maes_b2r2_l = np.load(b2r2_l_save)

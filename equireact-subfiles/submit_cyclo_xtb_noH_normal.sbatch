@@ -20,7 +20,7 @@ python -c 'import torch; print(torch.cuda.is_available())'
 wandb disabled
 python train.py --device cuda              \
                 --experiment_name benchmark-cyclo-xtb \
-                --CV 10                     \
+                --CV 1                     \
                 --num_epochs 512           \
                 --seed ${SEED}             \
                 --dataset "cyclo"          \

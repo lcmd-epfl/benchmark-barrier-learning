@@ -12,6 +12,7 @@ def parse_args():
     parser.add_argument('-p', '--proparg', action='store_true')
     parser.add_argument('--proparg_stereo', action='store_true')
     parser.add_argument('--proparg_combinatorial', action='store_true')
+    parser.add_argument('-f', '--force', action='store_true', help='predictions are recomputed (even if stored results exist)')
     parser.add_argument('-CV', '--CV', default=10)
     parser.add_argument('-tr', '--train', default=0.8)
     args = parser.parse_args()
@@ -142,14 +143,14 @@ if __name__ == "__main__":
             drfp_save = f'data/{dataset_path}/drfp_{CV}_fold.npy'
             mfp_save = f'data/{dataset_path}/mfp_{CV}_fold.npy'
 
-        if not os.path.exists(drfp_save):
+        if not os.path.exists(drfp_save) or args.force :
             maes_drfp = predict_CV_RF(drfp, barriers_twod, CV=CV, train_size=train, model='drfp', dataset=dataset)
             np.save(drfp_save, maes_drfp)
         else:
             maes_drfp = np.load(drfp_save)
         print(f'drfp mae {np.mean(maes_drfp)} +- {np.std(maes_drfp)}')
 
-        if not os.path.exists(mfp_save):
+        if not os.path.exists(mfp_save) or args.force :
             maes_mfp = predict_CV_RF(mfp, barriers_twod, CV=CV, train_size=train, model='mfp', dataset=dataset)
             np.save(mfp_save, maes_mfp)
         else:
@@ -165,7 +166,7 @@ if __name__ == "__main__":
             b2r2_l_save = f'data/{dataset_path}/b2r2_l_{CV}_fold.npy'
             dataset_label = dataset
 
-        if not os.path.exists(slatm_save):
+        if not os.path.exists(slatm_save) or args.force:
             print(f"Getting MAES for slatm..")
             maes_slatm = predict_CV_KRR(slatm, barriers_qml, CV=CV, model='slatm', dataset=dataset_label, train_size=train)
             np.save(slatm_save, maes_slatm)
@@ -173,7 +174,7 @@ if __name__ == "__main__":
             maes_slatm = np.load(slatm_save)
         print(f'slatm mae {np.mean(maes_slatm)} +- {np.std(maes_slatm)}')
 
-        if not os.path.exists(b2r2_l_save):
+        if not os.path.exists(b2r2_l_save) or args.force:
             print(f"Getting MAEs for b2r2..")
             maes_b2r2_l = predict_CV_KRR(b2r2_l, barriers_qml, CV=CV, model='b2r2', dataset=dataset_label, train_size=train)
             np.save(b2r2_l_save, maes_b2r2_l)

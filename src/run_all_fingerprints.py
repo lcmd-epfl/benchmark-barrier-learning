@@ -83,6 +83,7 @@ if __name__ == "__main__":
         else:
             mfp = np.load(mfp_save)
 
+        twodim.get_property(dataset=dataset)
         barriers_twod = twodim.barriers
 
         # 3d fingerprints SLATM

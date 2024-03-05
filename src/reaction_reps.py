@@ -95,6 +95,23 @@ class TWODIM:
             self.proparg_path = "data/proparg/data_fixarom_smiles.csv"
         else:
             self.proparg_path = "data/proparg/data.csv"
+        self.cyclo_path = "data/cyclo/full_dataset.csv"
+        self.gdb_path = "data/gdb7-22-ts/ccsdtf12_dz.csv"
+
+    def get_property(self, dataset=''):
+        datasets =  {'cyclo': self.cyclo_path, \
+                    'gdb': self.gdb_path ,\
+                    'proparg': self.proparg_path}
+        labels =  {'cyclo': 'G_act', \
+                    'gdb': 'dE0' ,\
+                    'proparg': 'Eafw'}
+        data_path = datasets[dataset]
+        data_label = labels[dataset]
+        data = pd.read_csv(data_path, index_col=0)
+        self.barriers = data[data_label].to_numpy()
+
+
+
 
     def get_proparg_MFP(self, subset=None):
         data = pd.read_csv(self.proparg_path, index_col=0)
